@@ -51,7 +51,7 @@
 	$row = pg_fetch_row($res);
 
 	if ($row[0] > 0) {
-	    trigger_error("The login or email already exists");
+	    trigger_error("The login and(or) email already exists");
 	    die();
 	}
 

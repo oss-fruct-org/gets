@@ -82,8 +82,24 @@
         return "Category '$name' added";
     }
     
+/*
+    Function gets list of categories
+
+    Params:
+
+    Example of using: curl -d "<methodCall><methodName>getCategories</methodName></methodCall>" http://geo2tag.cs.prv/gets/geo2tag.php
+ */
     function getcategories_func($method_name, $params, $app_data)
     {
 	global $dbconn;
+
+	$sql_request = "select * from category;";
+	$res = pg_query($dbconn, $sql_request);
+	if (!$res) {
+	    trigger_error("SQL error", E_USER_ERROR);
+	    die();
+	}
+
+	return pg_fetch_all($res);
     }
 ?>

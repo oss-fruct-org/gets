@@ -16,32 +16,32 @@
 
 	if (array_key_exists("name", $params[0])) {
 	    $name = $params[0]["name"];
+	    $name = pg_escape_string($name);
 	    $name = "'$name'";
 	} else {
 	    trigger_error("Category name did not specified", E_USER_ERROR);
 	    die();
 	}
-	$name = pg_escape_string($name);
 
 	if (array_key_exists("description", $params[0])) {
 	    $description = $params[0]["description"];
+	    $description = pg_escape_string($description);
 	    $description = "'$description'";
 	} else {
 	    $description = "NULL";
 	}
-	$description = pg_escape_string($description);
 	    
 	if (array_key_exists("url", $params[0])) {
 	    $url = $params[0]["url"];
+	    $url = pg_escape_string($url);
 	    $url = "'$url'";
 	} else {
 	    $url = "NULL";
 	}
-	$url = pg_escape_string($url);
 
 	/* check availability user name */
 
-	$sql_request = "select count(*) from category where name=$name;";
+	$sql_request = "select count(*) from category where category.name=$name;";
 	$res = pg_query($dbconn, $sql_request);
 
 	if (!$res) {
@@ -64,7 +64,7 @@
 	    die();
 	}
 
-	$sql_request = "select name from category where name=$name;";
+	$sql_request = "select category.name from category where category.name=$name;";
 	$res = pg_query($dbconn, $sql_request);
 
 	if (!$res) {

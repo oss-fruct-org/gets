@@ -14,27 +14,27 @@
     {
 	global $dbconn;
 
-	if (array_key_exists("name", $params[0]))
+	if (array_key_exists("name", $params[0])) {
 	    $name = $params[0]["name"];
 	    $name = "'$name'";
-	else {
+	} else {
 	    trigger_error("Category name did not specified", E_USER_ERROR);
 	    die();
 	}
 	$name = pg_escape_string($name);
 
-	if (array_key_exists("description", $params[0]))
+	if (array_key_exists("description", $params[0])) {
 	    $description = $params[0]["description"];
 	    $description = "'$description'";
-	else {
+	} else {
 	    $description = "NULL";
 	}
 	$description = pg_escape_string($description);
 	    
-	if (array_key_exists("url", $params[0])) 
+	if (array_key_exists("url", $params[0])) {
 	    $url = $params[0]["url"];
 	    $url = "'$url'";
-	else {
+	} else {
 	    $url = "NULL";
 	}
 	$url = pg_escape_string($url);

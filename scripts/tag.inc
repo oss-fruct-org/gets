@@ -3,18 +3,18 @@
     Function removes duplicate tags from database
 
     Params:
-	name - any existed user name (max 50 symbols)
+	user - any existed user name (max 50 symbols)
 	channel - any existed channel name (max 300 symbols, not required)
 
-    Example of using: curl -d "<methodCall><methodName>deleteDupTags</methodName><params><param><struct><member><name>name</name><value>gets2</value></member><member><name>channel</name><value>Gets-test</value></member></struct></param></params></methodCall>" http://geo2tag.cs.prv/gets/geo2tag.php
+    Example of using: curl -d "<methodCall><methodName>deleteDupTags</methodName><params><param><struct><member><name>user</name><value>gets2</value></member><member><name>channel</name><value>Gets-test</value></member></struct></param></params></methodCall>" http://geo2tag.cs.prv/gets/geo2tag.php
  */
 
     function deleteDupTags_func($method_name, $params, $app_data)
     {
 	global $dbconn;
 
-	if (array_key_exists("name", $params[0])) {
-	    $name = $params[0]["name"];
+	if (array_key_exists("user", $params[0])) {
+	    $name = $params[0]["user"];
 	    $name = pg_escape_string($name);
 	    $name = "'$name'";
 	} else {
@@ -48,6 +48,65 @@
 	$countRows = pg_affected_rows($res);
 
         return "Removed '$countRows' duplicate rows";
+    }
+    
+/*
+    Function removes tag from database
+
+    Params:
+	tag_id - any existed tag id (positive integer)
+	login - geo2tag admin login
+	password - geo2tag admin password
+
+    Example of using: curl -d "<methodCall><methodName>deleteTag</methodName><params><param><struct><member><name>tag_id</name><value>187</value></member><member><name>login</name><value>root</value></member><member><name>password</name><value>pass</value></member></struct></param></params></methodCall>" http://geo2tag.cs.prv/gets/geo2tag.php
+ */
+
+    function deleteTag_func($method_name, $params, $app_data)
+    {
+	global $dbconn;
+
+	if (array_key_exists("tag_id", $params[0])) {
+	    $tagid = $params[0]["tag_id"];
+	    $tagid = pg_escape_string($tagid);
+	    $tagid = intval($tagid);
+	} else {
+	    trigger_error("Tag id did not specified", E_USER_ERROR);
+	    die();
+	}
+
+	if (array_key_exists("login", $params[0])) {
+	    $login = $params[0]["login"];
+	    $login = pg_escape_string($login);
+	    $login = "'$login'";
+	} else {
+	    trigger_error("Administrator login did not specified", E_USER_ERROR);
+	    die();
+	}
+	    
+	if (array_key_exists("password", $params[0])) {
+	    $password = $params[0]["password"];
+	    $password = pg_escape_string($password);
+	    $password = "'$password'";
+	} else {
+	    $password = "NULL";
+	}
+
+	check_permissions($login, $password);
+	    
+	/* create request */
+
+	$sql_request = "delete from tag where tag.id = $tagid";
+
+	$res = pg_query($dbconn, $sql_request);
+
+	if (!$res) {
+	    trigger_error("SQL error", E_USER_ERROR);
+	    die();
+	}
+
+	$countRows = pg_affected_rows($res);
+
+        return "Removed '$countRows' row(s)";
     }
     
 ?>

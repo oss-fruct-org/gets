@@ -5,6 +5,7 @@ include "perm.inc";
 include "add-user.inc";
 include "category.inc";
 include "tag.inc";
+include "channel.inc";
 
 function return_xmlrpc_error($errno,$errstr,$errfile=NULL,$errline=NULL
        ,$errcontext=NULL){
@@ -34,6 +35,7 @@ xmlrpc_server_register_method($xmlrpc_server, "getCategories", "getcategories_fu
 xmlrpc_server_register_method($xmlrpc_server, "deleteCategory", "deleteCategory_func");
 xmlrpc_server_register_method($xmlrpc_server, "deleteDupTags", "deleteDupTags_func");
 xmlrpc_server_register_method($xmlrpc_server, "deleteTag", "deleteTag_func");
+xmlrpc_server_register_method($xmlrpc_server, "deleteChannel", "deleteChannel_func");
 
 /* process request */
 $request_xml = $HTTP_RAW_POST_DATA;

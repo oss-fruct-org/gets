@@ -4,6 +4,7 @@ include "perm.inc";
 
 include "add-user.inc";
 include "category.inc";
+include "tag.inc";
 
 function return_xmlrpc_error($errno,$errstr,$errfile=NULL,$errline=NULL
        ,$errcontext=NULL){
@@ -31,6 +32,7 @@ xmlrpc_server_register_method($xmlrpc_server, "addUser", "adduser_func");
 xmlrpc_server_register_method($xmlrpc_server, "addCategory", "addcategory_func");
 xmlrpc_server_register_method($xmlrpc_server, "getCategories", "getcategories_func");
 xmlrpc_server_register_method($xmlrpc_server, "deleteCategory", "deleteCategory_func");
+xmlrpc_server_register_method($xmlrpc_server, "deleteDupTags", "deleteDupTags_func");
 
 /* process request */
 $request_xml = $HTTP_RAW_POST_DATA;

@@ -1,3 +1,3 @@
 <?php
-define('GEO2TAG_SERVER_URL', '192.168.112.107');
+define('GEO2TAG_SERVER_URL', 'geo2tag.cs.prv');
 ?>

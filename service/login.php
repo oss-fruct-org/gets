@@ -1,7 +1,6 @@
 <?php
-include_once('methods_url.php');
-include_once('process_request.php');
-include_once('utils.inc');
+include_once('include/methods_url.inc');
+include_once('include/utils.inc');
 
 header('Content-Type:text/xml');
 

@@ -1,8 +1,7 @@
 <?php
-include_once('XmlParser.class.php');
-include_once('methods_url.php');
-include_once('process_request.php');
-include_once('utils.inc');
+include_once('include/XmlParser.class.inc');
+include_once('include/methods_url.inc');
+include_once('include/utils.inc');
 
 $xml_post = file_get_contents('php://input');
 if ($xml_post) {

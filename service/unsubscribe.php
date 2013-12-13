@@ -1,6 +1,6 @@
 <?php
-include_once('methods_url.php');
-include_once('process_request.php');
+include_once('include/methods_url.inc');
+include_once('include/utils.inc');
 
 if (!empty($_POST)) {
 	$data = json_encode($_POST);

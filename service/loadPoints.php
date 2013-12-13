@@ -1,7 +1,6 @@
 <?php
-include_once('methods_url.php');
-include_once('process_request.php');
-include_once('utils.inc');
+include_once('include/methods_url.inc');
+include_once('include/utils.inc');
 
 header ('Content-Type:text/xml');
 
@@ -33,6 +32,7 @@ $latitude_element = $dom->getElementsByTagName('latitude');
 $longitude_element = $dom->getElementsByTagName('longitude');
 $radius_element = $dom->getElementsByTagName('radius');
 
+$is_auth_token_defined = $auth_token_element->length > 0;
 $category_condition = $category_name_element->length > 0;
 $location_condition = ($latitude_element->length > 0) && 
 					   ($longitude_element->length > 0) && 
@@ -44,7 +44,9 @@ $category_name = $category_condition ?
 				 'any';
 
 $data_array = array();
-$data_array['auth_token'] = $auth_token_element->item(0)->nodeValue;
+$data_array['auth_token'] = $is_auth_token_defined ? 
+							$auth_token_element->item(0)->nodeValue : 
+							PUBLIC_TOKEN;
 $request_type = '';
 if ($category_condition && $location_condition) {
 	$data_array['latitude'] = floatval($latitude_element->item(0)->nodeValue);

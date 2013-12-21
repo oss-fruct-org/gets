@@ -96,7 +96,7 @@
                     <p><b>Request:</b></p>
                     <div class="xml_box">
                         <pre><code>
-&lt;request>&gt;
+&lt;request&gt;
     &lt;params&gt;
         &lt;auth_token&gt;...&lt;/auth_token&gt;
         &lt;latitude&gt;...&lt;/latitude&gt;
@@ -135,7 +135,7 @@
 			<li>
                 <div id="get-categories" class="method_box">
                     <p><b>Get Categories</b></p>
-                    <p>Method is returning list of point's categories available in GeTS service.</p>
+                    <p>Method is returning list of point&#39;s categories available in GeTS service.</p>
                     <p><b>Request should be http://oss.fruct.org/projects/gets/service/getCategories.php</b></p>
                     <p><b>Request:</b></p>
                     <div class="xml_box">
@@ -171,11 +171,11 @@
 &lt;/response&gt;
                         </code></pre>
                     </div>
-                    <p>Tag categories contains list of categories placed in tags category.Each tag category contains tags:</p>
+                    <p>Tag categories contains list of categories placed in tags category. Each tag category contains tags:</p>
                     <ul class="params_desc">
                         <li><i>id</i> - identifier of category (positive integer)</li>
-                        <li><i>name</i> - category's name (string) </li>
-                        <li><i>description</i> - category's description (string)</li>
+                        <li><i>name</i> - category&#39;s name (string) </li>
+                        <li><i>description</i> - category&#39;s description (string)</li>
                         <li><i>url</i> - category's url (string)</li>
                     </ul>
                 </div>

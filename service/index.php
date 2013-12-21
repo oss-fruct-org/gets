@@ -10,6 +10,14 @@
             body{
                 background: LightGrey; /* Цвет фона веб-страницы */
             }
+            .main_box {
+                display: block;
+                position: relative;
+                left: 50%;
+                margin-left: -450px;
+                width: 900px;
+                //height: 150px; 
+            }
             .menu {
                 background: white;
                 width: 250px;
@@ -69,6 +77,7 @@
         </style>
     </head>
     <body>
+        <div class="main_box">
         <h1>GeTS API Description</h1>
         <h2>Contents</h2>
         <div class="menu">
@@ -172,5 +181,6 @@
                 </div>
             </li>
         </ul>
+        </div>
     </body>
 </html>

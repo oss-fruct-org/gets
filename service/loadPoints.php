@@ -6,8 +6,8 @@ header ('Content-Type:text/xml');
 
 $xml_post = file_get_contents('php://input');
 if (!$xml_post) {
-	send_error(1, 'Error: no input file');
-	die();
+    send_error(1, 'Error: no input file');
+    die();
 }
 
 libxml_use_internal_errors(true);	
@@ -15,38 +15,71 @@ $dom = new DOMDocument();
 $dom->loadXML($xml_post);
 
 if (!$dom) {
-	send_error(1, 'Error: resource isn\'t XML document.');
+    send_error(1, 'Error: resource isn\'t XML document.');
     die();
 }
 
 if (!$dom->schemaValidate('schemes/loadPoints.xsd')) {
-	send_error(1, 'Error: not valid input XML document.');
+    send_error(1, 'Error: not valid input XML document.');
     die();
 }
 
 ////////////////////////////////////////////////
 
 $auth_token_element = $dom->getElementsByTagName('auth_token');
-$category_name_element = $dom->getElementsByTagName('category_name');
+$category_id_element = $dom->getElementsByTagName('category_id');
 $latitude_element = $dom->getElementsByTagName('latitude');
 $longitude_element = $dom->getElementsByTagName('longitude');
 $radius_element = $dom->getElementsByTagName('radius');
 
 $is_auth_token_defined = $auth_token_element->length > 0;
-$category_condition = $category_name_element->length > 0;
+$category_condition = $category_id_element->length > 0;
 $location_condition = ($latitude_element->length > 0) && 
-					   ($longitude_element->length > 0) && 
-					   ($radius_element->length > 0);
+                    ($longitude_element->length > 0) && 
+                    ($radius_element->length > 0);
 
 					   
-$category_name = $category_condition ? 
-				 htmlspecialchars($category_name_element->item(0)->nodeValue) : 
-				 'any';
+$category_id = $category_condition ? 
+                htmlspecialchars($category_id_element->item(0)->nodeValue) : 
+		-1;
 
 $data_array = array();
 $data_array['auth_token'] = $is_auth_token_defined ? 
-							$auth_token_element->item(0)->nodeValue : 
-							PUBLIC_TOKEN;
+                            $auth_token_element->item(0)->nodeValue : 
+                            PUBLIC_TOKEN;
+
+$category_name = 'any';
+if ($category_id != -1) {
+    $categories_request_content = '<?xml version="1.0" encoding="UTF-8"?><request><params></params></request>';
+    $categories_response = process_request('http://oss.fruct.org/projects/gets/service/getCategories.php', 
+                                    $categories_request_content, 
+                                    'Content-Type: text/xml');
+    if (!$categories_response) {
+        send_error(1, 'Error: can\'t get categories.');
+        die();
+    }
+    $categories_response_dom = new DOMDocument();
+    $categories_response_dom->loadXML($categories_response);
+    if (!$categories_response_dom) {
+        send_error(1, 'Error: categories response is not xml file.');
+        die();
+    }
+    $flag = false;
+    $category_elements = $categories_response_dom->getElementsByTagName('category');
+    foreach($category_elements as $category) {
+        if ($category_id == $category->getElementsByTagName('id')->item(0)->nodeValue) {
+            $category_name = 'ca_' . $category->getElementsByTagName('name')->item(0)->nodeValue;
+            $flag = true;
+            break;
+        }
+    }
+    
+    if (!$flag) {
+        send_error(1, 'Error: no category with given id in the system.');
+        die();
+    }
+}
+
 $request_type = '';
 if ($category_condition && $location_condition) {
 	$data_array['latitude'] = floatval($latitude_element->item(0)->nodeValue);
@@ -71,27 +104,27 @@ if ($category_condition && $location_condition) {
 
 $data_json = json_encode($data_array);
 if (!$data_json) {
-	send_error(1, 'Error: can\'t convert data to json.');
-	die();
+    send_error(1, 'Error: can\'t convert data to json.');
+    die();
 }
 
 $response_json = process_request($request_type, $data_json, 'Content-Type:application/json');
 if (!$response_json) {
-	send_error(1, 'Error: problem with request to geo2tag.');
-	die();
+    send_error(1, 'Error: problem with request to geo2tag.');
+    die();
 }
 ////////////////////////////////////
 
 $response_array = json_decode($response_json, true);
 if (!$response_array) {
-	send_error(1, 'Error: can\'t decode data from geo2tag.');
-	die();
+    send_error(1, 'Error: can\'t decode data from geo2tag.');
+    die();
 }
 
 $response_code = check_errors($response_array['errno']);
 if ($response_code != 'Ok') {
-	send_error(1, $response_code);
-	die();
+    send_error(1, $response_code);
+    die();
 }
 
 $xml = '<kml xmlns="http://www.opengis.net/kml/2.2">';

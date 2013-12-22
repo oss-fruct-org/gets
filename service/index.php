@@ -112,7 +112,7 @@
                         <li><i>latitude</i> - float value</li>
                         <li><i>longitude</i> - float value</li>
                         <li><i>radius</i> - float non-negative value</li>
-                        <li><i>category_name</i> - name of category string</li>
+                        <li><i>category_id</i> - name of category integer</li>
                     </ul>    
                     
                     <p>Points can be retrieved by: only category_name, or latitude and longitude and radius, or combination of both previous possibilities.</p>

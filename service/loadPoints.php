@@ -71,7 +71,7 @@ if ($is_auth_token_defined) {
 $category_name = 'any';
 if ($category_id != -1) {
     $categories_request_content = '<?xml version="1.0" encoding="UTF-8"?><request><params></params></request>';
-    $categories_response = process_request('http://localhost/gets/getCategories.php', 
+    $categories_response = process_request(GET_CATEGORIES_METHOD_URL_GETS, 
                                     $categories_request_content, 
                                     'Content-Type: text/xml');
     if (!$categories_response) {

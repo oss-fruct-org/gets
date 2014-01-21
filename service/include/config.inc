@@ -1,6 +1,9 @@
 <?php
-define('GEO2TAG_SERVER_URL', 'localhost:80');
-define('PUBLIC_TOKEN', '8519e7d71316d0b3a62854fc05e1ad42');
+#define('GEO2TAG_SERVER_URL', 'localhost');
+#define('GETS_SERVER_URL', 'localhost/gets');
+
+define('GEO2TAG_SERVER_URL', 'geo2tag.cs.prv');
+define('GETS_SERVER_URL', 'oss.fruct.org/projects/gets/service');
 
 define('GEO2TAG_USER', 'gets_user');
 define('GEO2TAG_PASSWORD', 'gets_user_password');

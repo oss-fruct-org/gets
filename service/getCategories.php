@@ -30,8 +30,8 @@ $data = '<methodCall><methodName>getCategories</methodName></methodCall>';
 
 $response =  process_request(GET_CATEGORIES_METHOD_URL, $data, 'Content-Type: text/xml');
 if (!$response) {
-    send_error(1, 'Error: problem with request to geo2tag.');
-    die();
+	send_error(1, 'Error: problem with request to geo2tag.');
+	die();
 }
 
 $content = '<categories>';

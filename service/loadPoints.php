@@ -1,6 +1,7 @@
 <?php
 include_once('include/methods_url.inc');
 include_once('include/utils.inc');
+include_once('include/public_token.inc');
 
 header ('Content-Type:text/xml');
 
@@ -44,14 +45,33 @@ $category_id = $category_condition ?
 		-1;
 
 $data_array = array();
-$data_array['auth_token'] = $is_auth_token_defined ? 
-                            $auth_token_element->item(0)->nodeValue : 
-                            PUBLIC_TOKEN;
+
+// We use cached token, not new
+$old_token = true;
+if ($is_auth_token_defined) {
+    $data_array['auth_token'] = $auth_token_element->item(0)->nodeValue; 
+    $old_token = false;
+} else {
+    $token = read_public_token();
+
+    // No token available, trying to receive it from geo2tag server
+    if (!$token) {
+        $token = receive_public_token();
+        $old_token = false;
+
+        if (!$token) {
+            send_error(1, 'Error: can\'t receive new token');
+        }
+    }
+
+    $data_array['auth_token'] = $token;
+}
+
 
 $category_name = 'any';
 if ($category_id != -1) {
     $categories_request_content = '<?xml version="1.0" encoding="UTF-8"?><request><params></params></request>';
-    $categories_response = process_request('http://oss.fruct.org/projects/gets/service/getCategories.php', 
+    $categories_response = process_request(GET_CATEGORIES_METHOD_URL_GETS, 
                                     $categories_request_content, 
                                     'Content-Type: text/xml');
     if (!$categories_response) {
@@ -102,26 +122,54 @@ if ($category_condition && $location_condition) {
 	$request_type = LOAD_POINTS_METHOD_URL;
 }
 
-$data_json = json_encode($data_array);
-if (!$data_json) {
-    send_error(1, 'Error: can\'t convert data to json.');
-    die();
+function process_load_points_request($data_array, $request_type) {
+    $data_json = json_encode($data_array);
+    if (!$data_json) {
+        send_error(1, 'Error: can\'t convert data to json.');
+        die();
+    }
+
+    $response_json = process_request($request_type, $data_json, 'Content-Type:application/json');
+    if (!$response_json) {
+        send_error(1, 'Error: problem with request to geo2tag.');
+        die();
+    }
+    ////////////////////////////////////
+
+    $response_array = json_decode($response_json, true);
+    if (!$response_array) {
+        send_error(1, 'Error: can\'t decode data from geo2tag.');
+        die();
+    }
+
+    return $response_array;
 }
 
-$response_json = process_request($request_type, $data_json, 'Content-Type:application/json');
-if (!$response_json) {
-    send_error(1, 'Error: problem with request to geo2tag.');
-    die();
-}
-////////////////////////////////////
-
-$response_array = json_decode($response_json, true);
-if (!$response_array) {
-    send_error(1, 'Error: can\'t decode data from geo2tag.');
-    die();
-}
+$response_array = process_load_points_request($data_array, $request_type);
 
 $response_code = check_errors($response_array['errno']);
+
+// Geo2tag server requires authentication and we're using cached token
+if ($response_code === 'Wrong token error' and $old_token) {
+    // Try receive new token from server
+    $token = receive_public_token();
+    if (!$token) {
+        send_error(1, 'Error: can\'t receive new token');
+        die();
+    }
+
+    // Send request with new token
+    $data_array['auth_token'] = $token;
+    $response_array = process_load_points_request($data_array, $request_type);
+    $response_code = check_errors($response_array['errno']);
+
+    // Same error, new token invalid
+    if ($response_code === 'Wrong token error') { 
+        send_error(1, 'Error: geo2tag server returned invalid token');
+        die();
+    }
+}
+
 if ($response_code != 'Ok') {
     send_error(1, $response_code);
     die();

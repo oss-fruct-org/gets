@@ -6,8 +6,8 @@ header('Content-Type:text/xml');
 
 $xml_post = file_get_contents('php://input');
 if (!$xml_post) {
-	send_error(1, 'Error: no input file');
-	die();
+    send_error(1, 'Error: no input file');
+    die();
 }
 
 libxml_use_internal_errors(true);	
@@ -15,12 +15,12 @@ $dom = new DOMDocument();
 $dom->loadXML($xml_post);
 			
 if (!$dom) {
-	send_error(1, 'Error: resource isn\'t XML document.');
+    send_error(1, 'Error: resource isn\'t XML document.');
     die();
 }
 
 if (!$dom->schemaValidate('schemes/getCategories.xsd')) {
-	send_error(1, 'Error: not valid input XML document.');
+    send_error(1, 'Error: not valid input XML document.');
     die();
 }
 
@@ -30,8 +30,8 @@ $data = '<methodCall><methodName>getCategories</methodName></methodCall>';
 
 $response =  process_request(GET_CATEGORIES_METHOD_URL, $data, 'Content-Type: text/xml');
 if (!$response) {
-	send_error(1, 'Error: problem with request to geo2tag.');
-	die();
+    send_error(1, 'Error: problem with request to geo2tag.');
+    die();
 }
 
 $content = '<categories>';

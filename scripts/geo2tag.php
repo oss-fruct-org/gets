@@ -2,7 +2,7 @@
 
 include "perm.inc";
 
-include "add-user.inc";
+include "user.inc";
 include "category.inc";
 include "tag.inc";
 include "channel.inc";
@@ -30,6 +30,7 @@ $dbconn = pg_connect("dbname=geo2tag user=geo2tag password=geo2tag");
 
 /* register methods */
 xmlrpc_server_register_method($xmlrpc_server, "addUser", "adduser_func");
+xmlrpc_server_register_method($xmlrpc_server, "checkUser", "checkuser_func");
 xmlrpc_server_register_method($xmlrpc_server, "addCategory", "addcategory_func");
 xmlrpc_server_register_method($xmlrpc_server, "getCategories", "getcategories_func");
 xmlrpc_server_register_method($xmlrpc_server, "deleteCategory", "deleteCategory_func");

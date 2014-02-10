@@ -6,6 +6,7 @@ include "user.inc";
 include "category.inc";
 include "tag.inc";
 include "channel.inc";
+include "track.inc";
 
 function return_xmlrpc_error($errno,$errstr,$errfile=NULL,$errline=NULL
        ,$errcontext=NULL){
@@ -37,6 +38,10 @@ xmlrpc_server_register_method($xmlrpc_server, "deleteCategory", "deleteCategory_
 xmlrpc_server_register_method($xmlrpc_server, "deleteDupTags", "deleteDupTags_func");
 xmlrpc_server_register_method($xmlrpc_server, "deleteTag", "deleteTag_func");
 xmlrpc_server_register_method($xmlrpc_server, "deleteChannel", "deleteChannel_func");
+
+// track methods
+xmlrpc_server_register_method($xmlrpc_server, "addTrack", "addtrack_func");
+xmlrpc_server_register_method($xmlrpc_server, "getTracks", "gettracks_func");
 
 /* process request */
 $request_xml = $HTTP_RAW_POST_DATA;

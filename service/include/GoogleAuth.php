@@ -1,12 +1,9 @@
 <?php
-ini_set('display_errors',1);
-error_reporting(E_ALL);
-
 require_once 'GoogleClientAPI/src/Google_Client.php';
 require_once 'GoogleClientAPI/src/contrib/Google_PlusService.php';
 require_once 'config.php';
 
-$redirectUri = 'http://' . $_SERVER['HTTP_HOST'] . '/service/include/GoogleAuth.php';
+$redirectUri = 'http://' . $_SERVER['HTTP_HOST'] . '/projects/gets/service/include/GoogleAuth.php';
 
 $client = new Google_Client();
 $client->setAccessType('online'); // default: offline
@@ -24,11 +21,6 @@ $client->setScopes(array('https://www.googleapis.com/auth/plus.me',
 
 // $service implements the client interface, has to be set before auth call
 $service = new Google_PlusService($client);
-
-if (isset($_SESSION['token'])) { // extract token from session and configure client
-    $token = $_SESSION['token'];
-    $client->setAccessToken($token);
-}
 
 if (isset($_GET['code']) && isset($_GET['state'])) { // we received the positive auth callback, get the token and store it in session
     $client->authenticate();

@@ -28,7 +28,7 @@ $auth_token_element = $dom->getElementsByTagName('auth_token');
 
 $data = '<methodCall><methodName>getCategories</methodName></methodCall>';
 
-$response =  process_request(GET_CATEGORIES_METHOD_URL, $data, 'Content-Type: text/xml');
+$response =  process_request(ADDITIONAL_FUNCTIONS_METHOD_URL, $data, 'Content-Type: text/xml');
 if (!$response) {
 	send_error(1, 'Error: problem with request to geo2tag.');
 	die();

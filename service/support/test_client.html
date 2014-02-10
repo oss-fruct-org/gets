@@ -1,19 +1,76 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <title>GeTS Web Test Client</title>
     <meta charset='utf-8' />
     <script type="text/javascript">
-        function closeWindow() {
-            setTimeout(function() {
-                window.close();
-            }, 3000);
+        
+        var auth_token = '';
+      
+        function getXmlHttp(){
+            var xmlhttp;
+            try {
+                xmlhttp = new ActiveXObject("Msxml2.XMLHTTP");
+            } catch (e) {
+                try {
+                    xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+                } catch (E) {
+                    xmlhttp = false;
+                }
+            }      
+            if (!xmlhttp && typeof XMLHttpRequest!='undefined') {
+                xmlhttp = new XMLHttpRequest();
+            }
+            return xmlhttp;
         }
-
-        window.onload = closeWindow();
+        
+        function authorize() {
+            var getRedirectLink = getXmlHttp();
+            //getRedirectLink.open('POST', 'http://localhost/service/userLogin.php', false);
+            getRedirectLink.open('POST', 'http://oss.fruct.org/projects/gets/service/userLogin.php', false);
+            getRedirectLink.setRequestHeader('Content-Type','text/xml');
+            getRedirectLink.send('<request><params></params></request>');
+            if (getRedirectLink.status !== 200) {
+                document.getElementById('error_log').innerHTML = 'An error has occurred while processing the request';
+            }
+            //console.log(getRedirectLink.responseText);
+            //console.log('response: ' + getRedirectLink.responseXML.getElementsByTagName('id')[0]);
+            
+            var id = getRedirectLink.responseXML.getElementsByTagName('id')[0].childNodes[0].nodeValue;
+            var redirect_url = getRedirectLink.responseXML.getElementsByTagName('redirect_url')[0].childNodes[0].nodeValue;
+            //console.log('id: ' + id);
+            //console.log('redirect_url: ' + redirect_url);
+            
+            var googleAuthWindow = window.open(redirect_url, 'Google Auth', 'height=600,width=500');
+            var timer = setInterval(function() {   
+                if(googleAuthWindow.closed) {  
+                    clearInterval(timer);  
+                    var getAuthToken = getXmlHttp();
+                    //getAuthToken.open('POST', 'http://localhost/service/userLogin.php', false);
+                    getAuthToken.open('POST', 'http://oss.fruct.org/projects/gets/service/userLogin.php', false);
+                    getAuthToken.setRequestHeader('Content-Type','text/xml');
+                    getAuthToken.send('<request><params><id>' + id + '</id></params></request>');
+                    if (getAuthToken.status !== 200) {
+                        document.getElementById('error_log').innerHTML = 'An error has occurred while processing the request';
+                    }
+                
+                    auth_token = getAuthToken.responseXML.getElementsByTagName('auth_token')[0].childNodes[0].nodeValue;
+                    if (auth_token !== '') {
+                        document.getElementById('auth_btn').setAttribute('style', 'display: none;');
+                    }
+                    console.log('auth_token: ' + auth_token);
+                    document.getElementById('auth_token_elem').innerHTML = 'Your auth token is: ' + auth_token;
+                    document.getElementById('get_data_btn').setAttribute('style', 'display: block;');
+                }  
+            }, 1000);                       
+        }
     </script>
   </head>
   <body>
-      <a href="javascript:w"></a>
+      <button id="auth_btn" onClick="authorize();">Authorize</button>
+      <p id="error_log"></p>
+      <p id="auth_token_elem"></p>
+      <button id="get_data_btn" onClick="authorize();" style="display: none;">Get data</button>
   </body>
 </html>
 

@@ -47,17 +47,17 @@ $category_id = $category_condition ?
 $data_array = array();
 
 // We use cached token, not new
-$old_token = true;
+//$old_token = true;
 if ($is_auth_token_defined) {
     $data_array['auth_token'] = $auth_token_element->item(0)->nodeValue; 
-    $old_token = false;
+    //$old_token = false;
 } else {
     $token = read_public_token();
 
     // No token available, trying to receive it from geo2tag server
     if (!$token) {
         $token = receive_public_token();
-        $old_token = false;
+        //$old_token = false;
 
         if (!$token) {
             send_error(1, 'Error: can\'t receive new token');
@@ -150,7 +150,9 @@ $response_array = process_load_points_request($data_array, $request_type);
 $response_code = check_errors($response_array['errno']);
 
 // Geo2tag server requires authentication and we're using cached token
-if ($response_code === 'Wrong token error' and $old_token) {
+$is_wrong_token_error = false;
+if ($response_code === 'Wrong token error') {
+    $is_wrong_token_error = true;
     // Try receive new token from server
     $token = receive_public_token();
     if (!$token) {
@@ -206,5 +208,9 @@ if ($location_condition) {
 $xml .= '</Document>';
 $xml .= '</kml>';
 
-send_result(0, 'success', $xml);
+if ($is_wrong_token_error && $is_auth_token_defined) {
+    send_result(2, 'Wrong token error. Response contains only public data.', $xml);
+} else {
+    send_result(0, 'success', $xml);
+}
 ?>

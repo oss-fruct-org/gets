@@ -4,15 +4,6 @@ include_once('include/methods_url.inc');
 include_once('include/utils.inc');
 include_once('include/public_token.inc');
 
-function get_request_argument($dom, $field) {
-    $element = $dom->getElementsByTagName($field);
-    $is_defined = $element->length > 0;
-    if ($is_defined)
-        return $element->item(0)->nodeValue;
-    else
-        return null;
-}
-
 header ('Content-Type:text/xml');
 
 $xml_post = file_get_contents('php://input');

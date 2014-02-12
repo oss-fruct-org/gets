@@ -3,8 +3,8 @@
 #./reset-database.sh > /dev/null
 source ./config.sh
 
-echo "Executing deleteTrack method"
-curl -d@- "${GETS_SERVER}/deleteTrack.php" <<-EOF
+echo "Executing getTrack method" >&2
+curl -d@- "${GETS_SERVER}/loadTrack.php" <<-EOF
 <request><params>
 
 <auth_token>$(cat token.txt)</auth_token>

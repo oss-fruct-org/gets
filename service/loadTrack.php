@@ -51,7 +51,7 @@ if ($is_auth_token_defined) {
     $data_array['auth_token'] = $token;
 }
 
-$data_array['channel'] = 'tr_' . $name_element->item(0)->nodeValue;
+$data_array['channel'] = $name_element->item(0)->nodeValue;
 $data_array['amount'] = 100;
 
 $data_json = json_encode($data_array);
@@ -74,8 +74,26 @@ if ($response_code !== "Ok") {
     die();
 }
 
+// Output points
+$xml = '<kml xmlns="http://www.opengis.net/kml/2.2">';
+$xml .= '<Document>';
+$xml .= '<name>' . $response_array['channel']['name'] . '.kml</name>';
+$xml .= '<open>1</open>';
+$xml .= '<Style id="styleDocument"><LabelStyle><color>ff0000cc</color></LabelStyle></Style>';
 
-var_dump($response_json);
+foreach ($response_array['channel']['items'] as $item) {
+    $xml .= '<Placemark>';
+    $xml .= '<name>' . htmlspecialchars($item['title']) . '</name>';
+    $xml .= '<description>' . '<![CDATA[' .  $item['description'] . ']]>' . '</description>';
+    $xml .= '<ExtendedData><Data name="url"><value>' . htmlspecialchars($item['link']) . '</value></Data></ExtendedData>';
+    $xml .= '<Point><coordinates>' . $item['latitude'] . ',' . $item['longitude'] . ',0.0' . '</coordinates></Point>';
+    $xml .= '</Placemark>';
+}
+
+$xml .= '</Document>';
+$xml .= '</kml>';
+
+send_result(0, 'success', $xml);
 
 ?>
 

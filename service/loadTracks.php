@@ -49,7 +49,6 @@ if ($is_auth_token_defined) {
     $data_array['auth_token'] = $token;
 }
 
-$request_type = SUBSCRIBED_METHOD_URL;
 $data_json = json_encode($data_array);
 
 if (!$data_json) {
@@ -57,6 +56,7 @@ if (!$data_json) {
     die();
 }
 
+$request_type = SUBSCRIBED_METHOD_URL;
 $response_json = process_request($request_type, $data_json, 'Content-Type:application/json');
 if (!$response_json) {
     send_error(1, 'Error: problem with request to geo2tag.');

@@ -110,4 +110,23 @@ function send_result($code, $message, $content) {
 	$xml_response .= '</response>';
 	echo $xml_response;
 }
+
+/**
+    Function finds and returns named argument from request DOM
+    Params:
+        dom - DOM representing client request
+        field - name of argument
+    Returns:
+        argument as string or null if argument not specified  
+
+ */
+function get_request_argument($dom, $field) {
+    $element = $dom->getElementsByTagName($field);
+    $is_defined = $element->length > 0;
+    if ($is_defined)
+        return $element->item(0)->nodeValue;
+    else
+        return null;
+}
+
 ?>

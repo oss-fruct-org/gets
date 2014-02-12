@@ -31,10 +31,10 @@ DROP TABLE users;
 DROP SEQUENCE users_seq;
 EOF
 
-psql geo2tag geo2tag -c "\i ${GEO2TAG_HOME}/scripts/base.sql"
-psql geo2tag geo2tag -c "\i ${GETS_HOME}/db/category.pg"
-psql geo2tag geo2tag -c "\i ${GETS_HOME}/db/track.pg"
-psql geo2tag geo2tag -c "delete from users;"
+#psql geo2tag geo2tag -c "\i ${GEO2TAG_HOME}/scripts/base.sql"
+#psql geo2tag geo2tag -c "\i ${GETS_HOME}/db/category.pg"
+#psql geo2tag geo2tag -c "delete from users;"
 
-psql geo2tag geo2tag -c "insert into users (email, login, password) values ('gets_user@example.com', 'gets_user', 'gets_user_password');"
-psql geo2tag geo2tag -c "insert into users (email, login, password) values ('test_user@example.com', 'test_user', 'test_user_password');"
+#psql geo2tag geo2tag -c "insert into users (email, login, password) values ('gets_user@example.com', 'gets_user', 'gets_user_password');"
+#psql geo2tag geo2tag -c "insert into users (email, login, password) values ('test_user@example.com', 'test_user', 'test_user_password');"
+psql geo2tag geo2tag < testdb1.sql

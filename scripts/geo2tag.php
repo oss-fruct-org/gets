@@ -6,7 +6,6 @@ include "user.inc";
 include "category.inc";
 include "tag.inc";
 include "channel.inc";
-include "track.inc";
 
 function return_xmlrpc_error($errno,$errstr,$errfile=NULL,$errline=NULL
        ,$errcontext=NULL){

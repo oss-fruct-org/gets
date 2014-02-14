@@ -52,14 +52,17 @@ if ($response_array['errno'] !== 0) {
     die();
 }
 
+
 $channel_name_found = null;
 
-foreach ($response_array['channels'] as $channel) {
-    $channel_name = $channel['name'];
+if (array_key_exists('channels', $response_array)) {
+    foreach ($response_array['channels'] as $channel) {
+        $channel_name = $channel['name'];
 
-    if ($track_name === $channel_name) {
-        $channel_name_found = $channel_name;
-        break;
+        if ($track_name === $channel_name) {
+            $channel_name_found = $channel_name;
+            break;
+        }
     }
 }
 
@@ -71,7 +74,7 @@ if (!$channel_name_found) {
 $xmlrpc_request = xmlrpc_encode_request('deleteChannel', 
     array('login' => GEO2TAG_USER, 
           'password' => GEO2TAG_PASSWORD,
-          'user' => 'unknown', 
+#          'user' => 'unknown', 
           'channel' => $channel_name_found));
 
 $xmlrpc_response =  process_request(ADDITIONAL_FUNCTIONS_METHOD_URL, $xmlrpc_request, 'Content-Type: text/xml');

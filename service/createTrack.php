@@ -32,10 +32,11 @@ $auth_token = get_request_argument($dom, 'auth_token');
 $description = get_request_argument($dom, 'description');
 $url = get_request_argument($dom, 'url');
 $name = get_request_argument($dom, 'name');
+$category_id = get_request_argument($dom, 'category_id', -1);
 
 $desc_array = array();
 $desc_array['description'] = $description;
-$desc_array['category'] = -1;
+$desc_array['category'] = $category_id;
 $desc_json = json_encode($desc_array);
 
 $data_array['auth_token'] = $auth_token;

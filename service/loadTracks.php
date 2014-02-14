@@ -25,13 +25,13 @@ if (!$dom->schemaValidate('schemes/loadTracks.xsd')) {
     die();
 }
 
-$auth_token_element = $dom->getElementsByTagName('auth_token');
-$is_auth_token_defined = $auth_token_element->length > 0;
+$auth_token = get_request_argument($dom, 'auth_token');
+$category_name = get_request_argument($dom, 'category_name');
 
 // First request geo2tag for all channels
 $old_token = true;
-if ($is_auth_token_defined) {
-    $data_array['auth_token'] = $auth_token_element->item(0)->nodeValue;
+if ($auth_token) {
+    $data_array['auth_token'] = $auth_token;
     $old_token = false;
 } else {
     $token = read_public_token();
@@ -48,6 +48,33 @@ if ($is_auth_token_defined) {
 
     $data_array['auth_token'] = $token;
 }
+
+
+// Find id of requested category
+if ($category_name) {
+    try {
+        $categories = get_categories();
+
+        $category_id = null;
+
+        foreach ($categories as $category) {
+            // Category name equals requested name
+            if ($category['name'] === $category_name) {
+                $category_id = $category['id'];
+                break;
+            }
+        }
+
+        if (!$category_id) {
+            send_error(1, "Wrong category name");
+            die();
+        }
+    } catch (Exception $e) {
+        send_error(1, $e->getMessage());
+        die();
+    }
+}
+
 
 $data_json = json_encode($data_array);
 
@@ -83,20 +110,25 @@ foreach ($response_array['channels'] as $channel) {
 
     $channel_description = null;
     $channel_id = null;
+    $channel_lang = null;
 
     $desc_arr = json_decode($channel_desc, true);
     if ($desc_arr) {
         $channel_description = $desc_arr['description'];
         $channel_id = $desc_arr['categoryId'];
+        $channel_lang = $desc_arr['lang'];
     }
 
     $resp .= '<tracks>';
-    if ($channel_id && stripos($channel_name, "tr_") === 0) {
+    if ($channel_id && stripos($channel_name, "tr_") === 0 && ($category_id == null || $category_id == $channel_id)) {
         $resp .= '<track>';
         $resp .= '<name>' . $channel_name . '</name>';
 
         $resp .= '<description>' . $channel_description . '</description>';
-        $resp .= '<id>' . $channel_id . '</id>';
+        $resp .= '<category_id>' . $channel_id . '</category_id>';
+
+        if ($channel_lang)
+            $resp .= '<lang>' . $channel_lang . '</lang>';
 
         $resp .= '</track>';
     }

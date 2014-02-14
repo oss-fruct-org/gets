@@ -10,6 +10,7 @@
               <xs:element type="xs:string" name="name" minOccurs="1"/>
               <xs:element type="xs:string" name="description" minOccurs="1"/>
               <xs:element type="xs:string" name="url" minOccurs="1"/>
+              <xs:element type="xs:string" name="category_id" minOccurs="0" maxOccurs="1"/>
             </xs:sequence>
           </xs:complexType>
         </xs:element>

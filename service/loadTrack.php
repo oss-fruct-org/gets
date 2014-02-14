@@ -82,10 +82,41 @@ $xml .= '<open>1</open>';
 $xml .= '<Style id="styleDocument"><LabelStyle><color>ff0000cc</color></LabelStyle></Style>';
 
 foreach ($response_array['channel']['items'] as $item) {
+    $description = $item['description'];
+
+    // Try parse description json
+    $description_json = json_decode($description, true);
+
+    //Get inner description
+    $inner_description = null;
+    if ($description_json) {
+        $inner_description = $description_json['description'];
+    }
+
     $xml .= '<Placemark>';
     $xml .= '<name>' . htmlspecialchars($item['title']) . '</name>';
-    $xml .= '<description>' . '<![CDATA[' .  $item['description'] . ']]>' . '</description>';
-    $xml .= '<ExtendedData><Data name="url"><value>' . htmlspecialchars($item['link']) . '</value></Data></ExtendedData>';
+    
+    if (!$description_json)
+        $xml .= '<description>' . '<![CDATA[' .  $item['description'] . ']]>' . '</description>';
+    else if ($inner_description)
+        $xml .= '<description>' . '<![CDATA[' .  $inner_description . ']]>' . '</description>';
+    else
+        $xml .= '<description></description>';
+
+    $xml .= '<ExtendedData>';
+    $xml .= '<Data name="url"><value>' . htmlspecialchars($item['link']) . '</value></Data>';
+
+    if ($description_json) {
+        foreach ($description_json as $key => $value) {
+            $field = $key;
+            $value = htmlspecialchars($value);
+        
+            $xml .= "<Data name=\"$field\"><value>$value</value></Data>";
+        }
+    }
+
+    $xml .= '</ExtendedData>';
+    
     $xml .= '<Point><coordinates>' . $item['latitude'] . ',' . $item['longitude'] . ',0.0' . '</coordinates></Point>';
     $xml .= '</Placemark>';
 }

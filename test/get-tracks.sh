@@ -3,7 +3,7 @@
 #./reset-database.sh > /dev/null
 source ./config.sh
 
-echo "Executing getTracks method"
+echo "Executing getTracks method" >&2
 curl -d@- "${GETS_SERVER}/loadTracks.php" <<-EOF
 <request><params>
 

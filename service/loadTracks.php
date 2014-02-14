@@ -103,6 +103,7 @@ if ($response_code !== "Ok") {
 }
 
 $resp = '';
+$resp .= '<tracks>';
 foreach ($response_array['channels'] as $channel) {
     $channel_name = $channel['name'];
     $channel_desc = $channel['description'];
@@ -119,7 +120,6 @@ foreach ($response_array['channels'] as $channel) {
         $channel_lang = $desc_arr['lang'];
     }
 
-    $resp .= '<tracks>';
     if ($channel_id && stripos($channel_name, "tr_") === 0 && ($category_id == null || $category_id == $channel_id)) {
         $resp .= '<track>';
         $resp .= '<name>' . $channel_name . '</name>';
@@ -132,8 +132,8 @@ foreach ($response_array['channels'] as $channel) {
 
         $resp .= '</track>';
     }
-    $resp .= '</tracks>';
 }
+$resp .= '</tracks>';
 
 send_result(0, 'success', $resp);
 

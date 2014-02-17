@@ -61,9 +61,14 @@ if (session_id() === '') {
     die();
 }
 
-$data = '<methodCall><methodName>checkUser</methodName><params><param><struct><member><name>email</name><value>' . 
-        $_SESSION['email'] . 
-        '</value></member></struct></param></params></methodCall>';
+if (isset($_SESSION['email'])) {
+    $data = '<methodCall><methodName>checkUser</methodName><params><param><struct><member><name>email</name><value>' . 
+            $_SESSION['email'] . 
+            '</value></member></struct></param></params></methodCall>';
+} else {
+    send_error(1, 'Error: google authorization didn\'t go through or google email isn\'t available');
+    die();
+}
 
 session_unset();
 session_destroy();

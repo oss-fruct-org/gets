@@ -225,9 +225,10 @@
                     </ul>
                 </div>
             </li>
+<!-- Create track method -->
             <li>
                 <div id="create-track" class="method_box">
-                    <p><b>Create Track</b></p>
+                    <p><b>Create track</b></p>
                     <p>Method creates new track</p>
                     <p><b>Request should be http://oss.fruct.org/projects/gets/service/createTrack.php</b></p>
                     <p><b>Request:</b></p>
@@ -264,7 +265,55 @@
 &lt;/response&gt;
                         </code></pre>
                     </div>
-
+                </div>
+            </li>
+<!-- Load tracks method -->
+            <li>
+                <div id="load-tracks" class="method_box">
+                    <p><b>Load tracks</b></p>
+                    <p>Method loads track list</p>
+                    <p><b>Request should be http://oss.fruct.org/projects/gets/service/loadTracks.php</b></p>
+                    <p><b>Request:</b></p>
+                    <div class="xml_box">
+                        <pre class="d"><code>
+&lt;request&gt;
+    &lt;params&gt;
+        &lt;auth_token&gt;...&lt;/auth_token&gt;
+        &lt;category_name&gt;...&lt;/category_name&gt;
+    &lt;/params&gt;
+&lt;/request&gt;
+                        </code></pre>
+                    </div><br>
+                    <ul class="params_desc">
+                        <li><i>auth_token</i> - auth token string (string, optional)</li>
+                        <li><i>category_name</i> - filter tracks by category (string, optional)</li>
+                    </ul>
+                    <p><b>Response:</b></p>
+                    <div class="xml_box">
+                        <pre class="d"><code>
+&lt;response&gt;
+    &lt;status&gt;
+        &lt;code&gt;0&lt;/code&gt;
+        &lt;message&gt;success&lt;/message&gt;
+    &lt;/status&gt;
+    &lt;content&gt;
+        &lt;tracks&gt;
+            &lt;track&gt;
+                &lt;name&gt;...&lt;/name&gt;
+                &lt;description&gt;...&lt;/description&gt;
+                &lt;category_id&gt;...&lt;/category_id&gt;
+            &lt;/track&gt;
+        &lt;/tracks&gt;
+    &lt;/content&gt;
+&lt;/response&gt;
+                        </code></pre>
+                    </div>
+                    <p>Response contains tracks with given category name</p>
+                    <ul class="params_desc">
+                        <li><i>name</i> - track&#39;s name (string) </li>
+                        <li><i>description</i> - track&#39;s description (string)</li>
+                        <li><i>category_id</i> - id of track&#39;s category(string)</li>
+                    </ul>
                 </div>
             </li>
         </ul>

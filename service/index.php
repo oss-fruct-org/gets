@@ -225,6 +225,48 @@
                     </ul>
                 </div>
             </li>
+            <li>
+                <div id="create-track" class="method_box">
+                    <p><b>Create Track</b></p>
+                    <p>Method creates new track</p>
+                    <p><b>Request should be http://oss.fruct.org/projects/gets/service/createTrack.php</b></p>
+                    <p><b>Request:</b></p>
+                    <div class="xml_box">
+                        <pre class="d"><code>
+&lt;request&gt;
+    &lt;params&gt;
+        &lt;auth_token&gt;...&lt;/auth_token&gt;
+        &lt;name&gt;...&lt;/name&gt;
+        &lt;description&gt;...&lt;/description&gt;
+        &lt;url&gt;...&lt;/url&gt;
+        &lt;lang&gt;...&lt;/lang&gt;
+    &lt;/params&gt;
+&lt;/request&gt;
+                        </code></pre>
+                    </div><br>
+                    <ul class="params_desc">
+                        <li><i>auth_token</i> - auth token string (string)</li>
+                        <li><i>name</i> - name of new track (string)</li>
+                        <li><i>description</i> - track&#39;s description (string)</li>
+                        <li><i>url</i> - track&#39;s url (string)</li>
+                        <li><i>lang</i> - track&#39;s language (language code string)</li>
+                        <li><i>category_id</i> - id of track&#39;s category</li>
+                    </ul>
+                    <p><b>Response:</b></p>
+                    <div class="xml_box">
+                        <pre class="d"><code>
+&lt;response&gt;
+    &lt;status&gt;
+        &lt;code&gt;0&lt;/code&gt;
+        &lt;message&gt;success&lt;/message&gt;
+    &lt;/status&gt;
+    &lt;content/&gt;
+&lt;/response&gt;
+                        </code></pre>
+                    </div>
+
+                </div>
+            </li>
         </ul>
         <footer><br>
             Posted by: Nikita Davydovsky<br>

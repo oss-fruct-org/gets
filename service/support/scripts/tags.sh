@@ -21,15 +21,15 @@ function login_gets {
 }
 
 function addTag {
-	CH_NAME="$1"
+    CH_NAME="$1"
     TAG_NAME="$2"
     TAG_DESC="$3"
     TAG_LINK="$4"
     TAG_LAT="$5"
     TAG_LONG="$6"
-	TAG_ALT="$7"
+    TAG_ALT="$7"
 	
-	TAG_TIME=`date +"%d %m %Y %H:%M:%S.%3N"`
+    TAG_TIME=`date +"%d %m %Y %H:%M:%S.%3N"`
 
     params_add_tag="<request><params><auth_token>$auth_token</auth_token><channel>$CH_NAME</channel><title>$TAG_NAME</title><description>$TAG_DESC</description><link>$TAG_LINK</link><latitude>$TAG_LAT</latitude><longitude>$TAG_LONG</longitude><altitude>$TAG_ALT</altitude><time>$TAG_TIME</time></params></request>"
     response_add_tag=`curl -s -d "$params_add_tag" http://kappa.cs.karelia.ru/~davydovs/gets/addPoint.php`
@@ -38,8 +38,8 @@ function addTag {
 }
 
 function getTags {
-	CH_NAME="$1"
-	AMOUNT=10000
+    CH_NAME="$1"
+    AMOUNT=10000
 
     params_get_tags="{\"auth_token\":\"$auth_token\",\"channel\":\"$CH_NAME\", \"amount\":$AMOUNT}"
     response_get_tags=`curl -s -d "$params_get_tags" http://geo2tag.cs.prv/service/filterChannel`

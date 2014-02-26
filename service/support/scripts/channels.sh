@@ -17,7 +17,7 @@ function login_gets {
     fi
     auth_token=`echo $response_login | xmllint --xpath '//auth_token/text()' -`
     echo "Auth_token: $auth_token"
-	echo $auth_token > token.txt
+    echo $auth_token > token.txt
 }
 
 function addChannel {

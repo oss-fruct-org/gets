@@ -89,6 +89,10 @@
                 <li><a href="#login">Login</a></li>
                 <li><a href="#load-points">Load points</a></li>
                 <li><a href="#get-categories">Get categories</a></li>
+                <li><a href="#create-track">Create track</a></li>
+                <li><a href="#load-tracks">Load tracks</a></li>
+                <li><a href="#load-track">Load track</a></li>
+                <li><a href="#delete-track">Delete track</a></li>
             </ul>
         </div>
         <h2>Methods list</h2>
@@ -223,6 +227,198 @@
                         <li><i>description</i> - category&#39;s description (string)</li>
                         <li><i>url</i> - category's url (string)</li>
                     </ul>
+                </div>
+            </li>
+<!-- Create track method -->
+            <li>
+                <div id="create-track" class="method_box">
+                    <p><b>Create track</b></p>
+                    <p>Method creates new track</p>
+                    <p><b>Request should be http://oss.fruct.org/projects/gets/service/createTrack.php</b></p>
+                    <p><b>Request:</b></p>
+                    <div class="xml_box">
+                        <pre class="d"><code>
+&lt;request&gt;
+    &lt;params&gt;
+        &lt;auth_token&gt;...&lt;/auth_token&gt;
+        &lt;name&gt;...&lt;/name&gt;
+        &lt;description&gt;...&lt;/description&gt;
+        &lt;url&gt;...&lt;/url&gt;
+        &lt;lang&gt;...&lt;/lang&gt;
+    &lt;/params&gt;
+&lt;/request&gt;
+                        </code></pre>
+                    </div><br>
+                    <ul class="params_desc">
+                        <li><i>auth_token</i> - auth token string (string)</li>
+                        <li><i>name</i> - name of new track (string)</li>
+                        <li><i>description</i> - track&#39;s description (string)</li>
+                        <li><i>url</i> - track&#39;s url (string)</li>
+                        <li><i>lang</i> - track&#39;s language (language code string)</li>
+                        <li><i>category_id</i> - id of track&#39;s category</li>
+                    </ul>
+                    <p><b>Response:</b></p>
+                    <div class="xml_box">
+                        <pre class="d"><code>
+&lt;response&gt;
+    &lt;status&gt;
+        &lt;code&gt;0&lt;/code&gt;
+        &lt;message&gt;success&lt;/message&gt;
+    &lt;/status&gt;
+    &lt;content/&gt;
+&lt;/response&gt;
+                        </code></pre>
+                    </div>
+                </div>
+            </li>
+<!-- Load tracks method -->
+            <li>
+                <div id="load-tracks" class="method_box">
+                    <p><b>Load tracks</b></p>
+                    <p>Method loads track list</p>
+                    <p><b>Request should be http://oss.fruct.org/projects/gets/service/loadTracks.php</b></p>
+                    <p><b>Request:</b></p>
+                    <div class="xml_box">
+                        <pre class="d"><code>
+&lt;request&gt;
+    &lt;params&gt;
+        &lt;auth_token&gt;...&lt;/auth_token&gt;
+        &lt;category_name&gt;...&lt;/category_name&gt;
+    &lt;/params&gt;
+&lt;/request&gt;
+                        </code></pre>
+                    </div><br>
+                    <ul class="params_desc">
+                        <li><i>auth_token</i> - auth token string (string, optional)</li>
+                        <li><i>category_name</i> - filter tracks by category (string, optional)</li>
+                    </ul>
+                    <p><b>Response:</b></p>
+                    <div class="xml_box">
+                        <pre class="d"><code>
+&lt;response&gt;
+    &lt;status&gt;
+        &lt;code&gt;0&lt;/code&gt;
+        &lt;message&gt;success&lt;/message&gt;
+    &lt;/status&gt;
+    &lt;content&gt;
+        &lt;tracks&gt;
+            &lt;track&gt;
+                &lt;name&gt;...&lt;/name&gt;
+                &lt;description&gt;...&lt;/description&gt;
+                &lt;category_id&gt;...&lt;/category_id&gt;
+            &lt;/track&gt;
+        &lt;/tracks&gt;
+    &lt;/content&gt;
+&lt;/response&gt;
+                        </code></pre>
+                    </div>
+                    <p>Response contains tracks with given category name</p>
+                    <ul class="params_desc">
+                        <li><i>name</i> - track&#39;s name (string) </li>
+                        <li><i>description</i> - track&#39;s description (string)</li>
+                        <li><i>category_id</i> - id of track&#39;s category(string)</li>
+                    </ul>
+                </div>
+            </li>
+<!-- Load track method -->
+            <li>
+                <div id="load-track" class="method_box">
+                    <p><b>Load track</b></p>
+                    <p>Method loads content of track</p>
+                    <p><b>Request should be http://oss.fruct.org/projects/gets/service/loadTrack.php</b></p>
+                    <p><b>Request:</b></p>
+                    <div class="xml_box">
+                        <pre class="d"><code>
+&lt;request&gt;
+    &lt;params&gt;
+        &lt;auth_token&gt;...&lt;/auth_token&gt;
+        &lt;category_name&gt;...&lt;/category_name&gt;
+    &lt;/params&gt;
+&lt;/request&gt;
+                        </code></pre>
+                    </div><br>
+                    <ul class="params_desc">
+                        <li><i>auth_token</i> - auth token string (string, optional)</li>
+                        <li><i>name</i> - name of track (string)</li>
+                    </ul>
+                    <p><b>Response:</b></p>
+                    <div class="xml_box">
+                        <pre class="d"><code>
+&lt;response&gt;
+    &lt;status&gt;
+        &lt;code&gt;0&lt;/code&gt;
+        &lt;message&gt;success&lt;/message&gt;
+    &lt;/status&gt;
+    &lt;content&gt;
+        &lt;kml xmlns=&quot;http://www.opengis.net/kml/2.2&quot;&gt;
+            &lt;Document&gt;
+                &lt;name&gt;tr_private.kml&lt;/name&gt;
+                &lt;open&gt;1&lt;/open&gt;
+                &lt;Style id=&quot;styleDocument&quot;&gt;
+                    &lt;LabelStyle&gt;
+                        &lt;color&gt;ff0000cc&lt;/color&gt;
+                    &lt;/LabelStyle&gt;
+                &lt;/Style&gt;
+                &lt;Placemark&gt;
+                    &lt;name&gt;qwe&lt;/name&gt;
+                    &lt;description&gt;&lt;![CDATA[QWE POI]]&gt;&lt;/description&gt;
+                    &lt;ExtendedData&gt;
+                        &lt;Data name=&quot;url&quot;&gt;
+                            &lt;value&gt;http://example.com&lt;/value&gt;
+                        &lt;/Data&gt;
+                        &lt;Data name=&quot;audio&quot;&gt;
+                            &lt;value&gt;http://example.com/1.mp3&lt;/value&gt;
+                        &lt;/Data&gt;
+                        &lt;Data name=&quot;description&quot;&gt;
+                            &lt;value&gt;QWE POI&lt;/value&gt;
+                        &lt;/Data&gt;
+                    &lt;/ExtendedData&gt;
+                    &lt;Point&gt;
+                        &lt;coordinates&gt;61,34,0.0&lt;/coordinates&gt;
+                    &lt;/Point&gt;
+                &lt;/Placemark&gt;
+            &lt;/Document&gt;
+        &lt;/kml&gt;
+    &lt;/content&gt;
+&lt;/response&gt;
+                        </code></pre>
+                    </div>
+                    <p>Response contains tracks points in KML format with optional data in ExtendedData tag</p>
+                </div>
+            </li>
+<!-- Delete track method -->
+            <li>
+                <div id="delete-track" class="method_box">
+                    <p><b>Delete track</b></p>
+                    <p>Method deletes existing track</p>
+                    <p><b>Request should be http://oss.fruct.org/projects/gets/service/deleteTrack.php</b></p>
+                    <p><b>Request:</b></p>
+                    <div class="xml_box">
+                        <pre class="d"><code>
+&lt;request&gt;
+    &lt;params&gt;
+        &lt;auth_token&gt;...&lt;/auth_token&gt;
+        &lt;name&gt;...&lt;/name&gt;
+    &lt;/params&gt;
+&lt;/request&gt;
+                        </code></pre>
+                    </div><br>
+                    <ul class="params_desc">
+                        <li><i>auth_token</i> - auth token string (string)</li>
+                        <li><i>name</i> - name of track (string)</li>
+                    </ul>
+                    <p><b>Response:</b></p>
+                    <div class="xml_box">
+                        <pre class="d"><code>
+&lt;response&gt;
+    &lt;status&gt;
+        &lt;code&gt;0&lt;/code&gt;
+        &lt;message&gt;Channel successfully removed&lt;/message&gt;
+    &lt;/status&gt;
+    &lt;content&gt;Removed 1 channel(s)&lt;/content&gt;
+&lt;/response&gt;
+                        </code></pre>
+                    </div>
                 </div>
             </li>
         </ul>

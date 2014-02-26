@@ -20,8 +20,9 @@
 	    $user = pg_escape_string($user);
 	    $user = "'$user'";
 	} else {
-	    trigger_error("User did not specified", E_USER_ERROR);
-	    die();
+        $user = null;
+	    #trigger_error("User did not specified", E_USER_ERROR);
+	    #die();
 	}
 
 	if (array_key_exists("channel", $params[0])) {
@@ -54,7 +55,12 @@
 	    
 	/* create request */
 
-	$sql_request = "delete from channel where channel.id in (select channel.id from channel, users where (users.id = channel.owner_id) and (users.login = $user) and (channel.name = $channel))";
+    if ($user)
+	    $sql_request = "delete from channel where channel.id in (select channel.id from channel, users where (users.id = channel.owner_id) and (users.login = $user) and (channel.name = $channel))";
+    else
+        $sql_request = "delete from channel where channel.name = $channel";
+
+    error_log($sql_request);
 
 	$res = pg_query($dbconn, $sql_request);
 

@@ -1,5 +1,7 @@
 <?php
 include_once('geo2tag_errors_list.inc');
+include_once('config.inc');
+include_once('methods_url.inc');
 
 /*
     Function processes request to geo2tag server
@@ -110,4 +112,70 @@ function send_result($code, $message, $content) {
 	$xml_response .= '</response>';
 	echo $xml_response;
 }
+
+/**
+    Function finds and returns named argument from request DOM
+    Params:
+        dom - DOM representing client request
+        field - name of argument
+        default_value (optional) - return value if argument not specified
+
+    Returns:
+        argument as string or null if argument not specified  
+
+ */
+function get_request_argument($dom, $field, $default_value = null) {
+    $element = $dom->getElementsByTagName($field);
+    $is_defined = $element->length > 0;
+    if ($is_defined)
+        return $element->item(0)->nodeValue;
+    else
+        return $default_value;
+}
+
+/**
+    Returns all available categories as array
+    Params:
+        token - optional token for caching categories
+
+    Returns:
+        array of categories represented as dictionaries {id, name, description, url}
+
+    Throws:
+        Exception on network error
+ */
+function get_categories($token = null) {
+    $categories_request_content = '<?xml version="1.0" encoding="UTF-8"?><methodCall><methodName>getCategories</methodName></methodCall>';
+    $categories_response = process_request(ADDITIONAL_FUNCTIONS_METHOD_URL,
+                                    $categories_request_content,
+                                    'Content-Type: text/xml');
+
+    if (!$categories_response)
+        throw new Exception('Cannot request categories from geo2tag');
+
+
+    $categories_response_dom = new DOMDocument();
+    $categories_response_dom->loadXML($categories_response);
+    if (!$categories_response_dom) 
+        throw new Exception('Categories response not XML file');
+
+
+    $idx = 0;
+    $ret = array();
+
+    $categories = $categories_response_dom->getElementsByTagName('struct');
+    foreach ($categories as $category) {
+        $item = array();
+        $members = $category->getElementsByTagName('member');
+        foreach ($members as $member) {
+            $tag_name = $member->getElementsByTagName('name')->item(0)->nodeValue;
+            $item[$tag_name] = $member->getElementsByTagName('value')->item(0)->getElementsByTagName('string')->item(0)->nodeValue;
+        }
+
+        $ret[$idx++] = $item;
+    }
+
+    return $ret;
+}
+
 ?>

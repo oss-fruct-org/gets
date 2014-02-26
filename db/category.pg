@@ -21,3 +21,4 @@ WITH (
 );
 ALTER TABLE category
   OWNER TO geo2tag;
+

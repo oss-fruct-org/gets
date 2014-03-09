@@ -1,18 +1,25 @@
 #!/bin/bash
 
-# Params section
+# PARAMS SECTION
 
 # Auth info
-GETS_LOGIN="gets2"
-GETS_PASSWORD="getsPWD"
+GETS_LOGIN="geonames"
+GETS_PASSWORD="geonamesPWD"
 
 # List of data files
 DATA_FILES="cities1000 cities5000 cities15000"
 
 DEFAULT_LANG="en_US"
-POPULATION_LIMIT=100000
+POPULATION_LIMIT=250000
 
-DEPENDENCIES="xmllint unzip curl"
+DEPENDENCIES="xmllint unzip curl wget"
+
+#Methods urls
+LOG_IN_URL=http://oss.fruct.org/projects/gets/service/login.php
+ADD_CHANNEL_URL=http://oss.fruct.org/projects/gets/service/addChannel.php
+SUBSCRIBE_CHANNEL_URL=http://oss.fruct.org/projects/gets/service/subscribe.php
+ADD_POINT_URL=http://oss.fruct.org/projects/gets/service/addPoint.php
+GETS_XMLRPC_URL=http://kappa.cs.karelia.ru/~davydovs/retr/checkUser.php
 
 auth_token=`cat token.txt 2>/dev/null`
 debug=0
@@ -21,7 +28,7 @@ if { [ $# == 1 ] && [ "$1" == "--debug" ]; } then
     debug=1
 fi
 
-# Main section
+# MAIN SECTION
 
 # Check for dependences 
 deps_ok=YES
@@ -57,7 +64,7 @@ do
     if [ "$auth_token" == "" ]; then
         echo "Loging in to GeTS..."
         params_login="<request><params><login>$GETS_LOGIN</login><password>$GETS_PASSWORD</password></params></request>"
-        response_login=`curl -s -d "$params_login" http://oss.fruct.org/projects/gets/service/login.php`        
+        response_login=`curl -s -d "$params_login" $LOG_IN_URL`        
         code_login=`echo "$response_login" | xmllint --xpath '//code/text()' -`
         if [ $code_login -ne 0 ]; then
             message_login=`echo "$response_login" | xmllint --xpath '//message/text()' -`
@@ -76,15 +83,15 @@ do
     
     # Match file name with channel and id
     if [ "$file" == "cities15000" ]; then
-        channel_name="ca_city.large"
+        channel_name="ca_city.large_$GETS_LOGIN"
         channel_ca_id="8"
     else 
         if [ "$file" == "cities5000" ]; then
-            channel_name="ca_city.medium"
+            channel_name="ca_city.medium_$GETS_LOGIN"
             channel_ca_id="9"
         else 
             if [ "$file" == "cities1000" ]; then
-                channel_name="ca_city.small"
+                channel_name="ca_city.small_$GETS_LOGIN"
                 channel_ca_id="10"
             else
                 echo "Error: unknown input files"
@@ -95,7 +102,7 @@ do
 
     echo "Creating channel $channel_name in geo2tag..."    
     params_cities="<request><params><auth_token>$auth_token</auth_token><name>$channel_name</name><description>$channel_desc</description><url>$channel_url</url><lang>$DEFAULT_LANG</lang><category_id>$channel_ca_id</category_id><active_radius>100000</active_radius></params></request>"
-    response_cities=`curl -s -d "$params_cities" http://oss.fruct.org/projects/gets/service/addChannel.php`
+    response_cities=`curl -s -d "$params_cities" $ADD_CHANNEL_URL`
     code_cities=`echo "$response_cities" | xmllint --xpath '//code/text()' -`
     message_cities=`echo "$response_cities"  | xmllint --xpath '//message/text()' -`
     if [ $code_cities -ne 0 ]; then
@@ -109,7 +116,7 @@ do
 
     echo "Subscribing to $channel_name channel..."
     params_subs="<request><params><auth_token>$auth_token</auth_token><channel>$channel_name</channel></params></request>"
-    response_subs=`curl -s -d "$params_subs" http://oss.fruct.org/projects/gets/service/subscribe.php`
+    response_subs=`curl -s -d "$params_subs" $SUBSCRIBE_CHANNEL_URL`
     code_subs=`echo "$response_subs" | xmllint --xpath '//code/text()' -`
     message_subs=`echo "$response_subs"  | xmllint --xpath '//message/text()' -`
     if [ $code_subs -ne 0 ]; then
@@ -145,6 +152,8 @@ do
             # Make request to English wikipedia in order to get a link from it
             response_wiki=`curl -s "http://en.wikipedia.org/w/api.php?action=opensearch&search=$title_for_wiki&limit=1&namespace=0&format=xml"`
             city_link=`echo "$response_wiki" | xmllint --xpath "//*[local-name()='Url']/text()" -`
+        else 
+            city_link=""
         fi
         
         if [ $debug == 1 ]; then
@@ -160,7 +169,7 @@ do
         fi
 
         params_add_tag="<request><params><auth_token>$auth_token</auth_token><channel>$channel_name</channel><title>$city_title</title><description>$city_desc</description><link>$city_link</link><latitude>$city_latitude</latitude><longitude>$city_longitude</longitude><altitude>$city_altitude</altitude><time>$city_time</time></params></request>"
-        response_add_tag=`curl -s -d "$params_add_tag" http://oss.fruct.org/projects/gets/service/addPoint.php`
+        response_add_tag=`curl -s -d "$params_add_tag" $ADD_POINT_URL`
         code_add_tag=`echo "$response_add_tag" | xmllint --xpath '//code/text()' -`
         message_add_tag=`echo "$response_add_tag" | xmllint --xpath '//message/text()' -`
         if [ $code_add_tag -ne 0 ]; then
@@ -171,7 +180,7 @@ do
 
     echo "Removing duplicates..."
     params_remove_dub="<methodCall><methodName>deleteDupTags</methodName><params><param><struct><member><name>user</name><value>$GETS_LOGIN</value></member><member><name>channel</name><value>$channel_name</value></member></struct></param></params></methodCall>"
-    response_remove_dub=`curl -s -d "$params_remove_dub" http://kappa.cs.karelia.ru/~davydovs/retr/checkUser.php | xmllint --xpath '//string/text()' -`
+    response_remove_dub=`curl -s -d "$params_remove_dub" $GETS_XMLRPC_URL | xmllint --xpath '//string/text()' -`
     echo "$response_remove_dub"
 done
 

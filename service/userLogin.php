@@ -67,6 +67,8 @@ if (isset($_SESSION['email'])) {
             '</value></member></struct></param></params></methodCall>';
 } else {
     send_error(1, 'Error: google authorization didn\'t go through or google email isn\'t available');
+    session_unset();
+    session_destroy();
     die();
 }
 

@@ -6,8 +6,8 @@
         <xs:element name="params">
           <xs:complexType>
             <xs:sequence>
-              <xs:element type="xs:string" name="auth_token" minOccurs="0" maxOccurs="1"/>
-              <xs:element type="xs:string" name="channel" minOccurs="0" maxOccurs="1"/>
+              <xs:element type="xs:string" name="auth_token"/>
+              <xs:element type="xs:string" name="channel"/>
             </xs:sequence>
           </xs:complexType>
         </xs:element>

@@ -6,15 +6,15 @@
         <xs:element name="params">
           <xs:complexType>
             <xs:sequence>
-              <xs:element type="xs:string" name="auth_token" minOccurs="0" maxOccurs="1"/>
-              <xs:element type="xs:string" name="channel" minOccurs="0" maxOccurs="1"/>
-              <xs:element type="xs:string" name="title" minOccurs="0" maxOccurs="1"/>
-              <xs:element type="xs:string" name="description" minOccurs="0" maxOccurs="1"/>
-              <xs:element type="xs:string" name="link" minOccurs="0" maxOccurs="1"/>
-              <xs:element type="xs:double" name="latitude" minOccurs="0" maxOccurs="1"/>
-              <xs:element type="xs:double" name="longitude" minOccurs="0" maxOccurs="1"/>
-              <xs:element type="xs:double" name="altitude" minOccurs="0" maxOccurs="1"/>
-              <xs:element type="xs:string" name="time" minOccurs="0" maxOccurs="1"/>
+              <xs:element type="xs:string" name="auth_token"/>
+              <xs:element type="xs:string" name="channel"/>
+              <xs:element type="xs:string" name="title"/>
+              <xs:element type="xs:string" name="description"/>
+              <xs:element type="xs:string" name="link"/>
+              <xs:element type="xs:double" name="latitude"/>
+              <xs:element type="xs:double" name="longitude"/>
+              <xs:element type="xs:double" name="altitude"/>
+              <xs:element type="xs:string" name="time"/>
             </xs:sequence>
           </xs:complexType>
         </xs:element>

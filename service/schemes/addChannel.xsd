@@ -6,13 +6,13 @@
         <xs:element name="params">
           <xs:complexType>
             <xs:sequence>
-              <xs:element type="xs:string" name="auth_token" minOccurs="0" maxOccurs="1"/>
-              <xs:element type="xs:string" name="name" minOccurs="0" maxOccurs="1"/>
-              <xs:element type="xs:string" name="description" minOccurs="0" maxOccurs="1"/>
-              <xs:element type="xs:string" name="url" minOccurs="0" maxOccurs="1"/>
-              <xs:element type="xs:string" name="lang" minOccurs="0" maxOccurs="1"/>
-              <xs:element type="xs:integer" name="category_id" minOccurs="0" maxOccurs="1"/>
-              <xs:element type="xs:double" name="active_radius" minOccurs="0" maxOccurs="1"/>
+              <xs:element type="xs:string" name="auth_token"/>
+              <xs:element type="xs:string" name="name"/>
+              <xs:element type="xs:string" name="description"/>
+              <xs:element type="xs:string" name="url"/>
+              <xs:element type="xs:string" name="lang"/>
+              <xs:element type="xs:integer" name="category_id"/>
+              <xs:element type="xs:double" name="active_radius"/>
             </xs:sequence>
           </xs:complexType>
         </xs:element>

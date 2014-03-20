@@ -25,8 +25,6 @@ if (!$dom->schemaValidate('schemes/loadPoints.xsd')) {
     die();
 }
 
-////////////////////////////////////////////////
-
 $auth_token_element = $dom->getElementsByTagName('auth_token');
 $category_id_element = $dom->getElementsByTagName('category_id');
 $latitude_element = $dom->getElementsByTagName('latitude');
@@ -61,6 +59,7 @@ if ($is_auth_token_defined) {
 
         if (!$token) {
             send_error(1, 'Error: can\'t receive new token');
+            die();
         }
     }
 
@@ -68,58 +67,52 @@ if ($is_auth_token_defined) {
 }
 
 
-$category_name = 'any';
+$channels_name_array = array();
 if ($category_id != -1) {
-    $categories_request_content = '<?xml version="1.0" encoding="UTF-8"?><request><params></params></request>';
-    $categories_response = process_request(GET_CATEGORIES_METHOD_URL_GETS, 
-                                    $categories_request_content, 
+    $subs_channels_request_content = '<request><params><auth_token>' . $data_array['auth_token'] . '</auth_token></params></request>';
+    
+    $subs_channels_response = process_request(SUBSCRIBED_CHANNELS_METHOD_URL_GETS, 
+                                    $subs_channels_request_content, 
                                     'Content-Type: text/xml');
-    if (!$categories_response) {
-        send_error(1, 'Error: can\'t get categories.');
+    if (!$subs_channels_response) {
+        send_error(1, 'Error: internal server error');
         die();
     }
-    $categories_response_dom = new DOMDocument();
-    $categories_response_dom->loadXML($categories_response);
-    if (!$categories_response_dom) {
-        send_error(1, 'Error: categories response is not xml file.');
+    
+    $subs_channels_response_dom = new DOMDocument();
+    $subs_channels_response_dom->loadXML($subs_channels_response);
+    if (!$subs_channels_response_dom) {
+        send_error(1, 'Error: internal server error');
         die();
     }
+       
+    /*if ($subs_channels_response_dom->getElementsByTagName('code')->item(0)->nodeValue != 0) {
+        send_error(1, 'Error: internal server error');
+        die();
+    }*/
+    
     $flag = false;
-    $category_elements = $categories_response_dom->getElementsByTagName('category');
-    foreach($category_elements as $category) {
-        if ($category_id == $category->getElementsByTagName('id')->item(0)->nodeValue) {
-            $category_name = 'ca_' . $category->getElementsByTagName('name')->item(0)->nodeValue;
+    $channels_elements = $subs_channels_response_dom->getElementsByTagName('channel');
+    foreach($channels_elements as $channel) {
+        if ($category_id == $channel->getElementsByTagName('category_id')->item(0)->nodeValue) {
+            $channels_name_array[] = $channel->getElementsByTagName('name')->item(0)->nodeValue;
             $flag = true;
-            break;
         }
     }
     
     if (!$flag) {
-        send_error(1, 'Error: no category with given id in the system.');
+        send_error(1, 'Error: there is no category in the system with given id');
         die();
     }
 }
 
-$request_type = '';
-if ($category_condition && $location_condition) {
-	$data_array['latitude'] = floatval($latitude_element->item(0)->nodeValue);
-	$data_array['longitude'] = floatval($longitude_element->item(0)->nodeValue);
-	$data_array['radius'] = floatval($radius_element->item(0)->nodeValue);
-	$data_array['time_from'] = '01 01 1999 00:00:00.000';
-	$data_array['time_to'] = '01 01 2099 00:00:00.000';
-	$data_array['channel'] = $category_name;
-	$request_type = LOAD_POINTS_METHOD_URL;
-} else if ($category_condition) {
-	$data_array['channel'] = $category_name;
-	$data_array['amount'] = 10000;
-	$request_type = FILTER_CHANNEL_METHOD_URL;
-} else {
-	$data_array['latitude'] = floatval($latitude_element->item(0)->nodeValue);
-	$data_array['longitude'] = floatval($longitude_element->item(0)->nodeValue);
-	$data_array['radius'] = floatval($radius_element->item(0)->nodeValue);
-	$data_array['time_from'] = '01 01 1999 00:00:00.000';
-	$data_array['time_to'] = '01 01 2099 00:00:00.000';
-	$request_type = LOAD_POINTS_METHOD_URL;
+function addItemIntoXml($item, &$xml) {
+    $xml .= '<Placemark>';
+    $xml .= '<name><![CDATA[' . $item['title'] . ']]></name>';
+    $xml .= '<description><![CDATA[' .  $item['description'] . ']]></description>';
+    $xml .= '<ExtendedData><Data name="url"><value><![CDATA[' . $item['link'] . ']]></value></Data></ExtendedData>';
+    $xml .= '<Point><coordinates>' . $item['latitude'] . ',' . $item['longitude'] . ',0.0' . '</coordinates></Point>';
+    $xml .= '</Placemark>';
 }
 
 function process_load_points_request($data_array, $request_type) {
@@ -134,7 +127,6 @@ function process_load_points_request($data_array, $request_type) {
         send_error(1, 'Error: problem with request to geo2tag.');
         die();
     }
-    ////////////////////////////////////
 
     $response_array = json_decode($response_json, true);
     if (!$response_array) {
@@ -145,64 +137,85 @@ function process_load_points_request($data_array, $request_type) {
     return $response_array;
 }
 
-$response_array = process_load_points_request($data_array, $request_type);
-
-$response_code = check_errors($response_array['errno']);
-
-// Geo2tag server requires authentication and we're using cached token
 $is_wrong_token_error = false;
-if ($response_code === 'Wrong token error') {
-    $is_wrong_token_error = true;
-    // Try receive new token from server
-    $token = receive_public_token();
-    if (!$token) {
-        send_error(1, 'Error: can\'t receive new token');
-        die();
-    }
 
-    // Send request with new token
-    $data_array['auth_token'] = $token;
+function getData($data_array, $request_type, &$xml, $location_condition, &$is_wrong_token_error) {
     $response_array = process_load_points_request($data_array, $request_type);
     $response_code = check_errors($response_array['errno']);
+    
+    // Geo2tag server requires authentication and we're using cached token
+    if ($response_code === 'Wrong token error') {
+        $is_wrong_token_error = true;
+        // Try receive new token from server
+        $token = receive_public_token();
+        if (!$token) {
+            send_error(1, 'Error: can\'t receive new token');
+            die();
+        }
 
-    // Same error, new token invalid
-    if ($response_code === 'Wrong token error') { 
-        send_error(1, 'Error: geo2tag server returned invalid token');
+        // Send request with new token
+        $data_array['auth_token'] = $token;
+        $response_array = process_load_points_request($data_array, $request_type);
+        $response_code = check_errors($response_array['errno']);
+
+        // Same error, new token invalid
+        if ($response_code === 'Wrong token error') { 
+            send_error(1, 'Error: geo2tag server returned invalid token');
+            die();
+        }
+    }
+    
+    if ($response_code != 'Ok') {
+        send_error(1, $response_code);
         die();
     }
-}
 
-if ($response_code != 'Ok') {
-    send_error(1, $response_code);
-    die();
+    if ($location_condition) {
+        foreach($response_array['channels'] as $channel) {
+            foreach($channel['channel']['items'] as $item) {
+                addItemIntoXml($item, $xml);
+            }
+        }
+    } else {
+        foreach($response_array['channel']['items'] as $item) {
+            addItemIntoXml($item, $xml);
+        }	
+    }
 }
 
 $xml = '<kml xmlns="http://www.opengis.net/kml/2.2">';
 $xml .= '<Document>';
-$xml .= '<name>' . $category_name . '.kml</name>';
+$xml .= '<name>any.kml</name>';
 $xml .= '<open>1</open>';
 $xml .= '<Style id="styleDocument"><LabelStyle><color>ff0000cc</color></LabelStyle></Style>';
 
-if ($location_condition) {
-	foreach($response_array['channels'] as $channel) {
-		foreach($channel['channel']['items'] as $item) {
-			$xml .= '<Placemark>';
-			$xml .= '<name>' . htmlspecialchars($item['title']) . '</name>';
-			$xml .= '<description>' . '<![CDATA[' .  $item['description'] . ']]>' . '</description>';
-			$xml .= '<ExtendedData><Data name="url"><value>' . htmlspecialchars($item['link']) . '</value></Data></ExtendedData>';
-			$xml .= '<Point><coordinates>' . $item['latitude'] . ',' . $item['longitude'] . ',0.0' . '</coordinates></Point>';
-			$xml .= '</Placemark>';
-		}
-	}
+$request_type = '';
+if ($category_condition && $location_condition) {
+	$data_array['latitude'] = floatval($latitude_element->item(0)->nodeValue);
+	$data_array['longitude'] = floatval($longitude_element->item(0)->nodeValue);
+	$data_array['radius'] = floatval($radius_element->item(0)->nodeValue);
+	$data_array['time_from'] = '01 01 1999 00:00:00.000';
+	$data_array['time_to'] = '01 01 2099 00:00:00.000';
+        $request_type = LOAD_POINTS_METHOD_URL;
+	foreach($channels_name_array as $channel_name) {
+            $data_array['channel'] = $channel_name;
+            getData($data_array, $request_type, $xml, $location_condition, $is_wrong_token_error);
+        }
+} else if ($category_condition) {
+        $data_array['amount'] = 10000;
+	$request_type = FILTER_CHANNEL_METHOD_URL;
+	foreach($channels_name_array as $channel_name) {
+            $data_array['channel'] = $channel_name;
+            getData($data_array, $request_type, $xml, $location_condition, $is_wrong_token_error);
+        }
 } else {
-	foreach($response_array['channel']['items'] as $item) {
-		$xml .= '<Placemark>';
-		$xml .= '<name>' . htmlspecialchars($item['title']) . '</name>';
-		$xml .= '<description>' . '<![CDATA[' .  $item['description'] . ']]>' . '</description>';
-		$xml .= '<ExtendedData><Data name="url"><value>' . htmlspecialchars($item['link']) . '</value></Data></ExtendedData>';
-		$xml .= '<Point><coordinates>' . $item['latitude'] . ',' . $item['longitude'] . ',0.0' . '</coordinates></Point>';
-		$xml .= '</Placemark>';
-	}	
+	$data_array['latitude'] = floatval($latitude_element->item(0)->nodeValue);
+	$data_array['longitude'] = floatval($longitude_element->item(0)->nodeValue);
+	$data_array['radius'] = floatval($radius_element->item(0)->nodeValue);
+	$data_array['time_from'] = '01 01 1999 00:00:00.000';
+	$data_array['time_to'] = '01 01 2099 00:00:00.000';
+	$request_type = LOAD_POINTS_METHOD_URL;
+        getData($data_array, $request_type, $xml, $location_condition, $is_wrong_token_error);
 }
 
 $xml .= '</Document>';

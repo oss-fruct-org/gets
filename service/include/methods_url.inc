@@ -14,4 +14,5 @@ define('ADDITIONAL_FUNCTIONS_METHOD_URL', 'http://' . GEO2TAG_SERVER_URL . '/get
 define('FILTER_CHANNEL_METHOD_URL', 'http://' . GEO2TAG_SERVER_URL . '/service/filterChannel');
 
 define('GET_CATEGORIES_METHOD_URL_GETS', 'http://' . GETS_SERVER_URL . '/getCategories.php');
+define('SUBSCRIBED_CHANNELS_METHOD_URL_GETS', 'http://' . GETS_SERVER_URL . '/subscribedChannels.php');
 ?>

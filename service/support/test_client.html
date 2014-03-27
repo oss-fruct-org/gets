@@ -6,7 +6,8 @@
     <script type="text/javascript">
         
         var auth_token = '';
-        var auth_token_elem;
+        var auth_token_elem = null;
+        var logout_elem = null;
         var load_points_btn;
         var points_elem;
       
@@ -64,6 +65,13 @@
             document.body.appendChild(auth_token_elem);
         }
         
+        function createLogOutElem() {
+            logout_elem = document.createElement('a');
+            logout_elem.setAttribute('href', '#');
+            logout_elem.setAttribute('onclick', '');
+            document.body.appendChild(logout_elem);
+        }
+        
         function showError(errorText, timeOut) {
             var error_log_elem = document.getElementById('error_log');
             error_log_elem.innerHTML = errorText;
@@ -82,6 +90,7 @@
                 return;
             }
             createAuthTokenElem(auth_token);
+            createLogOutElem();
         }
              
         function authorize() {
@@ -91,7 +100,7 @@
             getRedirectLink.setRequestHeader('Content-Type','text/xml');
             getRedirectLink.send('<request><params></params></request>');
             if (getRedirectLink.status !== 200) {
-                document.getElementById('error_log').innerHTML = 'An error occurred while processing the request';
+                showError('An error occurred while processing the request', 3000);
                 return;
             }
           
@@ -109,7 +118,7 @@
                     getAuthToken.send('<request><params><id>' + id + '</id></params></request>');
                     
                     if (getAuthToken.status !== 200) {
-                        document.getElementById('error_log').innerHTML = 'An error occurred while processing the request';
+                        showError('An error occurred while processing the request', 3000);
                         return;
                     }
                     console.log('getAuthToken.responseText: ' + getAuthToken.responseText);
@@ -125,6 +134,7 @@
                         document.getElementById('auth_btn').setAttribute('style', 'display: none;');
                     }
                     createAuthTokenElem(auth_token);
+                    createLogOutElem();
                     if (isLocalStorageAvailable()) {
                         try {
                             localStorage.setItem('auth_token', auth_token);
@@ -144,11 +154,29 @@
                 }  
             }, 1000);                       
         }
+        
+        function logout() {
+            var logout = getXmlHttp();
+            logout.open('POST', 'http://oss.fruct.org/projects/gets/service/userLogin.php', false);
+            logout.setRequestHeader('Content-Type','text/xml');
+            logout.send('<request><params><auth_token>' + auth_token + '</auth_token></params></request>');
+            if (logout.status !== 200) {
+                showError('An error occurred while processing the request', 3000);
+                return;
+            }
+            
+            document.body.removeChild(auth_token_elem);
+            document.body.removeChild(logout_elem);
+            auth_token_elem = null;
+            logout_elem = null;
+            document.getElementById('auth_btn').setAttribute('style', 'display: block;');
+            localStorage.clear();
+        }
     </script>
   </head>
   <body onload="onLoadBody();">
       <h4>This is a simple GeTS client that allows you to get GeTS auth token by using your Google account.</h4>
-      <button id="auth_btn" onClick="authorize();" style="display: none;">Authorize</button>
+      <button id="auth_btn" onclick="authorize();" style="display: none;">Authorize</button>
       <p id="error_log" style="display: none;"></p>
   </body>
 </html>

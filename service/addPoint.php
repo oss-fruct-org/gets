@@ -19,17 +19,31 @@ if (!$dom) {
     die();
 }
 
-if (!$dom->schemaValidate('schemes/subscribe.xsd')) {
+if (!$dom->schemaValidate('schemes/addPoint.xsd')) {
     send_error(1, 'Error: not valid input XML document.');
     die();
 }
 
 $auth_token_element = $dom->getElementsByTagName('auth_token');
 $channel_name_element = $dom->getElementsByTagName('channel');
+$title_element = $dom->getElementsByTagName('title');
+$description_element = $dom->getElementsByTagName('description');
+$link_element = $dom->getElementsByTagName('link');
+$latitude_element = $dom->getElementsByTagName('latitude');
+$longitude_element = $dom->getElementsByTagName('longitude');
+$altitude_element = $dom->getElementsByTagName('altitude');
+$time_element = $dom->getElementsByTagName('time');
 
 $data_array = array();
 $data_array['auth_token'] = $auth_token_element->item(0)->nodeValue;
 $data_array['channel'] = $channel_name_element->item(0)->nodeValue;
+$data_array['title'] = $title_element->item(0)->nodeValue;
+$data_array['description'] = $description_element->item(0)->nodeValue;
+$data_array['link'] = $link_element->item(0)->nodeValue;
+$data_array['latitude'] = $latitude_element->item(0)->nodeValue;
+$data_array['longitude'] = $longitude_element->item(0)->nodeValue;
+$data_array['altitude'] = $altitude_element->item(0)->nodeValue;
+$data_array['time'] = $time_element->item(0)->nodeValue;
 
 $data_json = json_encode($data_array);
 if (!$data_json) {
@@ -37,7 +51,7 @@ if (!$data_json) {
     die();
 }
 
-$response_json =  process_request(SUBSCRIBE_METHOD_URL, $data_json, 'Content-Type:application/json');
+$response_json =  process_request(WRITE_TAG_METHOD_URL, $data_json, 'Content-Type:application/json');
 if (!$response_json) {
     send_error(1, 'Error: problem with request to geo2tag.');
     die();
@@ -57,3 +71,4 @@ if ($response_code != 'Ok') {
 
 send_result(0, 'success', '');
 ?>
+

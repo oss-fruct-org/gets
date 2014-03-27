@@ -83,7 +83,7 @@ if (!$data_json) {
     die();
 }
 
-$request_type = SUBSCRIBED_METHOD_URL;
+$request_type = SUBSCRIBED_CHANNELS_METHOD_URL;
 $response_json = process_request($request_type, $data_json, 'Content-Type:application/json');
 if (!$response_json) {
     send_error(1, 'Error: problem with request to geo2tag.');

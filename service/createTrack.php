@@ -54,8 +54,6 @@ if (!$response_json) {
     die();
 }
 
-echo $response_json;
-
 $response_array = json_decode($response_json, true);
 if (!$response_array) {
     send_error(1, 'Error: can\'t decode data from geo2tag.');

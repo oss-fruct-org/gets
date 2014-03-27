@@ -11,9 +11,14 @@ $client = new Google_Client();
 $client->setAccessType('online');
 
 // Deploy settings
-$client->setApplicationName('GeTS-Service');
-$client->setClientId('710658254828-tntn2h772v22ilii1qgsvlfgrijrbg6e.apps.googleusercontent.com');
-$client->setClientSecret('y8fwnTyiEs-gsrCTLtfFyjXn');
+//$client->setApplicationName('GeTS-Service');
+//$client->setClientId('710658254828-tntn2h772v22ilii1qgsvlfgrijrbg6e.apps.googleusercontent.com');
+//$client->setClientSecret('y8fwnTyiEs-gsrCTLtfFyjXn');
+
+// Deploy settings from config.inc
+$client->setApplicationName(GOOGLE_APP_NAME);
+$client->setClientId(GOOGLE_CLIENT_ID);
+$client->setClientSecret(GOOGLE_SECRET_ID);
 
 // Test settings
 /*$client->setApplicationName('GeTS-Service');

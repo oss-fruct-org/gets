@@ -37,4 +37,4 @@ EOF
 
 #psql geo2tag geo2tag -c "insert into users (email, login, password) values ('gets_user@example.com', 'gets_user', 'gets_user_password');"
 #psql geo2tag geo2tag -c "insert into users (email, login, password) values ('test_user@example.com', 'test_user', 'test_user_password');"
-psql geo2tag geo2tag < testdb2.sql
+psql geo2tag geo2tag < testdb3.sql

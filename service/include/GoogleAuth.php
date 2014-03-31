@@ -2,9 +2,14 @@
 require_once 'GoogleClientAPI/src/Google_Client.php';
 require_once 'GoogleClientAPI/src/contrib/Google_PlusService.php';
 require_once 'config.php';
+require_once 'config.inc';
 
 //http://oss.fruct.org/projects/gets/service/include/GoogleAuth.php
-$redirectUri = 'http://' . $_SERVER['HTTP_HOST'] . '/projects/gets/service/include/GoogleAuth.php';
+if (defined("AUTH_REDIRECT_URL")) {
+    $redirectUri = AUTH_REDIRECT_URL;
+} else {
+    $redirectUri = 'http://' . $_SERVER['HTTP_HOST'] . '/projects/gets/service/include/GoogleAuth.php';
+}
 //$redirectUri = 'http://' . $_SERVER['HTTP_HOST'] . '/service/include/GoogleAuth.php';
 
 $client = new Google_Client();

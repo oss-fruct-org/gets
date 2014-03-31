@@ -51,11 +51,11 @@ if ($auth_token) {
 
 
 // Find id of requested category
+$category_id = null;
 if ($category_name) {
     try {
         $categories = get_categories();
 
-        $category_id = null;
 
         foreach ($categories as $category) {
             // Category name equals requested name
@@ -112,12 +112,15 @@ foreach ($response_array['channels'] as $channel) {
     $channel_description = null;
     $channel_id = null;
     $channel_lang = null;
+    $channel_hname = null;
+
 
     $desc_arr = json_decode($channel_desc, true);
     if ($desc_arr) {
         $channel_description = $desc_arr['description'];
         $channel_id = $desc_arr['categoryId'];
         $channel_lang = $desc_arr['lang'];
+        $channel_hname = $desc_arr['hname'];
     }
 
     if ($channel_id && stripos($channel_name, "tr_") === 0 && ($category_id == null || $category_id == $channel_id)) {
@@ -129,6 +132,9 @@ foreach ($response_array['channels'] as $channel) {
 
         if ($channel_lang)
             $resp .= '<lang>' . $channel_lang . '</lang>';
+
+        if ($channel_hname)
+            $resp .= '<hname>' . $channel_hname . '</hname>';
 
         $resp .= '</track>';
     }

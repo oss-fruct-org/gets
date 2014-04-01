@@ -40,9 +40,9 @@ $data_array['channel'] = $channel_name_element->item(0)->nodeValue;
 $data_array['title'] = $title_element->item(0)->nodeValue;
 $data_array['description'] = $description_element->item(0)->nodeValue;
 $data_array['link'] = $link_element->item(0)->nodeValue;
-$data_array['latitude'] = $latitude_element->item(0)->nodeValue;
-$data_array['longitude'] = $longitude_element->item(0)->nodeValue;
-$data_array['altitude'] = $altitude_element->item(0)->nodeValue;
+$data_array['latitude'] = /*(float)*/ $latitude_element->item(0)->nodeValue;
+$data_array['longitude'] = /*(float)*/ $longitude_element->item(0)->nodeValue;
+$data_array['altitude'] = /*(float)*/ $altitude_element->item(0)->nodeValue;
 $data_array['time'] = $time_element->item(0)->nodeValue;
 
 $data_json = json_encode($data_array);

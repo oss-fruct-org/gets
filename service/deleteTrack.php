@@ -34,7 +34,7 @@ $data_array = array();
 $data_array['auth_token'] = $auth_token;
 
 $data_json = json_encode($data_array);
-$response_json = process_request(SUBSCRIBED_METHOD_URL, $data_json, 'Content-Type:application/json');
+$response_json = process_request(SUBSCRIBED_CHANNELS_METHOD_URL, $data_json, 'Content-Type:application/json');
 
 if (!$response_json) {
     send_error(1, 'Error: problem with request to geo2tag.');

@@ -3,6 +3,7 @@
 include_once('include/methods_url.inc');
 include_once('include/utils.inc');
 include_once('include/public_token.inc');
+include_once('include/geo2tag_errors_list.inc');
 
 header ('Content-Type:text/xml');
 
@@ -61,9 +62,13 @@ if (!$response_array) {
     die();
 }
 
-$response_code = check_errors($response_array['errno']);
-if ($response_code != 'Ok') {
-    send_error(1, $response_code);
+$response_string = check_errors($response_array['errno']);
+$response_code = $response_array['errno'];
+if ($response_code === CHANNEL_ALREADY_EXIST_ERROR) {
+    send_error(2, $response_string);
+    die();
+} else if ($response_code !== SUCCESS) {
+    send_error(1, $response_string);
     die();
 }
 
@@ -86,9 +91,11 @@ if (!$response_array) {
     die();
 }
 
-$response_code = check_errors($response_array['errno']);
-if ($response_code != 'Ok') {
-    send_error(1, $response_code);
+$response_string = check_errors($response_array['errno']);
+$response_code = $response_array['errno'];
+
+if ($response_code !== SUCCESS) {
+    send_error(1, $response_string);
     die();
 }
 

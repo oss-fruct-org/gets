@@ -269,6 +269,13 @@
 &lt;/response&gt;
                         </code></pre>
                     </div>
+                    <p>Error code</p>
+                    <ul class="params_desc">
+                        <li><i>0</i> - success </li>
+                        <li><i>1</i> - other errors</li>
+                        <li><i>2</i> - track already exists</li>
+                    </ul>
+
                 </div>
             </li>
 <!-- Load tracks method -->

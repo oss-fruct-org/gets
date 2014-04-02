@@ -8,7 +8,7 @@ curl -d@- "${GETS_SERVER}/deleteTrack.php" <<-EOF
 <request><params>
 
 <auth_token>$(cat token.txt)</auth_token>
-<name>tr_private</name>
+<name>tr_qwerty</name>
 
 </params></request>
 EOF

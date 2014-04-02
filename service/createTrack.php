@@ -48,6 +48,7 @@ $data_array['name'] = $name;
 
 $data_json = json_encode($data_array);
 
+// Create channel request
 $response_json = process_request(ADD_CHANNEL_METHOD_URL, $data_json, 'Content-Type:application/json');
 if (!$response_json) {
     send_error(1, 'Error: problem with request to geo2tag.');
@@ -65,6 +66,32 @@ if ($response_code != 'Ok') {
     send_error(1, $response_code);
     die();
 }
+
+// Subscribe channel request
+$subs_array = array();
+$subs_array['auth_token'] = $auth_token;
+$subs_array['channel'] = $name;
+
+$subs_json = json_encode($subs_array);
+
+$response_json = process_request(SUBSCRIBE_METHOD_URL, $subs_json, 'Content-Type:application/json');
+if (!$response_json) {
+    send_error(1, 'Error: problem with request to geo2tag.');
+    die();
+}
+
+$response_array = json_decode($response_json, true);
+if (!$response_array) {
+    send_error(1, 'Error: can\'t decode data from geo2tag.');
+    die();
+}
+
+$response_code = check_errors($response_array['errno']);
+if ($response_code != 'Ok') {
+    send_error(1, $response_code);
+    die();
+}
+
 
 send_result(0, 'success', '');
 

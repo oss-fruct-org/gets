@@ -27,21 +27,28 @@ if (!$auth_token) {
 session_id($auth_token);
 session_start();
 
-require_once 'client.php';
-
-$root = check_content_directory($service);
-
 $mimeType = $_SERVER['CONTENT_TYPE'];
 $tmp = tempnam('/tmp', 'gets_store_content_');
 
 file_put_contents($tmp, file_get_contents('php://input'));
-$file = upload_file($service, $title, $mimeType, $root, $tmp);
+
+try {
+    require_once 'client.php';
+    $root = check_content_directory($service);
+    $file = upload_file($service, $title, $mimeType, $root, $tmp);
+} catch (Exception $e) {
+    send_error(1, 'Error request to Google Drive');
+    unlink($tmp);
+    die();
+}
+
 unlink($tmp);
 
 $response = '<file>';
 
 $response .= '<title>' . htmlspecialchars($file->title) . '</title>';
 $response .= '<downloadUrl>' . htmlspecialchars($file->webContentLink) . '</downloadUrl>';
+$response .= '<mimeType>' . htmlspecialchars($file->mimeType) . '</mimeType>';
 
 $response .= '</file>';
 

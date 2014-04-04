@@ -102,7 +102,6 @@ function list_files($service, $parent_id) {
 
     }
 
-
     return $ret;
 }
 

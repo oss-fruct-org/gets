@@ -33,6 +33,7 @@ $client->setClientSecret('S76cHyp2pUQfrltron0Abu7e');*/
 $client->setRedirectUri($redirectUri);
 $client->setScopes(array('https://www.googleapis.com/auth/plus.me', 
                         'https://www.googleapis.com/auth/plus.login', 
+                        'https://www.googleapis.com/auth/drive',
                         'https://www.googleapis.com/auth/userinfo.email'));
 //$client->setUseObjects(true);
 //$client->setDeveloperKey('AIzaSyBar90-XlZwVwZmrpH7b47weLrVhO4qQKI'); // API key
@@ -47,6 +48,8 @@ if (isset($_GET['code']) && isset($_GET['state'])) { // we received the positive
     session_start();
     $person = $service->people->get('me');
     $_SESSION['email'] = $person['emails'][0]['value'];
+    $_SESSION['access_token'] = $client->getAccessToken();
+
     echo '<!DOCTYPE html>
             <html>
                 <head>

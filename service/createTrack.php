@@ -42,7 +42,7 @@ $desc_array['description'] = $description;
 $desc_array['categoryId'] = $category_id;
 if ($lang) $desc_array['lang'] = $lang;
 if ($hname) $desc_array['hname'] = $hname;
-$desc_json = json_encode($desc_array);
+$desc_json = urlencode(json_encode($desc_array));
 
 $data_array['auth_token'] = $auth_token;
 $data_array['description'] = $desc_json;
@@ -50,6 +50,7 @@ $data_array['url'] = $url;
 $data_array['name'] = $name;
 
 $data_json = json_encode($data_array);
+
 
 // Create channel request
 $response_json = process_request(ADD_CHANNEL_METHOD_URL, $data_json, 'Content-Type:application/json');

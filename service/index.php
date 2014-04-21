@@ -86,7 +86,7 @@
         <h2>Contents</h2>
         <div class="menu">
             <ul>
-                <li><a href="#login">Login</a></li>
+                <li><a href="#login">Authorization with using Google account</a></li>
                 <li><a href="#load-points">Load points</a></li>
                 <li><a href="#get-categories">Get categories</a></li>
                 <li><a href="#create-track">Create track</a></li>
@@ -99,25 +99,21 @@
         <ul class="methods_list">
             <li>
                 <div id="login" class="method_box">
-                    <p><b>Login</b></p>
-                    <p>Authorize user with given login and password. In response service will send auth token.</p>
-                    <p><b>Request should be http://oss.fruct.org/projects/gets/service/login.php</b></p>
+                    <p><b>Authorization with using Google account</b></p>
+                    <p>Authorization with Google OAuth2 is performed in 2 steps.</p>
+                    <p><b>First step</b>. Client sends empty requests. In response server will send an id and a redirect link. Client opens this redirect link in a web browser, so that user can enter their authorization data. An id will be used in the second step, so client must save it.</p>
+                    <p><b>Request should be http://<?php echo $_SERVER['SERVER_NAME'];?>/projects/gets/service/userLogin.php</b></p>
                     <p><b>Request:</b></p>
                     <div class="xml_box">
                         <pre class="d"><code>
 &lt;request&gt;
   &lt;params&gt;
-    &lt;login&gt;...&lt;/login&gt;
-    &lt;password&gt;...&lt;/password&gt;
+    &lt;id&gt;&lt;/id&gt;
   &lt;/params&gt;
 &lt;/request&gt;
                         </code></pre>
                     </div><br>
-                    <ul class="params_desc">
-                        <li><i>login</i> - login name string</li>
-                        <li><i>password</i> - password string</li>
-                    </ul>    
-                    
+                      
                     <p><b>Response:</b></p>
                     <div class="xml_box">
                         <pre class="d"><code>

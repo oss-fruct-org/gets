@@ -38,6 +38,7 @@ if (!$is_id_defined) {
     $session_id = session_id();
     if (empty($session_id)) {
         send_error(1, 'Error: internal server error');
+        session_destroy();
         die();
     } else {
         require_once(dirname(__FILE__) . '/include/GoogleAuth.php');
@@ -47,6 +48,7 @@ if (!$is_id_defined) {
             $xml .= '<redirect_url>' . htmlspecialchars($client->createAuthUrl()) . '</redirect_url>';
         } else {
             send_error(1, 'Error: internal server error');
+            session_destroy();
             die();
         }
         send_result(2, 'redirect', $xml);

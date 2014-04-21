@@ -21,7 +21,7 @@ SUBSCRIBE_CHANNEL_URL=http://oss.fruct.org/projects/gets/service/subscribe.php
 ADD_POINT_URL=http://oss.fruct.org/projects/gets/service/addPoint.php
 GETS_XMLRPC_URL=http://kappa.cs.karelia.ru/~davydovs/retr/checkUser.php
 
-auth_token=`cat token.txt 2>/dev/null`
+auth_token=`cat "${GETS_LOGIN}_token.txt" 2>/dev/null`
 debug=0
 
 if { [ $# == 1 ] && [ "$1" == "--debug" ]; } then
@@ -83,16 +83,19 @@ do
     
     # Match file name with channel and id
     if [ "$file" == "cities15000" ]; then
-        channel_name="ca_city.large_$GETS_LOGIN"
+        channel_name="ca_city.large-${GETS_LOGIN}-$DEFAULT_LANG"
         channel_ca_id="8"
+        channel_desc="Large cities with population over 15000"
     else 
         if [ "$file" == "cities5000" ]; then
-            channel_name="ca_city.medium_$GETS_LOGIN"
+            channel_name="ca_city.medium-${GETS_LOGIN}-$DEFAULT_LANG"
             channel_ca_id="9"
+            channel_desc="Medium cities with population over 5000"
         else 
             if [ "$file" == "cities1000" ]; then
-                channel_name="ca_city.small_$GETS_LOGIN"
+                channel_name="ca_city.small-${GETS_LOGIN}-$DEFAULT_LANG"
                 channel_ca_id="10"
+                channel_desc="Small cities with population over 1000"
             else
                 echo "Error: unknown input files"
                 exit 1
@@ -168,7 +171,7 @@ do
             echo "-----------------------------------------------------------"
         fi
 
-        params_add_tag="<request><params><auth_token>$auth_token</auth_token><channel>$channel_name</channel><title>$city_title</title><description>$city_desc</description><link>$city_link</link><latitude>$city_latitude</latitude><longitude>$city_longitude</longitude><altitude>$city_altitude</altitude><time>$city_time</time></params></request>"
+        params_add_tag="<request><params><auth_token>$auth_token</auth_token><channel>$channel_name</channel><title>$city_title</title><description>$city_desc</description><link><![CDATA[$city_link]]></link><latitude>$city_latitude</latitude><longitude>$city_longitude</longitude><altitude>$city_altitude</altitude><time>$city_time</time></params></request>"
         response_add_tag=`curl -s -d "$params_add_tag" $ADD_POINT_URL`
         code_add_tag=`echo "$response_add_tag" | xmllint --xpath '//code/text()' -`
         message_add_tag=`echo "$response_add_tag" | xmllint --xpath '//message/text()' -`

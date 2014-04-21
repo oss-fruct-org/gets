@@ -124,8 +124,7 @@
                     console.log('getAuthToken.responseText: ' + getAuthToken.responseText);
                     var getAuthTokenRespCode = getAuthToken.responseXML.getElementsByTagName('code')[0].childNodes[0].nodeValue; 
                     if (getAuthTokenRespCode != 0) {
-                        document.getElementById('error_log').innerHTML = 
-                                getAuthToken.responseXML.getElementsByTagName('message')[0].childNodes[0].nodeValue;
+                        showError(getAuthToken.responseXML.getElementsByTagName('message')[0].childNodes[0].nodeValue, 3000);
                         return;
                     }
                     

@@ -1,0 +1,181 @@
+html { 
+    background: url(../images/bg.jpg) no-repeat center center fixed; 
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+    color:#777777;
+    height: 100%; 
+    margin-bottom: 1px;
+}
+
+.login-element {
+    position: fixed;
+    display: block;
+    top: 50%;
+    left: 50%;
+    margin-top: -75px;
+    margin-left: -102px;
+    width: 205px;
+    height: 230px;
+    background-color: white;
+    -moz-border-radius: 15px;
+    border-radius: 15px;
+    border:2px solid grey;
+    box-shadow: 0 0 15px rgba(0,0,0,0.5);
+}
+
+.login-button {
+    -moz-box-shadow:inset 0px 1px 0px 0px #ffffff;
+    -webkit-box-shadow:inset 0px 1px 0px 0px #ffffff;
+    box-shadow:inset 0px 1px 0px 0px #ffffff;
+    background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ededed), color-stop(1, #dfdfdf) );
+    background:-moz-linear-gradient( center top, #ededed 5%, #dfdfdf 100% );
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ededed', endColorstr='#dfdfdf');
+    background-color:#ededed;
+    -webkit-border-top-left-radius:0px;
+    -moz-border-radius-topleft:0px;
+    border-top-left-radius:0px;
+    -webkit-border-top-right-radius:0px;
+    -moz-border-radius-topright:0px;
+    border-top-right-radius:0px;
+    -webkit-border-bottom-right-radius:0px;
+    -moz-border-radius-bottomright:0px;
+    border-bottom-right-radius:0px;
+    -webkit-border-bottom-left-radius:0px;
+    -moz-border-radius-bottomleft:0px;
+    border-bottom-left-radius:0px;
+    text-indent:0;
+    border:1px solid #dcdcdc;
+    display:inline-block;
+    margin-left: 28px;
+    color:#777777;
+    font-family:Arial;
+    font-size:15px;
+    font-weight:bold;
+    font-style:normal;
+    height:33px;
+    line-height:33px;
+    width:150px;
+    text-decoration:none;
+    text-align:center;
+    text-shadow:1px 1px 0px #ffffff;
+}
+
+.login-button:hover {
+    background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #dfdfdf), color-stop(1, #ededed) );
+    background:-moz-linear-gradient( center top, #dfdfdf 5%, #ededed 100% );
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#dfdfdf', endColorstr='#ededed');
+    background-color:#dfdfdf;
+}
+
+.login-button:active {
+    position:relative;
+    top:1px;
+}
+
+.login-name {
+    display:inline-block;
+    width:150px;
+    margin-left: 28px;
+}
+
+.login-password {
+    display:inline-block;
+    width:150px;
+    margin-left: 28px;
+}
+
+.main-header {
+    position: absolute; 
+    display: block;										
+    height: 50px; 
+    width: 100%; 
+    top: 0%; 
+    left: 0%;
+    background-color:#bcbcbc;
+}
+
+.main-header a {
+    text-decoration: none;
+}
+
+.main-header-title {
+    position: relative;
+    display:inline-block;
+    width: 280px;
+    height: 36px;
+    top: 50%;
+    margin-top: -20px;
+    margin-left: 20px;
+    color:#555555;
+    font-size: 36px;
+    font-weight: bold;
+}
+
+.main-header-name {
+    position: relative;
+    display: inline-block;
+    height: 25px;
+    top: 50%;
+    margin-top: -13px;
+    margin-left: 5px;
+    color:#555555;
+    font-size: 25px;
+    font-weight: bold;
+}
+
+.content-table {
+    //position: fixed;
+    display: block;
+    top: 50px; 
+    left: 0%;
+    margin-top: 10px;
+    width: 1000px;
+    height: auto;
+    min-height: 100%;
+    position: relative;
+}
+
+.main-menu {
+    width: 200px;
+}
+
+.main-menu p {
+    display: block;
+    height: 30px;
+    width: 200px;
+    margin-left: 5px;
+    padding-left: 15px;
+    padding-top: 5px;
+}
+
+.main-menu p:hover {
+    background-color:#bcbcbc;
+    cursor: pointer;
+}
+
+.main-menu p  a {
+    position: relative;
+    display: block;
+    height: 30px;
+    width: 200px;
+    color: #555555;
+    text-decoration: none;
+}
+
+.data-input {
+    position: relative;
+    display: block;
+    width: 300px;
+}
+
+.data-input label {
+    left: 0px;
+}
+
+.data-input input[type="text"] {
+    position:absolute;
+    right:0px;
+    width:150px;
+}

@@ -74,8 +74,9 @@ if (isset($_SESSION['email'])) {
     die();
 }
 
-session_unset();
-session_destroy();
+
+//session_unset();
+//session_destroy();
 
 //!ATTENTION!
 $response =  process_request(ADDITIONAL_FUNCTIONS_METHOD_URL, $data, 'Content-Type: text/xml');
@@ -125,6 +126,7 @@ if ($response_code != 'Ok') {
     die();
 }
 
+session_id($response_array['auth_token']);
 $content = '<auth_token>' . $response_array['auth_token'] . '</auth_token>';
 send_result(0, 'success', $content);
 ?>

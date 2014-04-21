@@ -182,4 +182,15 @@ function get_categories($token = null) {
     return $ret;
 }
 
+/**
+    Like var_dump but outputs to error log instead of stdin
+  */
+function dump_error_log($object) {
+    ob_start();
+    var_dump($object);
+    $contents = ob_get_contents();
+    ob_end_clean();
+    error_log($contents);
+}
+
 ?>

@@ -5,8 +5,8 @@ source ./config.sh
 
 curl -d@- "${GEO2TAG_SERVER}/service/login"  <<-EOF | ./json.sh auth_token > token.txt
 {
-    "login" : "test_user",
-    "password" : "test_user_password"
+    "login" : "delzex@gmail.com",
+    "password" : "delzex@gmail.com"
 }
 EOF
 

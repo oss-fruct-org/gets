@@ -30,50 +30,69 @@ $category_id_element = $dom->getElementsByTagName('category_id');
 $latitude_element = $dom->getElementsByTagName('latitude');
 $longitude_element = $dom->getElementsByTagName('longitude');
 $radius_element = $dom->getElementsByTagName('radius');
+$space_element = $dom->getElementsByTagName('space');
 
 $is_auth_token_defined = $auth_token_element->length > 0;
 $category_condition = $category_id_element->length > 0;
 $location_condition = ($latitude_element->length > 0) && 
                     ($longitude_element->length > 0) && 
                     ($radius_element->length > 0);
+$space_condition = $space_element->length > 0;
 
 					   
 $category_id = $category_condition ? 
                 htmlspecialchars($category_id_element->item(0)->nodeValue) : 
 		-1;
 
-$data_array = array();
+// for different spaces we use different tokens
+$token_public = NULL;
+$token_user = NULL;
+
+// check what is space condition, by default it is 'all'
+$space = SPACE_ALL;
+if ($space_condition) {
+    $space_string = htmlspecialchars($space_element->item(0)->nodeValue);
+    if ($space_string === 'public') {
+        $space = SPACE_PUBLIC;
+    } elseif ($space_string === 'private') {
+        $space = SPACE_PRIVATE;
+    }
+}
+
+// if there is no token in a request, 
+// then only public data will be sent in a response
+if (!$is_auth_token_defined) {
+    $space = SPACE_PUBLIC;
+}
 
 // We use cached token, not new
 //$old_token = true;
 if ($is_auth_token_defined) {
-    $data_array['auth_token'] = $auth_token_element->item(0)->nodeValue; 
+    $token_user = $auth_token_element->item(0)->nodeValue; 
     //$old_token = false;
-} else {
-    $token = read_public_token();
+}
 
+if (!($is_auth_token_defined && ($space === SPACE_PRIVATE))) {
+    $token_public = read_public_token();
     // No token available, trying to receive it from geo2tag server
-    if (!$token) {
-        $token = receive_public_token();
+    if (!$token_public) {
+        $token_public = receive_public_token();
         //$old_token = false;
 
-        if (!$token) {
+        if (!$token_public) {
             send_error(1, 'Error: can\'t receive new token');
             die();
         }
     }
-
-    $data_array['auth_token'] = $token;
 }
 
-
-$channels_name_array = array();
-if ($category_id != -1) {
-    $subs_channels_request_content = '<request><params><auth_token>' . $data_array['auth_token'] . '</auth_token></params></request>';
+function getChannelsAsDom($token) {
+    $subs_channels_request_content = '<request><params><auth_token>' . $token . '</auth_token></params></request>';
     
     $subs_channels_response = process_request(SUBSCRIBED_CHANNELS_METHOD_URL_GETS, 
-                                    $subs_channels_request_content, 
-                                    'Content-Type: text/xml');
+                                            $subs_channels_request_content, 
+                                            'Content-Type: text/xml');
+    
     if (!$subs_channels_response) {
         send_error(1, 'Error: internal server error');
         die();
@@ -85,25 +104,48 @@ if ($category_id != -1) {
         send_error(1, 'Error: internal server error');
         die();
     }
+    
+    return $subs_channels_response_dom;
+}
+
+function getChannelNames(&$token, $category_id) {  
+    $channels_name_array = array();
+    
+    $subs_channels_response_dom = getChannelsAsDom($token);
        
-    /*if ($subs_channels_response_dom->getElementsByTagName('code')->item(0)->nodeValue != 0) {
+    if ($subs_channels_response_dom->getElementsByTagName('code')->item(0)->nodeValue != 0) {
+        $response_code = check_errors($subs_channels_response_dom->getElementsByTagName('code')->item(0)->nodeValue);
+
+        // Geo2tag server requires authentication and we're using cached token
+        if ($response_code === 'Wrong token error') {
+            // Try receive new token from server
+            $token = receive_public_token();
+            if (!$token) {
+                send_error(1, 'Error: can\'t receive new token');
+                die();
+            }
+
+            $subs_channels_response_dom = getChannelsAsDom($token);
+            $response_code = check_errors($subs_channels_response_dom->getElementsByTagName('code')->item(0)->nodeValue);
+
+            // Same error, new token invalid
+            if ($response_code === 'Wrong token error') {
+                send_error(1, 'Error: geo2tag server returned invalid token');
+                die();
+            }
+        }
         send_error(1, 'Error: internal server error');
         die();
-    }*/
-    
-    $flag = false;
+    }
+
     $channels_elements = $subs_channels_response_dom->getElementsByTagName('channel');
     foreach($channels_elements as $channel) {
         if ($category_id == $channel->getElementsByTagName('category_id')->item(0)->nodeValue) {
             $channels_name_array[] = $channel->getElementsByTagName('name')->item(0)->nodeValue;
-            $flag = true;
         }
     }
-    
-    if (!$flag) {
-        send_error(1, 'Error: there is no category in the system with given id');
-        die();
-    }
+ 
+    return $channels_name_array;
 }
 
 function addItemIntoXml($item, &$xml) {
@@ -183,39 +225,88 @@ function getData($data_array, $request_type, &$xml, $location_condition, &$is_wr
     }
 }
 
+function makeRequestBasedOnConditions(&$xml, $category_condition, $location_condition, 
+        $channels_name_array, $latitude_element, $longitude_element, $radius_element, $is_wrong_token_error, $token) {
+    
+    $data_array = array();
+    $data_array['auth_token'] = $token;
+
+    $request_type = '';
+    if ($category_condition && $location_condition) {
+        $data_array['latitude'] = floatval($latitude_element->item(0)->nodeValue);
+        $data_array['longitude'] = floatval($longitude_element->item(0)->nodeValue);
+        $data_array['radius'] = floatval($radius_element->item(0)->nodeValue);
+        $data_array['time_from'] = '01 01 1999 00:00:00.000';
+        $data_array['time_to'] = '01 01 2099 00:00:00.000';
+        $request_type = LOAD_POINTS_METHOD_URL;
+        foreach ($channels_name_array as $channel_name) {
+            $data_array['channel'] = $channel_name;
+            getData($data_array, $request_type, $xml, $location_condition, $is_wrong_token_error);
+        }
+    } else if ($category_condition) {
+        $data_array['amount'] = 10000;
+        $request_type = FILTER_CHANNEL_METHOD_URL;
+        foreach ($channels_name_array as $channel_name) {
+            $data_array['channel'] = $channel_name;
+            getData($data_array, $request_type, $xml, $location_condition, $is_wrong_token_error);
+        }
+    } else {
+        $data_array['latitude'] = floatval($latitude_element->item(0)->nodeValue);
+        $data_array['longitude'] = floatval($longitude_element->item(0)->nodeValue);
+        $data_array['radius'] = floatval($radius_element->item(0)->nodeValue);
+        $data_array['time_from'] = '01 01 1999 00:00:00.000';
+        $data_array['time_to'] = '01 01 2099 00:00:00.000';
+        $request_type = LOAD_POINTS_METHOD_URL;
+        getData($data_array, $request_type, $xml, $location_condition, $is_wrong_token_error);
+    }
+}
+
+
+$channels_name_array_public = array();
+$channels_name_array_user = array();
+if ($category_id != -1) {
+    if ($space === SPACE_ALL) {
+        $channels_name_array_public = getChannelNames($token_public, $category_id);
+        $channels_name_array_user = getChannelNames($token_user, $category_id);
+    } elseif ($space === SPACE_PUBLIC) {
+        $channels_name_array_public = getChannelNames($token_public, $category_id);
+    } elseif ($space === SPACE_PRIVATE) {
+        $channels_name_array_user = getChannelNames($token_user, $category_id);
+    }
+    
+    if (!(count($channels_name_array_public) > 0) && !(count($channels_name_array_user))) {
+        send_error(1, 'Error: there is no category in the system with given id');
+        die();
+    }
+}
+
+
 $xml = '<kml xmlns="http://www.opengis.net/kml/2.2">';
 $xml .= '<Document>';
 $xml .= '<name>any.kml</name>';
 $xml .= '<open>1</open>';
 $xml .= '<Style id="styleDocument"><LabelStyle><color>ff0000cc</color></LabelStyle></Style>';
 
-$request_type = '';
-if ($category_condition && $location_condition) {
-	$data_array['latitude'] = floatval($latitude_element->item(0)->nodeValue);
-	$data_array['longitude'] = floatval($longitude_element->item(0)->nodeValue);
-	$data_array['radius'] = floatval($radius_element->item(0)->nodeValue);
-	$data_array['time_from'] = '01 01 1999 00:00:00.000';
-	$data_array['time_to'] = '01 01 2099 00:00:00.000';
-        $request_type = LOAD_POINTS_METHOD_URL;
-	foreach($channels_name_array as $channel_name) {
-            $data_array['channel'] = $channel_name;
-            getData($data_array, $request_type, $xml, $location_condition, $is_wrong_token_error);
-        }
-} else if ($category_condition) {
-        $data_array['amount'] = 10000;
-	$request_type = FILTER_CHANNEL_METHOD_URL;
-	foreach($channels_name_array as $channel_name) {
-            $data_array['channel'] = $channel_name;
-            getData($data_array, $request_type, $xml, $location_condition, $is_wrong_token_error);
-        }
-} else {
-	$data_array['latitude'] = floatval($latitude_element->item(0)->nodeValue);
-	$data_array['longitude'] = floatval($longitude_element->item(0)->nodeValue);
-	$data_array['radius'] = floatval($radius_element->item(0)->nodeValue);
-	$data_array['time_from'] = '01 01 1999 00:00:00.000';
-	$data_array['time_to'] = '01 01 2099 00:00:00.000';
-	$request_type = LOAD_POINTS_METHOD_URL;
-        getData($data_array, $request_type, $xml, $location_condition, $is_wrong_token_error);
+// make requests based on different spaces
+if ($space === SPACE_ALL) {
+    makeRequestBasedOnConditions($xml, $category_condition, $location_condition, 
+                                $channels_name_array_public, $latitude_element, 
+                                $longitude_element, $radius_element, 
+                                $is_wrong_token_error, $token_public);
+    makeRequestBasedOnConditions($xml, $category_condition, $location_condition, 
+                               $channels_name_array_user, $latitude_element, 
+                                $longitude_element, $radius_element, 
+                                $is_wrong_token_error, $token_user);
+} elseif ($space === SPACE_PUBLIC) {
+    makeRequestBasedOnConditions($xml, $category_condition, $location_condition, 
+                                $channels_name_array_public, $latitude_element, 
+                                $longitude_element, $radius_element, 
+                                $is_wrong_token_error, $token_public);
+} elseif ($space === SPACE_PRIVATE) {
+    makeRequestBasedOnConditions($xml, $category_condition, $location_condition, 
+                                $channels_name_array_user, $latitude_element, 
+                                $longitude_element, $radius_element, 
+                                $is_wrong_token_error, $token_user);
 }
 
 $xml .= '</Document>';

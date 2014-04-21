@@ -3,13 +3,17 @@ include_once('geo2tag_errors_list.inc');
 include_once('config.inc');
 include_once('methods_url.inc');
 
+define('SPACE_ALL', 0);
+define('SPACE_PUBLIC', 1);
+define('SPACE_PRIVATE', 2);
+
 /*
     Function processes request to geo2tag server
 
     Params:
         method - url of method that need to be called in geo2tag
-		data - data in JSON format that need to be sent along with the request
-		content_type - type of content in HTTP notation
+	data - data in JSON format that need to be sent along with the request
+	content_type - type of content in HTTP notation
  */
 function process_request($method, $data, $content_type) {
 	/* Initialize and configure curl request */

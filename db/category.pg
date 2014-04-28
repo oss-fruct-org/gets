@@ -7,18 +7,20 @@ CREATE SEQUENCE category_seq
 ALTER TABLE category_seq
   OWNER TO geo2tag;
 
-
 CREATE TABLE category
 (
   id numeric(9,0) NOT NULL DEFAULT nextval('category_seq'::regclass),
   name character varying(300) NOT NULL,
-  description character varying(2048) NOT NULL,
+  description character varying(2048) DEFAULT NULL::character varying,
   url character varying(2048) DEFAULT NULL::character varying,
-  CONSTRAINT category_pkey PRIMARY KEY (id )
+  owner_id numeric(9,0),
+  CONSTRAINT category_pkey PRIMARY KEY (id ),
+  CONSTRAINT owner_key FOREIGN KEY (owner_id)
+      REFERENCES users (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
 )
 WITH (
   OIDS=FALSE
 );
 ALTER TABLE category
   OWNER TO geo2tag;
-

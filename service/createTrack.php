@@ -42,7 +42,7 @@ $desc_array['description'] = $description;
 $desc_array['categoryId'] = $category_id;
 if ($lang) $desc_array['lang'] = $lang;
 if ($hname) $desc_array['hname'] = $hname;
-$desc_json = json_encode($desc_array);
+$desc_json = urlencode(json_encode($desc_array));
 
 $data_array['auth_token'] = $auth_token;
 $data_array['description'] = $desc_json;

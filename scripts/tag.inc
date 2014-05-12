@@ -108,5 +108,54 @@
 
         return "Removed '$countRows' row(s)";
     }
+
+/*
+    Function removes tag with given parameters from database
+
+    Required parameters:
+    channel - channel name
+
+    Params:
+    name - filter by name (optional)
+    category_id - filter by category id (optional)
+
+ */
+
+    function deleteTag2_func($method_name, $params, $app_data) {
+        global $dbconn;
+
+        if (array_key_exists('channel', $params[0])) {
+            $channel_name = pg_escape_string($params[0]['channel']);
+            $channel_where = "tag.channel_id IN (SELECT id FROM channel WHERE name='{$channel_name}')";
+        } else {
+            trigger_error("Channel name not specified");
+            die();
+        }
+
+        if (array_key_exists('name', $params[0])) {
+            $name = pg_escape_string($params[0]['name']);
+            $name_where = "tag.label='{$name}'";
+        } else {
+            $name_where = 'true';
+        }
+
+        if (array_key_exists('category_id', $params[0])) {
+            $category_id = pg_escape_string($params[0]['category_id']);
+            $category_id_where = "safe_cast_to_json(tag.description)->>'category_id'='{$category_id}'";
+        } else {
+            $category_id_where = 'true';
+        }
+
+        $base_query = "DELETE FROM tag WHERE ({$channel_where}) AND ({$name_where}) AND ({$category_id_where})";
+        $res = pg_query($dbconn, $base_query);
+
+        if (!$res) {
+            trigger_error("SQL error", E_USER_ERROR);
+            die();
+        }
+
+        $countRows = pg_affected_rows($res);
+        return "Removed '$countRows' row(s)";
+    }
     
 ?>

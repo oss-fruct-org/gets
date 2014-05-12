@@ -119,10 +119,10 @@ function load_subscribed_channels($auth_token, $access, &$resp) {
         $channel_lang = null;
         $channel_hname = null;
 
-        $desc_arr = json_decode(urldecode($channel_desc), true);
+        $desc_arr = json_decode($channel_desc, true);
         if ($desc_arr) {
             $channel_description = $desc_arr['description'];
-            $channel_id = $desc_arr['categoryId'];
+            $channel_id = $desc_arr['category_id'];
             $channel_lang = $desc_arr['lang'];
             $channel_hname = $desc_arr['hname'];
         }

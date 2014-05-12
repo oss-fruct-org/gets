@@ -68,10 +68,10 @@ $need_update = get_request_argument($dom, 'update', 'false') === 'true';
 
 $desc_array = array();
 $desc_array['description'] = $description;
-$desc_array['categoryId'] = $category_id;
+$desc_array['category_id'] = $category_id;
 if ($lang) $desc_array['lang'] = $lang;
 if ($hname) $desc_array['hname'] = $hname;
-$desc_json = urlencode(json_encode($desc_array));
+$desc_json = json_encode($desc_array);
 
 $data_array['auth_token'] = $auth_token;
 $data_array['description'] = $desc_json;

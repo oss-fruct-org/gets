@@ -85,15 +85,7 @@ if ($category_name) {
         send_error(1, $e->getMessage());
         die();
     }
-$space = SPACE_ALL;
-if ($space_condition) {
-    $space_string = htmlspecialchars($space_element->item(0)->nodeValue);
-    if ($space_string === 'public') {
-            $space = SPACE_PUBLIC;
-        } elseif ($space_string === 'private') {
-                $space = SPACE_PRIVATE;
-            }
-}}
+}
 
 function load_subscribed_channels($auth_token, $access, &$resp) {
     $data_array = array('auth_token' => $auth_token);

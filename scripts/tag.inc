@@ -119,6 +119,28 @@
     name - filter by name (optional)
     category_id - filter by category id (optional)
 
+Example:
+<methodCall>
+  <methodName>deleteTag2</methodName>
+  <params>
+    <param>
+      <struct>
+        <member>
+          <name>channel</name>
+          <value>channel-name</value>
+        </member>
+        <member>
+          <name>name</name>
+          <value>tag-name</value>
+        </member>
+        <member>
+          <name>category_id</name>
+          <value>1</value>
+        </member>
+      </struct>
+    </param>
+  </params>
+</methodCall>
  */
 
     function deleteTag2_func($method_name, $params, $app_data) {

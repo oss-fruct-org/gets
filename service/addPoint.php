@@ -51,6 +51,7 @@ if (!$data_json) {
     die();
 }
 
+dump_error_log($data_json);
 $response_json =  process_request(WRITE_TAG_METHOD_URL, $data_json, 'Content-Type:application/json');
 if (!$response_json) {
     send_error(1, 'Error: problem with request to geo2tag.');

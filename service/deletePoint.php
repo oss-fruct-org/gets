@@ -76,8 +76,8 @@ if (!$channel_name_found) {
 $xmlrpc_array = array('channel' => $channel_name);
 if ($point_name)
     $xmlrpc_array['name'] = $point_name;
-if ($category_name)
-    $xmlrpc_array['category_name'] = $category_name;
+if ($point_category)
+    $xmlrpc_array['category_name'] = $point_category;
 
 $xmlrpc_request = xmlrpc_encode_request('deleteTag2', $xmlrpc_array);
 

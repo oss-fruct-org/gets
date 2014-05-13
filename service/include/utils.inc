@@ -137,6 +137,13 @@ function get_request_argument($dom, $field, $default_value = null) {
         return $default_value;
 }
 
+function get_array_element($array, $field, $default_value = null) {
+    if (array_key_exists($array, $field))
+        return $array[$field];
+    else
+        return $default_value;
+}
+
 /**
     Returns all available categories as array
     Params:

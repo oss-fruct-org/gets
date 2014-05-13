@@ -88,6 +88,8 @@ if ($category_name) {
 }
 
 function load_subscribed_channels($auth_token, $access, &$resp) {
+    global $category_id;
+
     $data_array = array('auth_token' => $auth_token);
     $data_json = json_encode($data_array);
 
@@ -121,10 +123,10 @@ function load_subscribed_channels($auth_token, $access, &$resp) {
 
         $desc_arr = json_decode($channel_desc, true);
         if ($desc_arr) {
-            $channel_description = $desc_arr['description'];
-            $channel_id = $desc_arr['category_id'];
-            $channel_lang = $desc_arr['lang'];
-            $channel_hname = $desc_arr['hname'];
+            $channel_description = get_array_element($desc_arr, 'description');
+            $channel_id = get_array_element($desc_arr, 'category_id');
+            $channel_lang = get_array_element($desc_arr, 'lang');
+            $channel_hname = get_array_element($desc_arr, 'hname');
         }
 
         if ($channel_id && stripos($channel_name, "tr_") === 0 && ($category_id == null || $category_id == $channel_id)) {

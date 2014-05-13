@@ -138,7 +138,7 @@ function get_request_argument($dom, $field, $default_value = null) {
 }
 
 function get_array_element($array, $field, $default_value = null) {
-    if (array_key_exists($array, $field))
+    if (array_key_exists($field, $array))
         return $array[$field];
     else
         return $default_value;

@@ -33,12 +33,12 @@ $space = SPACE_ALL;
 if ($space_arg) {
     if ($space_arg === 'public') {
         $space = SPACE_PUBLIC;
-    } elseif ($space_string === 'private') {
+    } elseif ($space_arg === 'private') {
         $space = SPACE_PRIVATE;
     }
 }
 
-if ($space === SPACE_PRIVATE && $auth_token) {
+if ($space === SPACE_PRIVATE && !$auth_token) {
     send_error(1, 'Private space requires auth_token');
     die();
 }

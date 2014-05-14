@@ -11,8 +11,8 @@
                 <xs:element type="xs:string" name="name" minOccurs="0"/>
                 <xs:element type="xs:string" name="category_id" minOccurs="0"/>
 
-                <xs:element type="xs:string" name="label" minOccurs="0"/>
-                <xs:element type="xs:string" name="url" minOccurs="0"/>
+                <xs:element type="xs:string" name="title" minOccurs="0"/>
+                <xs:element type="xs:string" name="link" minOccurs="0"/>
                 <xs:element type="xs:string" name="description" minOccurs="0"/>
                 <xs:element type="xs:double" name="latitude" minOccurs="0"/>
                 <xs:element type="xs:double" name="longitude" minOccurs="0"/>

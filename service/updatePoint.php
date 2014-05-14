@@ -31,8 +31,8 @@ $channel_name = get_request_argument($dom, 'channel');
 $point_name = get_request_argument($dom, 'name');
 $point_category = get_request_argument($dom, 'category_id');
 
-$new_label = get_request_argument($dom, 'label');
-$new_url = get_request_argument($dom, 'url');
+$new_label = get_request_argument($dom, 'title');
+$new_url = get_request_argument($dom, 'link');
 $new_description = get_request_argument($dom, 'description');
 $new_longitude = get_request_argument($dom, 'longitude');
 $new_altitude = get_request_argument($dom, 'altitude');

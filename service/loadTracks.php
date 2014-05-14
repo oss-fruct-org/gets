@@ -56,7 +56,7 @@ if ($space === SPACE_ALL || $space === SPACE_PUBLIC) {
     // No token available, trying to receive it from geo2tag server
     if (!$public_token) {
         $public_token = receive_public_token();
-        if (!public_token) {
+        if (!$public_token) {
             send_error(1, 'Error: can\'t receive new token');
             die();
         }

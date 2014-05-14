@@ -17,6 +17,10 @@ function write_public_token($token) {
     file_put_contents(PUBLIC_TOKEN_FILE, $content);
 }
 
+function invalidate_public_token() {
+    unlink(PUBLIC_TOKEN_FILE);
+}
+
 function receive_public_token() {
     $arr = array();
     $arr['login'] = GEO2TAG_USER;

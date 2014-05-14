@@ -89,6 +89,7 @@ if ($category_name) {
 
 function load_subscribed_channels($auth_token, $access, &$resp) {
     global $category_id;
+    global $public_token;
 
     $data_array = array('auth_token' => $auth_token);
     $data_json = json_encode($data_array);
@@ -106,7 +107,11 @@ function load_subscribed_channels($auth_token, $access, &$resp) {
     }
 
     $response_code = check_errors($response_array['errno']);
-    if ($response_array['errno'] !== SUCCESS) {
+    if ($auth_token === $public_token && $response_array['errno'] === WRONG_TOKEN_ERROR) {
+        invalidate_public_token();
+        send_error(1, $response_code);
+        die();
+    } else if ($response_array['errno'] !== SUCCESS) {
         send_error(1, $response_code);
         die();
     }

@@ -156,14 +156,14 @@ function load_subscribed_channels($auth_token, $access, &$resp) {
 
 $resp = '<tracks>';
 
-if ($space === SPACE_PRIVATE || $space === SPACE_ALL) {
-    load_subscribed_channels($private_token, 'rw', $resp);
-}
 
 if ($space === SPACE_PUBLIC || $space === SPACE_ALL) {
     load_subscribed_channels($public_token, 'r', $resp);
 }
 
+if ($space === SPACE_PRIVATE || $space === SPACE_ALL) {
+    load_subscribed_channels($private_token, 'rw', $resp);
+}
 
 $resp .= '</tracks>';
 send_result(0, 'success', $resp);

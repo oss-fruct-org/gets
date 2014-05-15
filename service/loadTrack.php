@@ -42,7 +42,6 @@ if (!try_load_points($private_token, $channel_name, true)) {
     try_load_points($public_token, $channel_name, false);
 }
 
-send_result(0, 'success', $xml);
 
 function try_load_points($auth_token, $channel_name, $allow_error) {
     $data_array = array();
@@ -122,6 +121,8 @@ function try_load_points($auth_token, $channel_name, $allow_error) {
     }
     $xml .= '</Document>';
     $xml .= '</kml>';
+
+    send_result(0, 'success', $xml);
 
     return true;
 }

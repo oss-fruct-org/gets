@@ -29,15 +29,20 @@ function auth_create_client() {
     return $client;
 }
 
-/*
-    Function creates new php session initialized with given initial access token
- */
-function set_initial_access_token($access_token) {
+function auth_set_initial_token($access_token, $email) {
     $token_array = json_decode($access_token, true);
-    $refresh_token = $token_array['refresh_token'];
 
-    session_id($refresh_token);
-    session_start();
+    if (!isset($token_array['refresh_token'])) {
+        throw new Exception('Google access_token doesn\'t contain refresh_token element');
+    }
+
+    $refresh_token = $token_array['refresh_token'];
+    
+    auth_set_token($refresh_token);
+    $_SESSION['access_token'] = $access_token;
+    $_SESSION['email'] = $email;
+
+    return $refresh_token;
 }
 
 function auth_set_token($gets_token) {

@@ -3,6 +3,7 @@
 include_once('include/methods_url.inc');
 include_once('include/utils.inc');
 include_once('include/public_token.inc');
+include_once('include/auth.inc');
 
 header ('Content-Type:text/xml');
 
@@ -30,6 +31,14 @@ $auth_token = get_request_argument($dom, 'auth_token');
 $channel_name = get_request_argument($dom, 'channel');
 $point_name = get_request_argument($dom, 'name');
 $point_category = get_request_argument($dom, 'category_id');
+
+try {
+    auth_set_token($auth_token);
+    $auth_token = auth_get_geo2tag_token();
+} catch (GetsAuthException $e) {
+    send_error(1, $e->getMessage());
+    die();
+}
 
 // First, receive list of channels, subscribed by user 
 $data_array = array();

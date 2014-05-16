@@ -3,6 +3,7 @@
 include_once('include/methods_url.inc');
 include_once('include/utils.inc');
 include_once('include/public_token.inc');
+include_once('include/auth.inc');
 
 header ('Content-Type:text/xml');
 
@@ -28,6 +29,14 @@ if (!$dom->schemaValidate('schemes/deleteTrack.xsd')) {
 
 $auth_token = get_request_argument($dom, 'auth_token');
 $track_name = get_request_argument($dom, 'name');
+
+try {
+    auth_set_token($auth_token);
+    $auth_token = auth_get_geo2tag_token();
+} catch (GetsAuthException $e) {
+    send_error(1, $e->getMessage());
+    die();
+}
 
 // First, receive list of channels, subscribed by user 
 $data_array = array();

@@ -1,6 +1,8 @@
 <?php
 include_once('include/methods_url.inc');
 include_once('include/utils.inc');
+include_once('include/auth.inc');
+
 
 header('Content-Type:text/xml');
 
@@ -34,8 +36,17 @@ $longitude_element = $dom->getElementsByTagName('longitude');
 $altitude_element = $dom->getElementsByTagName('altitude');
 $time_element = $dom->getElementsByTagName('time');
 
+$auth_token = $auth_token_element->item(0)->nodeValue;
+try {
+    auth_set_token($auth_token);
+    $auth_token = auth_get_geo2tag_token();
+} catch (GetsAuthException $e) {
+    send_error(1, $e->getMessage());
+    die();
+}
+
 $data_array = array();
-$data_array['auth_token'] = $auth_token_element->item(0)->nodeValue;
+$data_array['auth_token'] = $auth_token;
 $data_array['channel'] = $channel_name_element->item(0)->nodeValue;
 $data_array['title'] = $title_element->item(0)->nodeValue;
 $data_array['description'] = $description_element->item(0)->nodeValue;

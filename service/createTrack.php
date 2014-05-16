@@ -4,6 +4,7 @@ include_once('include/methods_url.inc');
 include_once('include/utils.inc');
 include_once('include/public_token.inc');
 include_once('include/geo2tag_errors_list.inc');
+include_once('include/auth.inc');
 
 header ('Content-Type:text/xml');
 
@@ -65,6 +66,14 @@ $lang = get_request_argument($dom, 'lang');
 $hname = get_request_argument($dom, 'hname');
 
 $need_update = get_request_argument($dom, 'update', 'false') === 'true';
+
+try {
+    auth_set_token($auth_token);
+    $auth_token = auth_get_geo2tag_token();
+} catch (GetsAuthException $e) {
+    send_error(1, $e->getMessage());
+    die();
+}
 
 $desc_array = array();
 $desc_array['description'] = $description;

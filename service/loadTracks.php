@@ -2,6 +2,7 @@
 include_once('include/methods_url.inc');
 include_once('include/utils.inc');
 include_once('include/public_token.inc');
+include_once('include/auth.inc');
 
 header ('Content-Type:text/xml');
 
@@ -47,7 +48,16 @@ if ($space === SPACE_ALL && !$auth_token) {
     $space = SPACE_PUBLIC;
 }
 
-$private_token = $auth_token;
+$private_token = null;
+if ($auth_token) {
+    try {
+        auth_set_token($auth_token);
+        $private_token = auth_get_geo2tag_token();;
+    } catch (GetsAuthException $e) {
+        send_error(1, $e->getMessage());
+        die();
+    }
+}
 $public_token = null;
 
 if ($space === SPACE_ALL || $space === SPACE_PUBLIC) {

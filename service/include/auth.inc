@@ -33,7 +33,7 @@ function auth_set_initial_token($access_token, $email) {
     $token_array = json_decode($access_token, true);
 
     if (!isset($token_array['refresh_token'])) {
-        throw new Exception('Google access_token doesn\'t contain refresh_token element');
+        throw new GetsAuthException('Google access_token doesn\'t contain refresh_token element');
     }
 
     $refresh_token = $token_array['refresh_token'];
@@ -53,7 +53,7 @@ function auth_set_token($gets_token) {
 
 function auth_get_google_token() {
     if (!isset($_SESSION['access_token'])) {
-        auth_refresh_google_token();
+        auth_refresh_google_access();
     }
 
     return $_SESSION['access_token'];
@@ -94,7 +94,7 @@ function auth_refresh_geo2tag_access() {
     }
 
     if (!$login && !$password) {
-        throw new Exception('Can\'t check account in geo2tag');
+        throw new GetsAuthException('Can\'t check account in geo2tag');
     }
 
     $login_array = array('login' => $login, 'password' => $password);
@@ -104,7 +104,7 @@ function auth_refresh_geo2tag_access() {
     $response_array = json_decode($response_json, true);
 
     if (!$response_array || $response_array['errno'] !== SUCCESS) {
-        throw new Exception('Can\'t login in geo2tag');
+        throw new GetsAuthException('Can\'t login in geo2tag');
     }
 
     $geo2tag_token = $response_array['auth_token'];
@@ -115,7 +115,14 @@ function auth_refresh_google_access() {
     $gets_token = $_SESSION['gets_token'];
 
     $client = auth_create_client();
-    $client->refreshToken($gets_token);
+
+    try {
+        $client->refreshToken($gets_token);
+    } catch (Google_AuthException $e) {
+        session_unset();
+        session_destroy();
+        throw new GetsAuthException('Can\'t refresh google token');
+    }
 
     $service = new Google_PlusService($client);
     $person = $service->people->get('me');
@@ -126,5 +133,7 @@ function auth_refresh_google_access() {
     $_SESSION['email'] = $email;
     $_SESSION['access_token'] = $access_token;
 }
+
+class GetsAuthException extends Exception { }
 
 ?>

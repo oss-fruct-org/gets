@@ -23,7 +23,6 @@ $client->setScopes(array('https://www.googleapis.com/auth/plus.me',
 //session_start();
 
 $client->setAccessToken($_SESSION["access_token"]);
-dump_error_log($_SESSION['access_token']);
 
 $service = new Google_DriveService($client);
 $files = $service->files;

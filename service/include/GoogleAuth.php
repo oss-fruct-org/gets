@@ -14,7 +14,7 @@ if (defined("AUTH_REDIRECT_URL")) {
 //$redirectUri = 'http://' . $_SERVER['HTTP_HOST'] . '/service/include/GoogleAuth.php';
 
 $client = new Google_Client();
-$client->setAccessType('online');
+$client->setAccessType('offline');
 
 // Deploy settings
 //$client->setApplicationName('GeTS-Service');

@@ -3,6 +3,7 @@
 require_once '../include/GoogleClientAPI/src/Google_Client.php';
 require_once '../include/GoogleClientAPI/src/contrib/Google_DriveService.php';
 require_once '../include/config.inc';
+require_once '../include/utils.inc';
 
 $client = new Google_Client();
 $client->setAccessType('online');
@@ -22,6 +23,7 @@ $client->setScopes(array('https://www.googleapis.com/auth/plus.me',
 //session_start();
 
 $client->setAccessToken($_SESSION["access_token"]);
+dump_error_log($_SESSION['access_token']);
 
 $service = new Google_DriveService($client);
 $files = $service->files;

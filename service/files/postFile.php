@@ -3,6 +3,7 @@
 include_once('../include/methods_url.inc');
 include_once('../include/utils.inc');
 include_once('../include/public_token.inc');
+include_once('../include/auth.inc');
 
 $id = $_GET['id'];
 if (!$id) {
@@ -24,8 +25,13 @@ if (!$auth_token) {
     die();
 }
 
-session_id($auth_token);
-session_start();
+try {
+    auth_set_token($auth_token);
+    auth_get_google_token();
+} catch (GetsAuthException $e) {
+    send_error(1, $e->getMessage());
+    die();
+}
 
 $mimeType = $_SERVER['CONTENT_TYPE'];
 $tmp = tempnam('/tmp', 'gets_store_content_');

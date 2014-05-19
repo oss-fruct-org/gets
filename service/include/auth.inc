@@ -5,13 +5,12 @@ DEFINE('SESSION_SALT', 'wHDYKw2Rk2');
 ini_set('session.use_cookies', 0);
 ini_set('session.use_trans_sid', 1);
 
-require_once 'GoogleClientAPI/src/Google_Client.php';
-require_once 'GoogleClientAPI/src/contrib/Google_PlusService.php';
 require_once 'config.inc';
 require_once 'utils.inc';
 require_once 'methods_url.inc';
 
 function auth_create_client() {
+    require_once 'GoogleClientAPI/src/Google_Client.php';
     $client = new Google_Client();
     $client->setAccessType('offline');
     $client->setUseObjects(true);
@@ -121,6 +120,7 @@ function auth_refresh_geo2tag_access() {
 }
 
 function auth_refresh_google_access() {
+    require_once 'GoogleClientAPI/src/contrib/Google_PlusService.php';
     $gets_token = $_SESSION['gets_token'];
 
     $client = auth_create_client();

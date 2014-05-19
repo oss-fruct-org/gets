@@ -80,6 +80,7 @@ function auth_refresh_geo2tag_access() {
         throw new GetsAuthException('gets_token not set');
     }
     $gets_token = $_SESSION['gets_token'];
+    session_commit();
 
     $data = "<methodCall><methodName>checkUser</methodName>"
         . "<params><param><struct><member><name>gets_token</name><value>{$gets_token}</value></member></struct></param></params></methodCall>";

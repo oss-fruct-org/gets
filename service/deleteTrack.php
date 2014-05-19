@@ -32,7 +32,7 @@ $track_name = get_request_argument($dom, 'name');
 
 $xmlrpc_request = xmlrpc_encode_request('deleteChannel', 
     array('gets_token' => $auth_token,
-          'channel' => $channel_name_found);
+          'channel' => $track_name));
 
 $xmlrpc_response =  process_request(ADDITIONAL_FUNCTIONS_METHOD_URL, $xmlrpc_request, 'Content-Type: text/xml');
 $xmlrpc = xmlrpc_decode($xmlrpc_response);

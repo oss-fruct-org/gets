@@ -59,6 +59,14 @@ function auth_get_google_token() {
     return $_SESSION['access_token'];
 }
 
+function auth_get_google_email() {
+    if (!isset($_SESSION['email'])) {
+        auth_refresh_google_access();
+    }
+
+    return $_SESSION['email'];
+}
+
 function auth_get_geo2tag_token() {
     if (!isset($_SESSION['geo2tag_token'])) {
         auth_refresh_geo2tag_access();

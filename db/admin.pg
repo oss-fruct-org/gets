@@ -1,0 +1,42 @@
+CREATE TABLE "adminUsers"
+(
+ admin_id numeric(9,0) NOT NULL,
+ owner_id numeric(9,0) NOT NULL
+
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE "adminUsers"
+  OWNER TO geo2tag;
+
+ALTER TABLE ONLY "adminUsers"
+    ADD CONSTRAINT adminusers_key PRIMARY KEY (admin_id, owner_id);
+
+ALTER TABLE ONLY "adminUsers"
+    ADD CONSTRAINT admin_key FOREIGN KEY (admin_id) REFERENCES users(id);
+
+ALTER TABLE ONLY "adminUsers"
+    ADD CONSTRAINT owner_key FOREIGN KEY (owner_id) REFERENCES users(id);
+
+CREATE TABLE "trustedUsers"
+(
+ user_id numeric(9,0) NOT NULL,
+ owner_id numeric(9,0) NOT NULL
+
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE "trustedUsers"
+  OWNER TO geo2tag;
+
+ALTER TABLE ONLY "trustedUsers"
+    ADD CONSTRAINT trusted_key PRIMARY KEY (user_id, owner_id);
+
+ALTER TABLE ONLY "trustedUsers"
+    ADD CONSTRAINT user_key FOREIGN KEY (user_id) REFERENCES users(id);
+
+ALTER TABLE ONLY "trustedUsers"
+    ADD CONSTRAINT owner_key FOREIGN KEY (owner_id) REFERENCES users(id);
+

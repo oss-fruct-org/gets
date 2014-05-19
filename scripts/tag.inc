@@ -150,6 +150,7 @@ Example:
 
     Required parameters:
     channel - channel name
+    gets_token - gets token
 
     Optional parameters:
     name - filter by name (optional)
@@ -174,6 +175,10 @@ Example:
         <member>
           <name>channel</name>
           <value>channel-name</value>
+        </member>
+        <member>
+          <name>gets_token</name>
+          <value>token</value>
         </member>
         <member>
           <name>name</name>
@@ -208,26 +213,40 @@ Example:
         global $dbconn;
 
         if (array_key_exists('channel', $params[0])) {
-            $channel_name = pg_escape_string($params[0]['channel']);
-            $channel_where = "tag.channel_id IN (SELECT id FROM channel WHERE name='{$channel_name}')";
+            $channel_name = pg_escape_literal($params[0]['channel']);
         } else {
             trigger_error("Channel name not specified");
             die();
         }
 
+        if (array_key_exists('gets_token', $params[0])) {
+            $gets_token = $params[0]['gets_token'];
+        } else {
+            trigger_error("Gets token not specified");
+            die();
+        }
+
         if (array_key_exists('name', $params[0])) {
-            $name = pg_escape_string($params[0]['name']);
-            $name_where = "tag.label='{$name}'";
+            $name = pg_escape_literal($params[0]['name']);
+            $name_where = "tag.label={$name}";
         } else {
             $name_where = 'true';
         }
 
         if (array_key_exists('category_id', $params[0])) {
-            $category_id = pg_escape_string($params[0]['category_id']);
-            $category_id_where = "safe_cast_to_json(tag.description)->>'category_id'='{$category_id}'";
+            $category_id = pg_escape_literal($params[0]['category_id']);
+            $category_id_where = "safe_cast_to_json(tag.description)->>'category_id'={$category_id}";
         } else {
             $category_id_where = 'true';
         }
+
+        $email = receive_email_by_token($gets_token);
+        if (!$email) {
+            trigger_error("Can't receive user e-mail", E_USER_ERROR);
+            die();
+        }
+        $email_r = pg_escape_literal($email);
+        $channel_where = "tag.channel_id IN (SELECT id FROM channel WHERE channel.name={$channel_name} AND channel.owner_id IN (SELECT id FROM users WHERE email={$email_r}))";
 
         $set_array = array();
         add_set_string('label', $params, $set_array);
@@ -244,6 +263,7 @@ Example:
         $set_string = implode($set_array, ',');
 
         $base_query = "UPDATE tag SET {$set_string} WHERE ({$channel_where}) AND ({$name_where}) AND ({$category_id_where});";
+        error_log($base_query);
         $res = pg_query($dbconn, $base_query);
 
         if (!$res) {

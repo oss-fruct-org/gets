@@ -39,57 +39,7 @@ $new_longitude = get_request_argument($dom, 'longitude');
 $new_altitude = get_request_argument($dom, 'altitude');
 $new_latitude = get_request_argument($dom, 'latitude');
 
-try {
-    auth_set_token($auth_token);
-    $auth_token = auth_get_geo2tag_token();
-} catch (GetsAuthException $e) {
-    send_error(1, $e->getMessage());
-    die();
-}
-
-// First, receive list of channels, subscribed by user 
-$data_array = array();
-$data_array['auth_token'] = $auth_token;
-
-$data_json = json_encode($data_array);
-$response_json = process_request(SUBSCRIBED_CHANNELS_METHOD_URL, $data_json, 'Content-Type:application/json');
-
-if (!$response_json) {
-    send_error(1, 'Error: problem with request to geo2tag.');
-    die();
-}
-
-$response_array = json_decode($response_json, true);
-if (!$response_array) {
-    send_error(1, 'Error: can\'t decode data from geo2tag.');
-    die();
-}
-
-if ($response_array['errno'] !== 0) {
-    send_error(1, 'Error: can\'t receive channel list from geo2tag server');
-    die();
-}
-
-
-$channel_name_found = null;
-if (array_key_exists('channels', $response_array)) {
-    foreach ($response_array['channels'] as $channel) {
-        $subscribed_channel_name = $channel['name'];
-
-        if ($subscribed_channel_name === $channel_name) {
-            $channel_name_found = $channel_name;
-            break;
-        }
-    }
-}
-
-// Don't allow to update tags in channel not subscribed
-if (!$channel_name_found) {
-    send_error(1, 'Error: channel not subscribed');
-    die();
-}
-
-$xmlrpc_array = array('channel' => $channel_name);
+$xmlrpc_array = array('channel' => $channel_name, 'gets_token' => $auth_token);
 if ($point_name)
     $xmlrpc_array['name'] = $point_name;
 if ($point_category)
@@ -109,7 +59,7 @@ $xmlrpc_response =  process_request(ADDITIONAL_FUNCTIONS_METHOD_URL, $xmlrpc_req
 $xmlrpc = xmlrpc_decode($xmlrpc_response);
 
 if (is_array($xmlrpc) && xmlrpc_is_fault($xmlrpc)) {
-    send_error(1, 'Error: internal error: can\'t delete channeld');
+    send_error(1, 'Error: internal error: can\'t update point');
     die();
 }
 

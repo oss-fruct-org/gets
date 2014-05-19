@@ -76,13 +76,13 @@ function auth_get_geo2tag_token() {
 }
 
 function auth_refresh_geo2tag_access() {
-    if (!isset($_SESSION['email'])) {
-        auth_refresh_google_access();
+    if (!isset($_SESSION['gets_token'])) {
+        throw new GetsAuthException('gets_token not set');
     }
-    $email = $_SESSION['email'];
+    $gets_token = $_SESSION['gets_token'];
 
     $data = "<methodCall><methodName>checkUser</methodName>"
-        . "<params><param><struct><member><name>email</name><value>{$email}</value></member></struct></param></params></methodCall>";
+        . "<params><param><struct><member><name>gets_token</name><value>{$gets_token}</value></member></struct></param></params></methodCall>";
     $response =  process_request(ADDITIONAL_FUNCTIONS_METHOD_URL, $data, 'Content-Type: text/xml');
 
     $dom_response = new DOMDocument();

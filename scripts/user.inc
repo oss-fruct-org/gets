@@ -89,7 +89,6 @@
     Function checks user in database
 
     Params:
-	email - valid email address
     gets_token - gets authentication token (aka google refresh_token).
 
     Example of using: curl -d "<methodCall><methodName>checkUser</methodName>

@@ -27,35 +27,47 @@ if (!$dom->schemaValidate('schemes/loadTracks.xsd')) {
 
 $auth_token = get_request_argument($dom, 'auth_token');
 $category_name = get_request_argument($dom, 'category_name');
+$space_arg = get_request_argument($dom, 'space');
 
-// First request geo2tag for all channels
-$old_token = true;
-if ($auth_token) {
-    $data_array['auth_token'] = $auth_token;
-    $old_token = false;
-} else {
-    $token = read_public_token();
-
-    // No token available, trying to receive it from geo2tag server
-    if (!$token) {
-        $token = receive_public_token();
-        $old_token = false;
-
-        if (!$token) {
-            send_error(1, 'Error: can\'t receive new token');
-        }
+$space = SPACE_ALL;
+if ($space_arg) {
+    if ($space_arg === 'public') {
+        $space = SPACE_PUBLIC;
+    } elseif ($space_arg === 'private') {
+        $space = SPACE_PRIVATE;
     }
-
-    $data_array['auth_token'] = $token;
 }
 
+if ($space === SPACE_PRIVATE && !$auth_token) {
+    send_error(1, 'Private space requires auth_token');
+    die();
+}
+
+if ($space === SPACE_ALL && !$auth_token) {
+    $space = SPACE_PUBLIC;
+}
+
+$private_token = $auth_token;
+$public_token = null;
+
+if ($space === SPACE_ALL || $space === SPACE_PUBLIC) {
+    $public_token = read_public_token();
+
+    // No token available, trying to receive it from geo2tag server
+    if (!$public_token) {
+        $public_token = receive_public_token();
+        if (!$public_token) {
+            send_error(1, 'Error: can\'t receive new token');
+            die();
+        }
+    }
+}
 
 // Find id of requested category
 $category_id = null;
 if ($category_name) {
     try {
         $categories = get_categories();
-
 
         foreach ($categories as $category) {
             // Category name equals requested name
@@ -75,72 +87,85 @@ if ($category_name) {
     }
 }
 
+function load_subscribed_channels($auth_token, $access, &$resp) {
+    global $category_id;
+    global $public_token;
 
-$data_json = json_encode($data_array);
+    $data_array = array('auth_token' => $auth_token);
+    $data_json = json_encode($data_array);
 
-if (!$data_json) {
-    send_error(1, 'Error: can\'t convert data to json.');
-    die();
-}
-
-$request_type = SUBSCRIBED_CHANNELS_METHOD_URL;
-$response_json = process_request($request_type, $data_json, 'Content-Type:application/json');
-if (!$response_json) {
-    send_error(1, 'Error: problem with request to geo2tag.');
-    die();
-}
-
-$response_array = json_decode($response_json, true);
-if (!$response_array) {
-    send_error(1, 'Error: can\'t decode data from geo2tag.');
-    die();
-}
-
-$response_code = check_errors($response_array['errno']);
-if ($response_code !== "Ok") {
-    send_error(1, $response_code);
-    die();
-}
-
-$resp = '';
-$resp .= '<tracks>';
-foreach ($response_array['channels'] as $channel) {
-    $channel_name = $channel['name'];
-    $channel_desc = $channel['description'];
-    $channel_url = $channel['url'];
-
-    $channel_description = null;
-    $channel_id = null;
-    $channel_lang = null;
-    $channel_hname = null;
-
-
-    $desc_arr = json_decode(urldecode($channel_desc), true);
-    if ($desc_arr) {
-        $channel_description = $desc_arr['description'];
-        $channel_id = $desc_arr['categoryId'];
-        $channel_lang = $desc_arr['lang'];
-        $channel_hname = $desc_arr['hname'];
+    $response_json = process_request(SUBSCRIBED_CHANNELS_METHOD_URL, $data_json, 'Content-Type:application/json');
+    if (!$response_json) {
+        send_error(1, 'Error: problem with request to geo2tag.');
+        die();
     }
 
-    if ($channel_id && stripos($channel_name, "tr_") === 0 && ($category_id == null || $category_id == $channel_id)) {
-        $resp .= '<track>';
-        $resp .= '<name>' . $channel_name . '</name>';
+    $response_array = json_decode($response_json, true);
+    if (!$response_array) {
+        send_error(1, 'Error: can\'t decode data from geo2tag.');
+        die();
+    }
 
-        $resp .= '<description>' . $channel_description . '</description>';
-        $resp .= '<category_id>' . $channel_id . '</category_id>';
+    $response_code = check_errors($response_array['errno']);
+    if ($auth_token === $public_token && $response_array['errno'] === WRONG_TOKEN_ERROR) {
+        invalidate_public_token();
+        send_error(1, $response_code);
+        die();
+    } else if ($response_array['errno'] !== SUCCESS) {
+        send_error(1, $response_code);
+        die();
+    }
 
-        if ($channel_lang)
-            $resp .= '<lang>' . $channel_lang . '</lang>';
+    foreach ($response_array['channels'] as $channel) {
+        $channel_name = $channel['name'];
+        $channel_desc = $channel['description'];
+        $channel_url = $channel['url'];
 
-        if ($channel_hname)
-            $resp .= '<hname>' . $channel_hname . '</hname>';
+        $channel_description = null;
+        $channel_id = null;
+        $channel_lang = null;
+        $channel_hname = null;
 
-        $resp .= '</track>';
+        $desc_arr = json_decode($channel_desc, true);
+        if ($desc_arr) {
+            $channel_description = get_array_element($desc_arr, 'description');
+            $channel_id = get_array_element($desc_arr, 'category_id');
+            $channel_lang = get_array_element($desc_arr, 'lang');
+            $channel_hname = get_array_element($desc_arr, 'hname');
+        }
+
+        if ($channel_id && stripos($channel_name, "tr_") === 0 && ($category_id == null || $category_id == $channel_id)) {
+            $resp .= '<track>';
+            $resp .= '<name>' . $channel_name . '</name>';
+
+            $resp .= '<description>' . $channel_description . '</description>';
+            $resp .= '<category_id>' . $channel_id . '</category_id>';
+
+            if ($channel_lang)
+                $resp .= '<lang>' . $channel_lang . '</lang>';
+
+            if ($channel_hname)
+                $resp .= '<hname>' . $channel_hname . '</hname>';
+
+            $resp .= '<access>' . $access . '</access>';
+
+            $resp .= '</track>';
+        }
     }
 }
+
+$resp = '<tracks>';
+
+
+if ($space === SPACE_PUBLIC || $space === SPACE_ALL) {
+    load_subscribed_channels($public_token, 'r', $resp);
+}
+
+if ($space === SPACE_PRIVATE || $space === SPACE_ALL) {
+    load_subscribed_channels($private_token, 'rw', $resp);
+}
+
 $resp .= '</tracks>';
-
 send_result(0, 'success', $resp);
 
 ?>

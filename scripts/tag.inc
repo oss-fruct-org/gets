@@ -108,5 +108,187 @@
 
         return "Removed '$countRows' row(s)";
     }
+
+/*
+    Function removes tag with given parameters from database
+
+    Required parameters:
+    channel - channel name
+
+    Params:
+    name - filter by name (optional)
+    category_id - filter by category id (optional)
+
+Example:
+<methodCall>
+  <methodName>deleteTag2</methodName>
+  <params>
+    <param>
+      <struct>
+        <member>
+          <name>channel</name>
+          <value>channel-name</value>
+        </member>
+        <member>
+          <name>name</name>
+          <value>tag-name</value>
+        </member>
+        <member>
+          <name>category_id</name>
+          <value>1</value>
+        </member>
+      </struct>
+    </param>
+  </params>
+</methodCall>
+ */
+
+    function deleteTag2_func($method_name, $params, $app_data) {
+        global $dbconn;
+
+        if (array_key_exists('channel', $params[0])) {
+            $channel_name = pg_escape_string($params[0]['channel']);
+            $channel_where = "tag.channel_id IN (SELECT id FROM channel WHERE name='{$channel_name}')";
+        } else {
+            trigger_error("Channel name not specified");
+            die();
+        }
+
+        if (array_key_exists('name', $params[0])) {
+            $name = pg_escape_string($params[0]['name']);
+            $name_where = "tag.label='{$name}'";
+        } else {
+            $name_where = 'true';
+        }
+
+        if (array_key_exists('category_id', $params[0])) {
+            $category_id = pg_escape_string($params[0]['category_id']);
+            $category_id_where = "safe_cast_to_json(tag.description)->>'category_id'='{$category_id}'";
+        } else {
+            $category_id_where = 'true';
+        }
+
+        $base_query = "DELETE FROM tag WHERE ({$channel_where}) AND ({$name_where}) AND ({$category_id_where})";
+        $res = pg_query($dbconn, $base_query);
+
+        if (!$res) {
+            trigger_error("SQL error", E_USER_ERROR);
+            die();
+        }
+
+        $countRows = pg_affected_rows($res);
+        return "Removed '$countRows' row(s)";
+    }
+
+
+/*
+    Function updates tag with given parameters in database
+
+    Required parameters:
+    channel - channel name
+
+    Optional parameters:
+    name - filter by name (optional)
+    category_id - filter by category id (optional)
+
+    New tag parameters:
+    label
+    url
+    description
+    latitude
+    longitude
+    altitude
+
+    Any parameter can be ommited
+
+Example:
+<methodCall>
+  <methodName>updateTag</methodName>
+  <params>
+    <param>
+      <struct>
+        <member>
+          <name>channel</name>
+          <value>channel-name</value>
+        </member>
+        <member>
+          <name>name</name>
+          <value>tag-name</value>
+        </member>
+        <member>
+          <name>category_id</name>
+          <value>1</value>
+        </member>
+
+        <member>
+          <name>description</name>
+          <value>New description</value>
+        </member>
+      </struct>
+    </param>
+  </params>
+</methodCall>
+ */
+
+    function add_set_string($field, $params, &$out_arr) {
+        global $dbconn;
+        if (array_key_exists($field, $params[0])) {
+            $key = pg_escape_identifier($dbconn, $field);
+            $value = pg_escape_literal($dbconn, $params[0][$field]);
+
+            $out_arr[] = "{$key}={$value}";
+        }
+    }
+
+    function updateTag_func($method_name, $params, $app_data) {
+        global $dbconn;
+
+        if (array_key_exists('channel', $params[0])) {
+            $channel_name = pg_escape_string($params[0]['channel']);
+            $channel_where = "tag.channel_id IN (SELECT id FROM channel WHERE name='{$channel_name}')";
+        } else {
+            trigger_error("Channel name not specified");
+            die();
+        }
+
+        if (array_key_exists('name', $params[0])) {
+            $name = pg_escape_string($params[0]['name']);
+            $name_where = "tag.label='{$name}'";
+        } else {
+            $name_where = 'true';
+        }
+
+        if (array_key_exists('category_id', $params[0])) {
+            $category_id = pg_escape_string($params[0]['category_id']);
+            $category_id_where = "safe_cast_to_json(tag.description)->>'category_id'='{$category_id}'";
+        } else {
+            $category_id_where = 'true';
+        }
+
+        $set_array = array();
+        add_set_string('label', $params, $set_array);
+        add_set_string('url', $params, $set_array);
+        add_set_string('description', $params, $set_array);
+        add_set_string('latitude', $params, $set_array);
+        add_set_string('longitude', $params, $set_array);
+        add_set_string('altitude', $params, $set_array);
+
+        if (count($set_array) === 0) {
+            return "Updated '0' row(s)";
+        }
+
+        $set_string = implode($set_array, ',');
+
+        $base_query = "UPDATE tag SET {$set_string} WHERE ({$channel_where}) AND ({$name_where}) AND ({$category_id_where});";
+        $res = pg_query($dbconn, $base_query);
+
+        if (!$res) {
+            trigger_error("SQL error", E_USER_ERROR);
+            die();
+        }
+
+        $countRows = pg_affected_rows($res);
+        return "Updated '$countRows' row(s)";
+    }
     
 ?>

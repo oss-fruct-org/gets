@@ -120,6 +120,7 @@ function auth_refresh_geo2tag_access() {
 }
 
 function auth_refresh_google_access() {
+    require_once 'GoogleClientAPI/src/Google_Client.php';
     require_once 'GoogleClientAPI/src/contrib/Google_PlusService.php';
     $gets_token = $_SESSION['gets_token'];
 

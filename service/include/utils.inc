@@ -2,6 +2,7 @@
 include_once('geo2tag_errors_list.inc');
 include_once('config.inc');
 include_once('methods_url.inc');
+include_once('auth.inc');
 
 define('SPACE_ALL', 0);
 define('SPACE_PUBLIC', 1);
@@ -34,6 +35,44 @@ function process_request($method, $data, $content_type) {
 		curl_close($ch);
 		return $result;
 	}
+}
+
+/*
+   Function performs json request using google authentication method
+ */
+function process_json_request($method, $array, $gets_token = null, $allow_token_refreshing = true) {
+    if ($gets_token !== null) {
+        auth_set_token($gets_token);
+        $geo2tag_token = auth_get_geo2tag_token();
+        session_commit();
+        $array['auth_token'] = $geo2tag_token;
+    }
+    $request_json = json_encode($array);
+
+    $response_json = process_request(SUBSCRIBED_CHANNELS_METHOD_URL, $request_json, 'Content-Type:application/json');
+    if (!$response_json) {
+        throw new Exception('Error: problem with request to geo2tag.');
+    }
+
+    $response_array = json_decode($response_json, true);
+    if (!$response_array) {
+        throw new Exception('Error: can\'t decode data from geo2tag.');
+    }
+
+    $response_code = $response_array['errno'];
+    if ($response_code === WRONG_TOKEN_ERROR && $allow_token_refreshing === true && $gets_token !== null) {
+        auth_set_token($gets_token);
+        auth_refresh_geo2tag_access();
+        session_commit();
+
+        return process_json_request($method, $array, $gets_token, false);
+    }
+
+    if ($response_code !== SUCCESS) {
+        throw new Exception(check_errors($response_code));
+    }
+
+    return $response_json;
 }
 
 /*

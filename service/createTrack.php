@@ -6,6 +6,13 @@ include_once('include/public_token.inc');
 include_once('include/geo2tag_errors_list.inc');
 
 header ('Content-Type:text/xml');
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    header('Access-Control-Allow-Origin: *');
+    header('Access-Control-Allow-Methods: POST, GET, PUT, DELETE');
+    header('Access-Control-Allow-Headers: X-Requested-With, Content-Type');
+} else {
+    header('Access-Control-Allow-Origin: *');
+}
 
 function update_channel_field($auth_token, $channel, $field, $value) {
     $alter_array = array();

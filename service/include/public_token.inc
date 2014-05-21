@@ -63,7 +63,7 @@ function receive_public_token() {
         return false;
     }
 
-    $token = $response['auth_token'];
+    $token = 'p:' . $response['auth_token'];
     write_public_token($token);
 
     return $token;

@@ -54,6 +54,7 @@ $category_id = $category_condition ?
 // for different spaces we use different tokens
 $token_public = NULL;
 $token_user = NULL;
+$is_wrong_token_error = false;
 
 // check what is space condition, by default it is 'all'
 $space = SPACE_ALL;
@@ -116,6 +117,8 @@ function getChannelsAsDom($token) {
 }
 
 function getChannelNames(&$token, $category_id) {  
+    global $token_user;
+    global $is_wrong_token_error;
     $channels_name_array = array();
     
     $subs_channels_response_dom = getChannelsAsDom($token);
@@ -125,6 +128,11 @@ function getChannelNames(&$token, $category_id) {
 
         // Geo2tag server requires authentication and we're using cached token
         if ($response_code === 'Wrong token error') {
+            if ($token === $token_user) {
+                $is_wrong_token_error = true;
+                return array();
+            }
+
             // Try receive new token from server
             $token = receive_public_token();
             if (!$token) {
@@ -140,9 +148,10 @@ function getChannelNames(&$token, $category_id) {
                 send_error(1, 'Error: geo2tag server returned invalid token');
                 die();
             }
+        } else {
+            send_error(1, 'Error: internal server error');
+            die();
         }
-        send_error(1, 'Error: internal server error');
-        die();
     }
 
     $channels_elements = $subs_channels_response_dom->getElementsByTagName('channel');
@@ -165,36 +174,23 @@ function addItemIntoXml($item, &$xml) {
 }
 
 function process_load_points_request($data_array, $request_type) {
-    $data_json = json_encode($data_array);
-    if (!$data_json) {
-        send_error(1, 'Error: can\'t convert data to json.');
-        die();
-    }
+    $auth_token = $data_array['auth_token'];
+    $data_array['auth_token'] = null;
 
-    $response_json = process_request($request_type, $data_json, 'Content-Type:application/json');
-    if (!$response_json) {
-        send_error(1, 'Error: problem with request to geo2tag.');
-        die();
-    }
-
-    $response_array = json_decode($response_json, true);
-    if (!$response_array) {
-        send_error(1, 'Error: can\'t decode data from geo2tag.');
-        die();
-    }
-
-    return $response_array;
+    return process_json_request($request_type, $data_array, $auth_token, false);
 }
 
-$is_wrong_token_error = false;
-
 function getData($data_array, $request_type, &$xml, $location_condition, &$is_wrong_token_error) {
-    $response_array = process_load_points_request($data_array, $request_type);
-    $response_code = check_errors($response_array['errno']);
-    
-    // Geo2tag server requires authentication and we're using cached token
-    if ($response_code === 'Wrong token error') {
-        $is_wrong_token_error = true;
+    global $token_user;
+    $auth_token = $data_array['auth_token'];
+    try {
+        $response_array = process_load_points_request($data_array, $request_type);
+    } catch (WrongTokenException $e) {
+        if ($auth_token === $token_user) {
+            $is_wrong_token_error = true;
+            return;
+        }
+
         // Try receive new token from server
         $token = receive_public_token();
         if (!$token) {
@@ -204,21 +200,20 @@ function getData($data_array, $request_type, &$xml, $location_condition, &$is_wr
 
         // Send request with new token
         $data_array['auth_token'] = $token;
-        $response_array = process_load_points_request($data_array, $request_type);
-        $response_code = check_errors($response_array['errno']);
-
-        // Same error, new token invalid
-        if ($response_code === 'Wrong token error') { 
+        try {
+            $response_array = process_load_points_request($data_array, $request_type);
+        } catch (WrongTokenException $e) {
             send_error(1, 'Error: geo2tag server returned invalid token');
             die();
+        } catch (Exception $e) {
+            send_error(1, $e->getMessage());
+            die();
         }
-    }
-    
-    if ($response_code != 'Ok') {
-        send_error(1, $response_code);
+    } catch (Exception $e) {
+        send_error(1, $e->getMessage());
         die();
     }
-
+    
     if ($location_condition) {
         foreach($response_array['channels'] as $channel) {
             foreach($channel['channel']['items'] as $item) {

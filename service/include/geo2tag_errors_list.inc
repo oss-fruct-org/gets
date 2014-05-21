@@ -27,4 +27,5 @@ define('USER_DOES_NOT_OWN_CHANNEL_ERROR', 23);
 class ChannelAlreadyExistException extends Exception {}
 class ChannelAlreadySubscribedException extends Exception {}
 class ChannelNotSubscribedException extends Exception {}
+class WrongTokenException extends Exception {}
 ?>

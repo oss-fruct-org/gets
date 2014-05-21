@@ -141,7 +141,7 @@ $resp = '<tracks>';
 
 try {
     if ($space === SPACE_PUBLIC || $space === SPACE_ALL) {
-        $response_array = process_json_request(SUBSCRIBED_CHANNELS_METHOD_URL, Array('auth_token' => $public_token));
+        $response_array = process_json_request(SUBSCRIBED_CHANNELS_METHOD_URL, Array(), $public_token);
         process_subscribed_channels($response_array, 'r', $resp);
     }
 

@@ -44,16 +44,8 @@ $altitude_element = $dom->getElementsByTagName('altitude');
 $time_element = $dom->getElementsByTagName('time');
 
 $auth_token = $auth_token_element->item(0)->nodeValue;
-try {
-    auth_set_token($auth_token);
-    $auth_token = auth_get_geo2tag_token();
-} catch (GetsAuthException $e) {
-    send_error(1, $e->getMessage());
-    die();
-}
 
 $data_array = array();
-$data_array['auth_token'] = $auth_token;
 $data_array['channel'] = $channel_name_element->item(0)->nodeValue;
 $data_array['title'] = $title_element->item(0)->nodeValue;
 $data_array['description'] = $description_element->item(0)->nodeValue;
@@ -63,27 +55,10 @@ $data_array['longitude'] = /*(float)*/ $longitude_element->item(0)->nodeValue;
 $data_array['altitude'] = /*(float)*/ $altitude_element->item(0)->nodeValue;
 $data_array['time'] = $time_element->item(0)->nodeValue;
 
-$data_json = json_encode($data_array);
-if (!$data_json) {
-    send_error(1, 'Error: can\'t convert data to json.');
-    die();
-}
-
-$response_json =  process_request(WRITE_TAG_METHOD_URL, $data_json, 'Content-Type:application/json');
-if (!$response_json) {
-    send_error(1, 'Error: problem with request to geo2tag.');
-    die();
-}
-
-$response_array = json_decode($response_json, true);
-if (!$response_array) {
-    send_error(1, 'Error: can\'t decode data from geo2tag.');
-    die();
-}
-
-$response_code = check_errors($response_array['errno']);
-if ($response_code != 'Ok') {
-    send_error(1, $response_code);
+try {
+    $response_array = process_json_request(WRITE_TAG_METHOD_URL, $data_array, $auth_token);
+} catch (Exception $e) {
+    send_error(1, $e->getMessage());
     die();
 }
 

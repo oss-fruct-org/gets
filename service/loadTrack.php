@@ -53,6 +53,7 @@ try {
     }
 } catch (Exception $e) {
     send_error(1, $e->getMessage());
+    die();
 }
 
 

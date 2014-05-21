@@ -14,25 +14,7 @@ function update_channel_field($auth_token, $channel, $field, $value) {
     $alter_array['name'] = $channel;
     $alter_array['field'] = $field;
     $alter_array['value'] = $value;
-    $alter_json = json_encode($alter_array);
-
-    $response_json = process_request(ALTER_CHANNEL_METHOD_URL, $alter_json, 'Content-Type:application/json');
-    if (!$response_json) {
-        send_error(1, 'Error: problem with request to geo2tag while updating channel');
-        die();
-    }
-
-    $response_array = json_decode($response_json, true);
-    if (!$response_array) {
-        send_error(1, 'Error: can\'t decode data from geo2tag while updating channel');
-        die();
-    }
-
-    $response_code = $response_array['errno'];
-    if ($response_code !== SUCCESS) {
-        send_error(1, 'Error: can\'t update channel');
-        die();
-    }
+    process_json_request(ALTER_CHANNEL_METHOD_URL, $alter_array, $auth_token);
 }
 
 $xml_post = file_get_contents('php://input');
@@ -67,14 +49,6 @@ $hname = get_request_argument($dom, 'hname');
 
 $need_update = get_request_argument($dom, 'update', 'false') === 'true';
 
-try {
-    auth_set_token($auth_token);
-    $auth_token = auth_get_geo2tag_token();
-} catch (GetsAuthException $e) {
-    send_error(1, $e->getMessage());
-    die();
-}
-
 $desc_array = array();
 $desc_array['description'] = $description;
 $desc_array['category_id'] = $category_id;
@@ -82,72 +56,35 @@ if ($lang) $desc_array['lang'] = $lang;
 if ($hname) $desc_array['hname'] = $hname;
 $desc_json = json_encode($desc_array);
 
-$data_array['auth_token'] = $auth_token;
 $data_array['description'] = $desc_json;
 $data_array['url'] = $url;
 $data_array['name'] = $name;
 
-$data_json = json_encode($data_array);
-
-// Create channel request
-$response_json = process_request(ADD_CHANNEL_METHOD_URL, $data_json, 'Content-Type:application/json');
-if (!$response_json) {
-    send_error(1, 'Error: problem with request to geo2tag.');
-    die();
-}
-
-$response_array = json_decode($response_json, true);
-if (!$response_array) {
-    send_error(1, 'Error: can\'t decode data from geo2tag.');
-    die();
-}
-
-$response_string = check_errors($response_array['errno']);
-$response_code = $response_array['errno'];
-if ($response_code === CHANNEL_ALREADY_EXIST_ERROR) {
-    if ($need_update) {
-        // Update channel
-        update_channel_field($auth_token, $name, 'description', $desc_json);
-        update_channel_field($auth_token, $name, 'url', $url);
-        // Channel name is internal and shouldn't be updated
-    } else {
-        send_error(2, 'Channel already exists');
-        die();
+try {
+    try {
+        $response_json = process_json_request(ADD_CHANNEL_METHOD_URL, $data_array, $auth_token);
+    } catch (ChannelAlreadyExistException $e) {
+        if ($need_update) {
+            // Update channel
+            update_channel_field($auth_token, $name, 'description', $desc_json);
+            update_channel_field($auth_token, $name, 'url', $url);
+            // Channel name is internal and shouldn't be updated
+        } else {
+            send_error(2, 'Channel already exists');
+            die();
+        }
     }
-} else if ($response_code !== SUCCESS) {
-    send_error(1, $response_string);
+
+    try {
+        $response_json = process_json_request(SUBSCRIBE_METHOD_URL, Array('channel' => $name), $auth_token);
+    } catch (ChannelAlreadySubscribedException $e) {
+        // Ignore
+    }
+
+} catch (Exception $e) {
+    send_error($e->getCode(), $e->getMessage());
     die();
 }
-
-// Subscribe channel request
-$subs_array = array();
-$subs_array['auth_token'] = $auth_token;
-$subs_array['channel'] = $name;
-
-$subs_json = json_encode($subs_array);
-
-$response_json = process_request(SUBSCRIBE_METHOD_URL, $subs_json, 'Content-Type:application/json');
-if (!$response_json) {
-    send_error(1, 'Error: problem with request to geo2tag.');
-    die();
-}
-
-$response_array = json_decode($response_json, true);
-if (!$response_array) {
-    send_error(1, 'Error: can\'t decode data from geo2tag.');
-    die();
-}
-
-$response_string = check_errors($response_array['errno']);
-$response_code = $response_array['errno'];
-
-if ($response_code === CHANNEL_ALREADY_SUBSCRIBED_ERROR) {
-    // Do nothing, channel already subscribed
-} else if ($response_code !== SUCCESS) {
-    send_error(1, $response_string);
-    die();
-}
-
 
 send_result(0, 'success', '');
 

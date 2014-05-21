@@ -23,4 +23,7 @@ define('WEAK_PASSWORD_ERROR', 20);
 define('NOT_SUPPORTED', 21);
 define('DB_DOES_NOT_EXIST_ERROR', 22);
 define('USER_DOES_NOT_OWN_CHANNEL_ERROR', 23);
+
+class ChannelAlreadyExistException extends Exception {}
+class ChannelAlreadySubscribedException extends Exception {}
 ?>

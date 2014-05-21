@@ -49,7 +49,7 @@ function process_json_request($method, $array, $gets_token = null, $allow_token_
     }
     $request_json = json_encode($array);
 
-    $response_json = process_request(SUBSCRIBED_CHANNELS_METHOD_URL, $request_json, 'Content-Type:application/json');
+    $response_json = process_request($method, $request_json, 'Content-Type:application/json');
     if (!$response_json) {
         throw new Exception('Error: problem with request to geo2tag.');
     }
@@ -69,7 +69,16 @@ function process_json_request($method, $array, $gets_token = null, $allow_token_
     }
 
     if ($response_code !== SUCCESS) {
-        throw new Exception(check_errors($response_code));
+        $error_str = check_errors($response_code);
+
+        switch ($response_code) {
+        case CHANNEL_ALREADY_EXIST_ERROR: 
+            throw new ChannelAlreadyExistException($error_str, $response_code);
+        case CHANNEL_ALREADY_SUBSCRIBED_ERROR:
+            throw new ChannelAlreadySubscribedException($error_str, $response_code);
+        default:
+            throw new Exception(check_errors($response_code), $response_code);
+        }
     }
 
     return $response_json;

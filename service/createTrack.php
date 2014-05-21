@@ -69,7 +69,7 @@ $data_array['name'] = $name;
 
 try {
     try {
-        $response_json = process_json_request(ADD_CHANNEL_METHOD_URL, $data_array, $auth_token);
+        $response_array = process_json_request(ADD_CHANNEL_METHOD_URL, $data_array, $auth_token);
     } catch (ChannelAlreadyExistException $e) {
         if ($need_update) {
             // Update channel
@@ -83,13 +83,13 @@ try {
     }
 
     try {
-        $response_json = process_json_request(SUBSCRIBE_METHOD_URL, Array('channel' => $name), $auth_token);
+        $response_array = process_json_request(SUBSCRIBE_METHOD_URL, Array('channel' => $name), $auth_token);
     } catch (ChannelAlreadySubscribedException $e) {
         // Ignore
     }
 
 } catch (Exception $e) {
-    send_error($e->getCode(), $e->getMessage());
+    send_error(1, $e->getMessage());
     die();
 }
 

@@ -95,10 +95,8 @@ if ($category_name) {
     }
 }
 
-function process_subscribed_channels($response_json, $access, &$resp) {
+function process_subscribed_channels($response_array, $access, &$resp) {
     global $category_id;
-
-    $response_array = json_decode($response_json, true);
 
     foreach ($response_array['channels'] as $channel) {
         $channel_name = $channel['name'];
@@ -143,13 +141,13 @@ $resp = '<tracks>';
 
 try {
     if ($space === SPACE_PUBLIC || $space === SPACE_ALL) {
-        $response = process_json_request(SUBSCRIBED_CHANNELS_METHOD_URL, Array('auth_token' => $public_token));
-        process_subscribed_channels($response, 'r', $resp);
+        $response_array = process_json_request(SUBSCRIBED_CHANNELS_METHOD_URL, Array('auth_token' => $public_token));
+        process_subscribed_channels($response_array, 'r', $resp);
     }
 
     if ($space === SPACE_PRIVATE || $space === SPACE_ALL) {
-        $response = process_json_request(SUBSCRIBED_CHANNELS_METHOD_URL, Array(), $private_token);
-        process_subscribed_channels($response, 'rw', $resp);
+        $response_array = process_json_request(SUBSCRIBED_CHANNELS_METHOD_URL, Array(), $private_token);
+        process_subscribed_channels($response_array, 'rw', $resp);
     }
 } catch (Exception $e) {
     send_error(1, $e->getMessage());

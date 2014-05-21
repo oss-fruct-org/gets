@@ -76,12 +76,14 @@ function process_json_request($method, $array, $gets_token = null, $allow_token_
             throw new ChannelAlreadyExistException($error_str, $response_code);
         case CHANNEL_ALREADY_SUBSCRIBED_ERROR:
             throw new ChannelAlreadySubscribedException($error_str, $response_code);
+        case CHANNEL_NOT_SUBCRIBED_ERROR:
+            throw new ChannelNotSubscribedException($error_str, $response_code);
         default:
             throw new Exception(check_errors($response_code), $response_code);
         }
     }
 
-    return $response_json;
+    return $response_array;
 }
 
 /*

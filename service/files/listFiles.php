@@ -4,6 +4,7 @@ include_once('../include/methods_url.inc');
 include_once('../include/utils.inc');
 include_once('../include/public_token.inc');
 include_once('../include/auth.inc');
+require_once 'client.php';
 
 header ('Content-Type:text/xml');
 
@@ -39,8 +40,7 @@ try {
 }
 
 try {
-    require_once 'client.php';
-
+    $service = create_service();
     $root = check_content_directory($service);
     $files = list_files($service, $root);
 } catch (Exception $e) {

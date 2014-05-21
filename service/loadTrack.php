@@ -34,21 +34,9 @@ if (!$dom->schemaValidate('schemes/loadTrack.xsd')) {
 }
 
 $auth_token = get_request_argument($dom, 'auth_token');
-$private_token = null;
-if ($auth_token) {
-    try {
-        auth_set_token($auth_token);
-        $private_token = auth_get_geo2tag_token();
-    } catch (GetsAuthException $e) {
-        send_error(1, $e->getMessage());
-        die();
-    }
-}
-
 $channel_name = get_request_argument($dom, 'name');
 
 $public_token = read_public_token();
-
 if (!$public_token) {
     $public_token = receive_public_token();
     if (!$public_token) {
@@ -57,95 +45,68 @@ if (!$public_token) {
     }
 }
 
-if (!try_load_points($private_token, $channel_name, true)) {
-    try_load_points($public_token, $channel_name, false);
+try {
+    try {
+        $response_array = process_json_request(FILTER_CHANNEL_METHOD_URL, Array('channel' => $channel_name, 'amount' => 100), $auth_token);
+    } catch (ChannelNotSubscribedException $e) {
+        $response_array = process_json_request(FILTER_CHANNEL_METHOD_URL, Array('channel' => $channel_name, 'amount' => 100, 'auth_token' => $public_token));
+    }
+} catch (Exception $e) {
+    send_error(1, $e->getMessage());
 }
 
 
-function try_load_points($auth_token, $channel_name, $allow_error) {
-    $data_array = array();
-    $data_array['auth_token'] = $auth_token;
-    $data_array['channel'] = $channel_name;
-    $data_array['amount'] = 100;
+$xml = '<kml xmlns="http://www.opengis.net/kml/2.2">';
+$xml .= '<Document>';
+$xml .= '<name>' . $response_array['channel']['name'] . '.kml</name>';
+$xml .= '<open>1</open>';
+$xml .= '<Style id="styleDocument"><LabelStyle><color>ff0000cc</color></LabelStyle></Style>';
 
-    $data_json = json_encode($data_array);
-    $response_json = process_request(FILTER_CHANNEL_METHOD_URL, $data_json, 'Content-Type:application/json');
+// Output points
+foreach ($response_array['channel']['items'] as $item) {
+    $description = $item['description'];
 
-    if (!$response_json) {
-        send_error(1, 'Error: problem with request to geo2tag.');
-        die();
+    // Try parse description json
+    $description_json = json_decode($description, true);
+
+    //Get inner description
+    $inner_description = null;
+    if ($description_json) {
+        $inner_description = $description_json['description'];
     }
 
-    $response_array = json_decode($response_json, true);
-    if (!$response_array) {
-        send_error(1, 'Error: can\'t decode data from geo2tag.');
-        die();
-    }
+    $xml .= '<Placemark>';
+    $xml .= '<name>' . htmlspecialchars($item['title']) . '</name>';
 
-    $response_code = check_errors($response_array['errno']);
-    if ($response_code !== "Ok") {
-        if (!$allow_error) {
-            send_error(1, $response_code);
-            die();
-        } else {
-            return false;
+    if (!$description_json)
+        $xml .= '<description>' . '<![CDATA[' .  $item['description'] . ']]>' . '</description>';
+    else if ($inner_description)
+        $xml .= '<description>' . '<![CDATA[' .  $inner_description . ']]>' . '</description>';
+    else
+        $xml .= '<description></description>';
+
+    $xml .= '<ExtendedData>';
+    $xml .= '<Data name="url"><value>' . htmlspecialchars($item['link']) . '</value></Data>';
+
+    if ($description_json) {
+        foreach ($description_json as $key => $value) {
+            $field = $key;
+            $value = htmlspecialchars($value);
+
+            $xml .= "<Data name=\"$field\"><value>$value</value></Data>";
         }
     }
 
-    $xml = '<kml xmlns="http://www.opengis.net/kml/2.2">';
-    $xml .= '<Document>';
-    $xml .= '<name>' . $response_array['channel']['name'] . '.kml</name>';
-    $xml .= '<open>1</open>';
-    $xml .= '<Style id="styleDocument"><LabelStyle><color>ff0000cc</color></LabelStyle></Style>';
+    $xml .= '</ExtendedData>';
 
-    // Output points
-    foreach ($response_array['channel']['items'] as $item) {
-        $description = $item['description'];
-
-        // Try parse description json
-        $description_json = json_decode($description, true);
-
-        //Get inner description
-        $inner_description = null;
-        if ($description_json) {
-            $inner_description = $description_json['description'];
-        }
-
-        $xml .= '<Placemark>';
-        $xml .= '<name>' . htmlspecialchars($item['title']) . '</name>';
-
-        if (!$description_json)
-            $xml .= '<description>' . '<![CDATA[' .  $item['description'] . ']]>' . '</description>';
-        else if ($inner_description)
-            $xml .= '<description>' . '<![CDATA[' .  $inner_description . ']]>' . '</description>';
-        else
-            $xml .= '<description></description>';
-
-        $xml .= '<ExtendedData>';
-        $xml .= '<Data name="url"><value>' . htmlspecialchars($item['link']) . '</value></Data>';
-
-        if ($description_json) {
-            foreach ($description_json as $key => $value) {
-                $field = $key;
-                $value = htmlspecialchars($value);
-
-                $xml .= "<Data name=\"$field\"><value>$value</value></Data>";
-            }
-        }
-
-        $xml .= '</ExtendedData>';
-
-        $xml .= '<Point><coordinates>' . $item['latitude'] . ',' . $item['longitude'] . ',0.0' . '</coordinates></Point>';
-        $xml .= '</Placemark>';
-    }
-    $xml .= '</Document>';
-    $xml .= '</kml>';
-
-    send_result(0, 'success', $xml);
-
-    return true;
+    $xml .= '<Point><coordinates>' . $item['latitude'] . ',' . $item['longitude'] . ',0.0' . '</coordinates></Point>';
+    $xml .= '</Placemark>';
 }
 
+$xml .= '</Document>';
+$xml .= '</kml>';
+
+send_result(0, 'success', $xml);
 
 ?>
 

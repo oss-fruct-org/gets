@@ -13,6 +13,9 @@
 	<title>GeTS Web Client</title>	
     </head>
     <body>
+        <?php
+        include('widgets/header.php');
+        ?>
 	<?php
             if (isset($_GET['badlogin'])) {
                 echo '<div style="width:350px; height:30px; 
@@ -32,6 +35,9 @@
             </form>
             <p align="center">or</p>
             <p><input class="login-button" type="button" value="Login with Google" onclick="authorizeGoogle();"/></p>
+            <form action="guest.php" method="post">
+                <p><input class="login-button" type="submit" name="submitGuest" value="Enter as Guest"/></p>
+            </form>
         </div>
     </body>
 </html>

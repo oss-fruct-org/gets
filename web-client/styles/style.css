@@ -17,7 +17,7 @@ html {
     margin-top: -75px;
     margin-left: -102px;
     width: 205px;
-    height: 230px;
+    height: 275px;
     background-color: white;
     -moz-border-radius: 15px;
     border-radius: 15px;
@@ -94,6 +94,10 @@ html {
     top: 0%; 
     left: 0%;
     background-color:#bcbcbc;
+}
+
+.main-footer {
+    
 }
 
 .main-header a {

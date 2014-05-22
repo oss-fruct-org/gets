@@ -4,6 +4,7 @@ ini_set('session.use_trans_sid', 1);
 
 include_once('include/methods_url.inc');
 include_once('include/utils.inc');
+include_once('include/auth.inc');
 
 header('Content-Type:text/xml');
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -70,70 +71,22 @@ if (session_id() === '') {
     die();
 }
 
-if (isset($_SESSION['email'])) {
-    $data = '<methodCall><methodName>checkUser</methodName><params><param><struct><member><name>email</name><value>' . 
-            $_SESSION['email'] . 
-            '</value></member></struct></param></params></methodCall>';
-} else {
+if (!isset($_SESSION['access_token'])) {
     send_error(1, 'Error: google authorization didn\'t go through or google email isn\'t available');
     session_unset();
     session_destroy();
     die();
 }
 
+$google_access_token = $_SESSION['access_token'];
+$google_email = $_SESSION['email'];
 
-//session_unset();
-//session_destroy();
+session_unset();
+session_destroy();
 
-//!ATTENTION!
-$response =  process_request(ADDITIONAL_FUNCTIONS_METHOD_URL, $data, 'Content-Type: text/xml');
-//$response =  process_request('http://kappa.cs.karelia.ru/~davydovs/retr/checkUser.php', $data, 'Content-Type: text/xml');
-if (!$response) {
-    send_error(1, 'Error: problem with request to geo2tag.');
-    die();
-}
+$auth_token = auth_set_initial_token($google_access_token, $google_email);
+auth_refresh_geo2tag_access();
 
-$dom_response = new DOMDocument();
-$dom_response->loadXML($response);
-
-$data_array = array();
-
-$members_element = $dom_response->getElementsByTagName('member');
-foreach ($members_element as $member) {
-    $name = $member->getElementsByTagName('name')->item(0)->nodeValue;
-    if ($name === 'login') {
-        $data_array['login'] = $member->getElementsByTagName('value')->item(0)->getElementsByTagName('string')->item(0)->nodeValue;
-    } elseif ($name === 'password') {
-        $data_array['password'] = $member->getElementsByTagName('value')->item(0)->getElementsByTagName('string')->item(0)->nodeValue;
-    }
-}
-
-$data_json = json_encode($data_array);
-if (!$data_json) {
-    send_error(1, 'Error: can\'t convert data to json.');
-    die();
-}
-//!ATTENTION!
-$response_json =  process_request(LOGIN_METHOD_URL, $data_json, 'Content-Type:application/json');
-//$response_json =  process_request('http://kappa.cs.karelia.ru/~davydovs/retr/login.php', $data_json, 'Content-Type:application/json');
-if (!$response_json) {
-    send_error(1, 'Error: problem with request to geo2tag.');
-    die();
-}
-
-$response_array = json_decode($response_json, true);
-if (!$response_array) {
-    send_error(1, 'Error: can\'t decode data from geo2tag.');
-    die();
-}
-
-$response_code = check_errors($response_array['errno']);
-if ($response_code != 'Ok') {
-    send_error(1, $response_code);
-    die();
-}
-
-session_id($response_array['auth_token']);
-$content = '<auth_token>' . $response_array['auth_token'] . '</auth_token>';
+$content = '<auth_token>' . $auth_token . '</auth_token>';
 send_result(0, 'success', $content);
 ?>

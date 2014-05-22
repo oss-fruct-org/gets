@@ -2,6 +2,7 @@
 include_once('include/methods_url.inc');
 include_once('include/utils.inc');
 include_once('include/public_token.inc');
+include_once('include/auth.inc');
 
 header ('Content-Type:text/xml');
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -94,34 +95,8 @@ if ($category_name) {
     }
 }
 
-function load_subscribed_channels($auth_token, $access, &$resp) {
+function process_subscribed_channels($response_array, $access, &$resp) {
     global $category_id;
-    global $public_token;
-
-    $data_array = array('auth_token' => $auth_token);
-    $data_json = json_encode($data_array);
-
-    $response_json = process_request(SUBSCRIBED_CHANNELS_METHOD_URL, $data_json, 'Content-Type:application/json');
-    if (!$response_json) {
-        send_error(1, 'Error: problem with request to geo2tag.');
-        die();
-    }
-
-    $response_array = json_decode($response_json, true);
-    if (!$response_array) {
-        send_error(1, 'Error: can\'t decode data from geo2tag.');
-        die();
-    }
-
-    $response_code = check_errors($response_array['errno']);
-    if ($auth_token === $public_token && $response_array['errno'] === WRONG_TOKEN_ERROR) {
-        invalidate_public_token();
-        send_error(1, $response_code);
-        die();
-    } else if ($response_array['errno'] !== SUCCESS) {
-        send_error(1, $response_code);
-        die();
-    }
 
     foreach ($response_array['channels'] as $channel) {
         $channel_name = $channel['name'];
@@ -164,12 +139,20 @@ function load_subscribed_channels($auth_token, $access, &$resp) {
 $resp = '<tracks>';
 
 
-if ($space === SPACE_PUBLIC || $space === SPACE_ALL) {
-    load_subscribed_channels($public_token, 'r', $resp);
-}
+try {
+    if ($space === SPACE_PUBLIC || $space === SPACE_ALL) {
+        $response_array = process_json_request(SUBSCRIBED_CHANNELS_METHOD_URL, Array(), $public_token);
+        process_subscribed_channels($response_array, 'r', $resp);
+    }
 
-if ($space === SPACE_PRIVATE || $space === SPACE_ALL) {
-    load_subscribed_channels($private_token, 'rw', $resp);
+    if ($space === SPACE_PRIVATE || $space === SPACE_ALL) {
+        $response_array = process_json_request(SUBSCRIBED_CHANNELS_METHOD_URL, Array(), $private_token);
+        process_subscribed_channels($response_array, 'rw', $resp);
+    }
+} catch (Exception $e) {
+    send_error(1, $e->getMessage());
+    invalidate_public_token();
+    die();
 }
 
 $resp .= '</tracks>';

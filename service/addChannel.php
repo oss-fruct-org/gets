@@ -1,6 +1,7 @@
 <?php
 include_once('include/methods_url.inc');
 include_once('include/utils.inc');
+include_once('include/auth.inc');
 
 header('Content-Type:text/xml');
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -43,8 +44,17 @@ $description_data = '{"description":"' . $description_element->item(0)->nodeValu
                     '", "category_id":"' . $category_id_element->item(0)->nodeValue . 
                     '", "lang":"' . $lang_element->item(0)->nodeValue . '"}';
 
+$auth_token = $auth_token_element->item(0)->nodeValue;
+try {
+    auth_set_token($auth_token);
+    $auth_token = auth_get_geo2tag_token();
+} catch (GetsAuthException $e) {
+    send_error(1, $e->getMessage());
+    die();
+}
+
 $data_array = array();
-$data_array['auth_token'] = $auth_token_element->item(0)->nodeValue;
+$data_array['auth_token'] = $auth_token;
 $data_array['name'] = $name_element->item(0)->nodeValue;
 $data_array['description'] = $description_data;
 $data_array['url'] = $url_element->item(0)->nodeValue;

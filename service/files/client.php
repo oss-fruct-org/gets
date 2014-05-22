@@ -1,35 +1,35 @@
 <?php
 
-require_once '../include/GoogleClientAPI/src/Google_Client.php';
-require_once '../include/GoogleClientAPI/src/contrib/Google_DriveService.php';
 require_once '../include/config.inc';
-
-$client = new Google_Client();
-$client->setAccessType('online');
-$client->setUseObjects(true);
-
-// Deploy settings from config.inc
-$client->setApplicationName(GOOGLE_APP_NAME);
-$client->setClientId(GOOGLE_CLIENT_ID);
-$client->setClientSecret(GOOGLE_SECRET_ID);
-
-$client->setScopes(array('https://www.googleapis.com/auth/plus.me',
-            'https://www.googleapis.com/auth/plus.login',
-            'https://www.googleapis.com/auth/drive',
-            'https://www.googleapis.com/auth/userinfo.email'));
-
-//session_id("ec0fccd957e5b65d5460ca147d2b4ccc");
-//session_start();
-
-$client->setAccessToken($_SESSION["access_token"]);
-
-$service = new Google_DriveService($client);
-$files = $service->files;
-$permissions = $service->permissions;
-
+require_once '../include/utils.inc';
 
 define('CONTENT_DIRECTORY', 'gets-content-directory');
 define('FOLDER_MIME', 'application/vnd.google-apps.folder');
+
+function create_service() {
+    require_once '../include/GoogleClientAPI/src/Google_Client.php';
+    require_once '../include/GoogleClientAPI/src/contrib/Google_DriveService.php';
+    $client = new Google_Client();
+    $client->setAccessType('online');
+    $client->setUseObjects(true);
+
+    // Deploy settings from config.inc
+    $client->setApplicationName(GOOGLE_APP_NAME);
+    $client->setClientId(GOOGLE_CLIENT_ID);
+    $client->setClientSecret(GOOGLE_SECRET_ID);
+
+    $client->setScopes(array('https://www.googleapis.com/auth/plus.me',
+                'https://www.googleapis.com/auth/plus.login',
+                'https://www.googleapis.com/auth/drive',
+                'https://www.googleapis.com/auth/userinfo.email'));
+
+    $client->setAccessToken($_SESSION["access_token"]);
+
+    $service = new Google_DriveService($client);
+    $files = $service->files;
+    $permissions = $service->permissions;
+    return $service;
+}
 
 function create_content_directory($service) {
     $files = $service->files;
@@ -95,10 +95,18 @@ function list_files($service, $parent_id) {
     for ($i = 0; $i < $count; $i++) {
         $file = $list->items[$i];
 
-        $file_arr = Array('title' => $file->title,
-                'mime' => $file->mimeType,
-                'downloadUrl' => $file->webContentLink);
-        $ret[$i] = $file_arr;
+        if ($file->mimeType === FOLDER_MIME) {
+            $sub_files = list_files($service, $file->id);
+            foreach ($sub_files as $sub_file) {
+                $sub_file['parent'] = $file->title;
+                $ret[] = $sub_file;
+            }
+        } else {
+            $file_arr = Array('title' => $file->title,
+                    'mime' => $file->mimeType,
+                    'downloadUrl' => $file->webContentLink);
+            $ret[] = $file_arr;
+        }
 
     }
 

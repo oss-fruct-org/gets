@@ -4,21 +4,38 @@ include_once('config.inc');
 include_once('methods_url.inc');
 include_once('geo2tag_errors_list.inc');
 
+function create_session_id() {
+    return sha1('9EXyKVPgLthG' . GEO2TAG_USER . 'O1He7SYW7t3a' . GEO2TAG_PASSWORD);
+}
+
 function read_public_token() {
-    $content = file_get_contents(PUBLIC_TOKEN_FILE);
-    if (!$content)
-        return false;
-    else
-        return unserialize($content);
+    session_id(create_session_id());
+    session_start();
+
+    if (isset($_SESSION['public_token'])) {
+        $ret = $_SESSION['public_token'];
+    } else {
+        $ret = false;
+    }
+    session_commit();
+    return $ret;
 }
 
 function write_public_token($token) {
-    $content = serialize($token);
-    file_put_contents(PUBLIC_TOKEN_FILE, $content);
+    session_id(create_session_id());
+    session_start();
+
+    $_SESSION['public_token'] = $token;
+
+    session_commit();
 }
 
 function invalidate_public_token() {
-    unlink(PUBLIC_TOKEN_FILE);
+    session_id(create_session_id());
+    session_start();
+
+    session_unset();
+    session_destroy();
 }
 
 function receive_public_token() {
@@ -46,7 +63,7 @@ function receive_public_token() {
         return false;
     }
 
-    $token = $response['auth_token'];
+    $token = 'p:' . $response['auth_token'];
     write_public_token($token);
 
     return $token;

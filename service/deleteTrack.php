@@ -3,6 +3,7 @@
 include_once('include/methods_url.inc');
 include_once('include/utils.inc');
 include_once('include/public_token.inc');
+include_once('include/auth.inc');
 
 header ('Content-Type:text/xml');
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -36,53 +37,9 @@ if (!$dom->schemaValidate('schemes/deleteTrack.xsd')) {
 $auth_token = get_request_argument($dom, 'auth_token');
 $track_name = get_request_argument($dom, 'name');
 
-// First, receive list of channels, subscribed by user 
-$data_array = array();
-$data_array['auth_token'] = $auth_token;
-
-$data_json = json_encode($data_array);
-$response_json = process_request(SUBSCRIBED_CHANNELS_METHOD_URL, $data_json, 'Content-Type:application/json');
-
-if (!$response_json) {
-    send_error(1, 'Error: problem with request to geo2tag.');
-    die();
-}
-
-$response_array = json_decode($response_json, true);
-if (!$response_array) {
-    send_error(1, 'Error: can\'t decode data from geo2tag.');
-    die();
-}
-
-if ($response_array['errno'] !== 0) {
-    send_error(1, 'Error: can\'t receive channel list from geo2tag server');
-    die();
-}
-
-
-$channel_name_found = null;
-
-if (array_key_exists('channels', $response_array)) {
-    foreach ($response_array['channels'] as $channel) {
-        $channel_name = $channel['name'];
-
-        if ($track_name === $channel_name) {
-            $channel_name_found = $channel_name;
-            break;
-        }
-    }
-}
-
-if (!$channel_name_found) {
-    send_error(1, 'Error: channel not subscribed');
-    die();
-}
-
 $xmlrpc_request = xmlrpc_encode_request('deleteChannel', 
-    array('login' => GEO2TAG_USER, 
-          'password' => GEO2TAG_PASSWORD,
-#          'user' => 'unknown', 
-          'channel' => $channel_name_found));
+    array('gets_token' => $auth_token,
+          'channel' => $track_name));
 
 $xmlrpc_response =  process_request(ADDITIONAL_FUNCTIONS_METHOD_URL, $xmlrpc_request, 'Content-Type: text/xml');
 $xmlrpc = xmlrpc_decode($xmlrpc_response);

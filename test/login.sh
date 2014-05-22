@@ -8,11 +8,14 @@ if [ "$#" -eq 2 ]; then
     PASSWORD=$2
 fi
 
-curl -d@- "${GEO2TAG_SERVER}/service/login"  <<-EOF | ./json.sh auth_token > token.txt
+curl -d@- "${GEO2TAG_SERVER}/service/login"  <<-EOF | ./json.sh auth_token > token2.txt
 {
     "login" : "${LOGIN}",
     "password" : "${PASSWORD}"
 }
 EOF
 
+echo -n 'p:' > token.txt
+cat token2.txt >> token.txt
+rm -f token2.txt
 

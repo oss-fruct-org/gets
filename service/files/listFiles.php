@@ -56,6 +56,10 @@ foreach ($files as $file) {
     $resp .= '<mimeType>' . htmlspecialchars($file['mime']) . '</mimeType>';
     $resp .= '<downloadUrl>' . htmlspecialchars($file['downloadUrl']) . '</downloadUrl>';
 
+    if (isset($file['parent'])) {
+        $resp .= '<parent>' . htmlspecialchars($file['parent']) . '</parent>';
+    }
+
     $resp .= '</file>';
 }
 

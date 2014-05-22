@@ -95,10 +95,18 @@ function list_files($service, $parent_id) {
     for ($i = 0; $i < $count; $i++) {
         $file = $list->items[$i];
 
-        $file_arr = Array('title' => $file->title,
-                'mime' => $file->mimeType,
-                'downloadUrl' => $file->webContentLink);
-        $ret[$i] = $file_arr;
+        if ($file->mimeType === FOLDER_MIME) {
+            $sub_files = list_files($service, $file->id);
+            foreach ($sub_files as $sub_file) {
+                $sub_file['parent'] = $file->title;
+                $ret[] = $sub_file;
+            }
+        } else {
+            $file_arr = Array('title' => $file->title,
+                    'mime' => $file->mimeType,
+                    'downloadUrl' => $file->webContentLink);
+            $ret[] = $file_arr;
+        }
 
     }
 

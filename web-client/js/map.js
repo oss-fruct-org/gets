@@ -4,6 +4,9 @@ L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(map);
 
+//Global data
+var points;
+
 function placePointsOnMap() {
     if (!checkGeoInput()) {
         console.log('Incorrect input.');
@@ -14,14 +17,16 @@ function placePointsOnMap() {
     var longitude = document.getElementById('longitude-input').value;
     var radius = document.getElementById('radius-input').value;
     var category = document.getElementById('category-input').value;
+    //var space = document.getElementById('space-input').value;
     
     console.log('latitude: ' + latitude + ' longitude: ' + longitude + ' radius: ' + radius);
     
-    var points = getPointsAsArray({
+    points = getPointsAsArray({
         latitude: latitude, 
         longitude: longitude, 
         radius: radius, 
-        category: category        
+        category: category 
+        //space: space
     });
     
     for (var i = 0; i < points.length; i++) {

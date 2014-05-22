@@ -79,7 +79,7 @@ function process_json_request($method, $array, $gets_token = null, $allow_token_
         case CHANNEL_NOT_SUBCRIBED_ERROR:
             throw new ChannelNotSubscribedException($error_str, $response_code);
         case WRONG_TOKEN_ERROR:
-            throw new WrongTokenError($error_str, $response_code);
+            throw new WrongTokenException($error_str, $response_code);
         default:
             throw new Exception(check_errors($response_code), $response_code);
         }

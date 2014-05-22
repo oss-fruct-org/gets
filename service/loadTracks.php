@@ -151,6 +151,7 @@ try {
     }
 } catch (Exception $e) {
     send_error(1, $e->getMessage());
+    invalidate_public_token();
     die();
 }
 

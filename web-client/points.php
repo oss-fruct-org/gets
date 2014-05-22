@@ -54,7 +54,7 @@ include_once('actions/utils.inc');
                         <td style="width: 400px;" valign="top">
                             <div id="accordion">
                                 <h3>Load points</h3>                           
-                                <div class="data-input">
+                                <div class="load-points-input">
                                         <p>
                                             <input id="latitude-input" name="latitude" 
                                                    type="text" onchange="enableSubmit();" 
@@ -107,42 +107,14 @@ include_once('actions/utils.inc');
                                         }
                                         ?>
                                         <p>
-                                            <input id="load-input" type="button" value="Load Points" disabled>
+                                            <input id="load-input" type="button" value="Load Points" disabled onclick="loadPointsHandler();">
                                         </p>
-                                </div>  
+                                </div>
+                                <h3>Add point</h3>                           
+                                <div class="add-point-input">
+                                    
+                                </div>
                             </div>
-                            <?php
-                            if ($need_load_data) {
-                                $location_condition = !empty($_GET['latitude']) && !empty($_GET['longitude']) && !empty($_GET['radius']);
-                                $category_condition = $_GET['category'] != -1;
-
-                                $response = array();
-                                if ($location_condition && $category_condition) {
-                                    $response = getPointsAsArray($_SESSION['g2t_token'], $_GET['space'], $_GET['latitude'], $_GET['longitude'], $_GET['radius'], $_GET['category']);
-                                } elseif ($location_condition) {
-                                    $response = getPointsAsArray($_SESSION['g2t_token'], $_GET['space'], $_GET['latitude'], $_GET['longitude'], $_GET['radius'], -1);
-                                } else {
-                                    $response = getPointsAsArray($_SESSION['g2t_token'], $_GET['space'], NULL, NULL, NULL, $_GET['category']);
-                                }
-
-                                echo '<table bgcolor="#ffffff" border="1">';
-                                echo '<thead><tr><td><b>Name</b></td><td><b>Description</b></td><td><b>Coordinates</b></td><td><b>Map</b></td></tr></thead>';
-                                echo '<tbody>';
-                                foreach ($response as $point) {
-                                    echo '<tr>';
-
-                                    echo '<td>' . $point['name'] . '</td>';
-                                    echo '<td>' . $point['description'] . '</td>';
-                                    $coords = explode(',', $point['coords']);
-                                    echo '<td>' . $coords[1] . ',' . $coords[0] . '</td>';
-                                    echo '<td style="width: 130px;"><a target="_blank" href="https://maps.google.com/maps?t=h&q=loc:' . $coords[1] . ',' . $coords[0] . '&z=10">Show on a map</a></td>';
-
-                                    echo '</tr>';
-                                }
-                                echo '</tbody>';
-                                echo '</table>';
-                            }
-                            ?>
                         </td>
                         <td style="width: 700px;" valign="top">
                             <div id="tabs">
@@ -153,8 +125,7 @@ include_once('actions/utils.inc');
                                 <div id="tab-map">
                                     <div id="map" style="width: 700px; height: 730px"></div>
                                 </div>
-                                <div id="tab-list">
-                                    
+                                <div id="tab-list">                                   
                                 </div>
                             </div>     
                         </td>

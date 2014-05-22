@@ -4,30 +4,11 @@ L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(map);
 
-//Global data
-var points;
-
 function placePointsOnMap() {
-    if (!checkGeoInput()) {
-        console.log('Incorrect input.');
+    if (typeof(points) === 'undefined' || points == null) {
+        console.log('points undefined or null');
         return;
     }
-    
-    var latitude = document.getElementById('latitude-input').value;
-    var longitude = document.getElementById('longitude-input').value;
-    var radius = document.getElementById('radius-input').value;
-    var category = document.getElementById('category-input').value;
-    //var space = document.getElementById('space-input').value;
-    
-    console.log('latitude: ' + latitude + ' longitude: ' + longitude + ' radius: ' + radius);
-    
-    points = getPointsAsArray({
-        latitude: latitude, 
-        longitude: longitude, 
-        radius: radius, 
-        category: category 
-        //space: space
-    });
     
     for (var i = 0; i < points.length; i++) {
         var coords = points[i].coordinates.split(',');
@@ -36,4 +17,35 @@ function placePointsOnMap() {
     }
 }
 
-document.getElementById('load-input').onclick = placePointsOnMap;
+function placeTrackOnMap() {
+    if (typeof(track) === 'undefined' || track == null) {
+        console.log('track undefined or null');
+        return;
+    }
+    
+    var coordinatesArray = new Array();
+    for (var i = 0; i < track.points.length; i++) {
+        var localCoords = track.points[i].coordinates.split(',');
+        var point = new L.LatLng(localCoords[0], localCoords[1]);
+        
+        coordinatesArray.push(point);
+    }
+    
+    // create a red polyline from an arrays of LatLng points
+    var polyline = L.polyline(
+            coordinatesArray, 
+            {
+                color: 'red',
+                weight: 3,
+                opacity: 1
+            }).addTo(map);
+
+    // zoom the map to the polyline
+    map.fitBounds(polyline.getBounds());
+
+    
+    for (var i = 0; i < track.points.length; i++) {
+        L.marker(coordinatesArray[i], {title: track.points[i].name}).addTo(map)
+            .bindPopup('<b>' + track.points[i].name + '</b><br>' + track.points[i].description);
+    }
+}

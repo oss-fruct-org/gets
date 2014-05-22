@@ -1,6 +1,6 @@
 <?php
 session_start();
-if (isset($_SESSION['g2t_token']) || isset($_SESSION['guestsession'])) {
+if (isset($_SESSION['g2t_token'])) { 
     header("Location:user.php");
 }
 if (isset($_SESSION['guestsession'])) {

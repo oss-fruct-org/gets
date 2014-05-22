@@ -223,19 +223,3 @@ html, body {
     position: relative;
     margin-top: 15px;
 }
-
-/*.data-input {
-    position: relative;
-    display: block;
-    width: 300px;
-}
-
-.data-input label {
-    left: 0px;
-}
-
-.data-input input[type="text"] {
-    position:absolute;
-    right:0px;
-    width:150px;
-}*/

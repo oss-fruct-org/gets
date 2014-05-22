@@ -1,12 +1,13 @@
-html { 
-    background: url(../images/bg.jpg) no-repeat center center fixed; 
+html, body { 
+    background-color: #f5f5f5;
     -webkit-background-size: cover;
     -moz-background-size: cover;
     -o-background-size: cover;
     background-size: cover;
     color:#777777;
     height: 100%; 
-    margin-bottom: 1px;
+    margin:0;
+    padding:0;
 }
 
 .login-element {
@@ -96,22 +97,14 @@ html {
     background-color:#bcbcbc;
 }
 
-.main-footer {
-    
-}
-
-.main-header a {
-    text-decoration: none;
-}
-
 .main-header-title {
-    position: relative;
+    position: absolute;
     display:inline-block;
-    width: 280px;
-    height: 36px;
-    top: 50%;
-    margin-top: -20px;
-    margin-left: 20px;
+    text-decoration: none;
+    width: 380px;
+    height: 50px;
+    vertical-align: middle;
+    left: 20px;
     color:#555555;
     font-size: 36px;
     font-weight: bold;
@@ -124,51 +117,114 @@ html {
     top: 50%;
     margin-top: -13px;
     margin-left: 5px;
-    color:#555555;
+    color: #555555;
     font-size: 25px;
     font-weight: bold;
 }
 
-.content-table {
-    //position: fixed;
-    display: block;
-    top: 50px; 
-    left: 0%;
-    margin-top: 10px;
-    width: 1000px;
-    height: auto;
+.main-container {
     min-height: 100%;
     position: relative;
 }
 
+.main-content {
+    padding: 50px;
+    //padding-bottom: 50px;   /* Height of the footer */
+}
+
+.main-footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 50px;   /* Height of the footer */
+    background-color: #bcbcbc;
+}
+
+.main-footer p {
+    position: absolute;
+    display: inline-block;
+    left: 50%;
+    margin-left: -500px;
+    width: 1000px;
+    text-align: center;
+    font-size: 10pt;
+}
+
+.content-table {
+    //position: fixed;
+    display: block; 
+    left: 0%;
+ //   //margin-top: 10px;
+    
+//    width: 1000px;
+    //height: auto;
+    //min-height: 100%;
+//    position: relative;
+    margin-top: 10px;
+}
+
 .main-menu {
-    width: 200px;
+    position: absolute;
+    display: inline-block;
+    left: 400px;
+    width: 400px;
+    height: 50px;
+    //margin-top: -50px;
 }
 
-.main-menu p {
-    display: block;
-    height: 30px;
-    width: 200px;
-    margin-left: 5px;
-    padding-left: 15px;
-    padding-top: 5px;
+.main-menu .menu-item {
+    display: inline-block;
+    height: 50px;
+    width: 100px;
+    text-align: center;
+    color: #555555;
 }
 
-.main-menu p:hover {
-    background-color:#bcbcbc;
+.main-menu .menu-item:hover {
+    background-color: #f5f5f5;
     cursor: pointer;
 }
 
-.main-menu p  a {
+.main-menu .menu-item a {
+    display: inline-block;
     position: relative;
-    display: block;
-    height: 30px;
-    width: 200px;
-    color: #555555;
+    height: 50px;
+    width: 100px;
+    color: inherit;
     text-decoration: none;
 }
 
-.data-input {
+.main-menu .menu-item a span {
+    display: inline-block;
+    position: relative;
+    margin-top: 15px;
+}
+
+.main-menu .menu-item-selected {
+    display: inline-block;
+    height: 50px;
+    width: 100px;
+    text-align: center;
+    background-color: #f5f5f5;
+    color: #555555;
+}
+
+.main-menu .menu-item-selected a {
+    display: inline-block;
+    position: relative;
+    height: 50px;
+    width: 100px;
+    color: inherit;
+    text-decoration: none;
+}
+
+.main-menu .menu-item-selected a span {
+    display: inline-block;
+    position: relative;
+    margin-top: 15px;
+}
+
+/*.data-input {
     position: relative;
     display: block;
     width: 300px;
@@ -182,4 +238,4 @@ html {
     position:absolute;
     right:0px;
     width:150px;
-}
+}*/

@@ -183,9 +183,11 @@ function getPointsAsArray(paramsObj) {
         requestString = '<auth_token>' + paramsObj.token + '</auth_token>';
     }
   
-    var locationCondition = (typeof(paramsObj.latitude) !== 'undefined' && paramsObj.latitude != null && paramsObj.latitude !== '') &&
-                            (typeof(paramsObj.longitude) !== 'undefined' && paramsObj.longitude != null && paramsObj.longitude !== '') &&
-                            (typeof(paramsObj.radius) !== 'undefined' && paramsObj.radius != null && paramsObj.radius !== '');
+    var locationCondition = (
+        (typeof(paramsObj.latitude) !== 'undefined' && paramsObj.latitude != null && paramsObj.latitude !== '') &&
+        (typeof(paramsObj.longitude) !== 'undefined' && paramsObj.longitude != null && paramsObj.longitude !== '') &&
+        (typeof(paramsObj.radius) !== 'undefined' && paramsObj.radius != null && paramsObj.radius !== '')
+    );
                     
     var categoryCondition = typeof(paramsObj.category) !== 'undefined' && 
                             paramsObj.category != null && 
@@ -243,4 +245,8 @@ function getPointsAsArray(paramsObj) {
 
     console.log(pointsArray);
     return pointsArray;
+}
+
+function getListOfTracksAsArray() {
+    
 }

@@ -1,5 +1,7 @@
 <?php
 
+require_once 'config.inc';
+
 function process_request($method, $data, $content_type) {
     /* Initialize and configure curl request */
     $ch = curl_init();
@@ -25,7 +27,7 @@ function receive_email_by_token($token) {
     $token = htmlspecialchars($token);
     $request = "<request><params><auth_token>{$token}</auth_token></params></request>";
 
-    $response_str = process_request('http://localhost/getslocal/userInfo.php', $request, 'Content-Type: text/xml');
+    $response_str = process_request(GEO2TAG_USER_INFO_URL, $request, 'Content-Type: text/xml');
     $response_xml = simplexml_load_string($response_str);
 
     if (!$response_xml) {

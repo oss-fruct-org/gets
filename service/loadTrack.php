@@ -46,11 +46,16 @@ if (!$public_token) {
 }
 
 try {
-    try {
-        $response_array = process_json_request(FILTER_CHANNEL_METHOD_URL, Array('channel' => $channel_name, 'amount' => 100), $auth_token);
-    } catch (ChannelNotSubscribedException $e) {
+    if ($auth_token) {
+        try {
+            $response_array = process_json_request(FILTER_CHANNEL_METHOD_URL, Array('channel' => $channel_name, 'amount' => 100), $auth_token);
+        } catch (ChannelNotSubscribedException $e) {
+            $response_array = process_json_request(FILTER_CHANNEL_METHOD_URL, Array('channel' => $channel_name, 'amount' => 100), $public_token);
+        }
+    } else {
         $response_array = process_json_request(FILTER_CHANNEL_METHOD_URL, Array('channel' => $channel_name, 'amount' => 100), $public_token);
     }
+
 } catch (Exception $e) {
     send_error(1, $e->getMessage());
     die();

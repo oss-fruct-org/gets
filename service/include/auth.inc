@@ -52,13 +52,22 @@ function auth_set_initial_token($access_token, $email) {
     return $gets_token;
 }
 
+function auth_set_initial_public_token($access_token, $email) {
+    $gets_token = 'p:' . $access_token;
+
+    auth_set_token($gets_token);
+    $_SESSION['email'] = $email;
+    return $gets_token;
+}
+
 function auth_set_token($gets_token) {
     session_id(sha1(SESSION_SALT . $gets_token));
     session_start();
     $_SESSION['gets_token'] = $gets_token;
-    $_SESSION['refresh_token'] = substr($gets_token, 2);
+    if (!auth_is_public_token($gets_token)) {
+        $_SESSION['refresh_token'] = substr($gets_token, 2);
+    }
 }
-
 function auth_get_google_token() {
     if (!isset($_SESSION['access_token'])) {
         auth_refresh_google_access();

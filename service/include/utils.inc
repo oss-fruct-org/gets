@@ -81,7 +81,7 @@ function process_json_request($method, $array, $gets_token = null, $allow_token_
         case WRONG_TOKEN_ERROR:
             throw new WrongTokenException($error_str, $response_code);
         default:
-            throw new Exception(check_errors($response_code), $response_code);
+            throw new Exception($error_str, $response_code);
         }
     }
 

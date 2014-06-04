@@ -3,6 +3,7 @@
 include_once('config.inc');
 include_once('methods_url.inc');
 include_once('geo2tag_errors_list.inc');
+include_once('auth.inc');
 
 function create_session_id() {
     return sha1('9EXyKVPgLthG' . GEO2TAG_USER . 'O1He7SYW7t3a' . GEO2TAG_PASSWORD);
@@ -24,9 +25,7 @@ function read_public_token() {
 function write_public_token($token) {
     session_id(create_session_id());
     session_start();
-
     $_SESSION['public_token'] = $token;
-
     session_commit();
 }
 
@@ -63,7 +62,9 @@ function receive_public_token() {
         return false;
     }
 
-    $token = 'p:' . $response['auth_token'];
+    $token = auth_set_initial_public_token($response['auth_token'], GEO2TAG_EMAIL);
+    session_commit();
+
     write_public_token($token);
 
     return $token;

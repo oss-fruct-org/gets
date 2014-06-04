@@ -103,7 +103,7 @@ if ($category_name) {
 
 
 function get_channel_info($channel_name, $token) {
-    $request = xmlrpc_encode_request('getTagDescription', array('channel' => $channel_name, 'gets_token' => $token));
+    $request = xmlrpc_encode_request('getChannelDescription', array('channel' => $channel_name, 'gets_token' => $token));
     $response = process_request(ADDITIONAL_FUNCTIONS_METHOD_URL, $request, 'Content-Type: text/xml');
 
     $xmlrpc = xmlrpc_decode($response);
@@ -115,7 +115,7 @@ function get_channel_info($channel_name, $token) {
     return $xmlrpc;
 }
 
-function process_subscribed_channels($response_array, $access, &$resp, $is_incomplete_channel, $token) {
+function process_subscribed_channels($response_array, $access, &$resp, $is_incomplete_channel, $token, &$processed_channels) {
     global $requested_category_id;
 
     if (!isset($response_array['channels'])) {
@@ -128,6 +128,11 @@ function process_subscribed_channels($response_array, $access, &$resp, $is_incom
         }
 
         $channel_name = $channel['name'];
+
+        if (!$channel_name || array_key_exists($channel_name, $processed_channels))
+            continue;
+
+        $processed_channels[$channel_name] = null;
 
         if ($is_incomplete_channel) {
             $channel_info = get_channel_info($channel_name, $token);
@@ -175,6 +180,8 @@ function process_subscribed_channels($response_array, $access, &$resp, $is_incom
 $resp = '<tracks>';
 
 try {
+    $processed_channels = array();
+
     $method = SUBSCRIBED_CHANNELS_METHOD_URL;
     $request_array = Array();
     $is_incomplete = false;
@@ -186,14 +193,14 @@ try {
                 'time_to' => '01 01 2199 00:00:00.000');
     }
 
-    if ($space === SPACE_PUBLIC || $space === SPACE_ALL) {
-        $response_array = process_json_request($method, $request_array, $public_token);
-        process_subscribed_channels($response_array, 'r', $resp, $is_incomplete, $public_token);
-    }
-
     if ($space === SPACE_PRIVATE || $space === SPACE_ALL) {
         $response_array = process_json_request($method, $request_array, $private_token);
-        process_subscribed_channels($response_array, 'rw', $resp, $is_incomplete, $private_token);
+        process_subscribed_channels($response_array, 'rw', $resp, $is_incomplete, $private_token, $processed_channels);
+    }
+
+    if ($space === SPACE_PUBLIC || $space === SPACE_ALL) {
+        $response_array = process_json_request($method, $request_array, $public_token);
+        process_subscribed_channels($response_array, 'r', $resp, $is_incomplete, $public_token, $processed_channels);
     }
 
     /* else {

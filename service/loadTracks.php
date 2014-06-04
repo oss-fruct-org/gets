@@ -101,8 +101,26 @@ if ($category_name) {
     }
 }
 
-function process_subscribed_channels($response_array, $access, &$resp) {
+
+function get_channel_info($channel_name, $token) {
+    $request = xmlrpc_encode_request('getTagDescription', array('channel' => $channel_name, 'gets_token' => $token));
+    $response = process_request(ADDITIONAL_FUNCTIONS_METHOD_URL, $request, 'Content-Type: text/xml');
+
+    $xmlrpc = xmlrpc_decode($response);
+    if (!is_array($xmlrpc) || xmlrpc_is_fault($xmlrpc)) {
+        send_error(1, 'Can\'t load channel information');
+        die();
+    }
+
+    return $xmlrpc;
+}
+
+function process_subscribed_channels($response_array, $access, &$resp, $is_incomplete_channel, $token) {
     global $requested_category_id;
+
+    if (!isset($response_array['channels'])) {
+        return;
+    }
 
     foreach ($response_array['channels'] as $channel) {
         if (isset($channel['channel'])) {
@@ -110,8 +128,15 @@ function process_subscribed_channels($response_array, $access, &$resp) {
         }
 
         $channel_name = $channel['name'];
-        $channel_desc = get_array_element($channel, 'description', '');;
-        $channel_url = get_array_element($channel, 'url', '');;
+
+        if ($is_incomplete_channel) {
+            $channel_info = get_channel_info($channel_name, $token);
+            $channel_desc = $channel_info['description'];
+            $channel_url = $channel_info['url'];
+        } else {
+            $channel_desc = get_array_element($channel, 'description', '');;
+            $channel_url = get_array_element($channel, 'url', '');;
+        }
 
         $channel_description = null;
         $channel_category_id = null;
@@ -152,8 +177,10 @@ $resp = '<tracks>';
 try {
     $method = SUBSCRIBED_CHANNELS_METHOD_URL;
     $request_array = Array();
+    $is_incomplete = false;
 
     if ($is_radius_filter) {
+        $is_incomplete = true;
         $method = FILTER_CIRCLE_METHOD_URL;
         $request_array = Array('radius' => $radius, 'latitude' => $latitude, 'longitude' => $longitude, 'time_from' => '01 01 1999 00:00:00.000',
                 'time_to' => '01 01 2199 00:00:00.000');
@@ -161,12 +188,12 @@ try {
 
     if ($space === SPACE_PUBLIC || $space === SPACE_ALL) {
         $response_array = process_json_request($method, $request_array, $public_token);
-        process_subscribed_channels($response_array, 'r', $resp);
+        process_subscribed_channels($response_array, 'r', $resp, $is_incomplete, $public_token);
     }
 
     if ($space === SPACE_PRIVATE || $space === SPACE_ALL) {
         $response_array = process_json_request($method, $request_array, $private_token);
-        process_subscribed_channels($response_array, 'rw', $resp);
+        process_subscribed_channels($response_array, 'rw', $resp, $is_incomplete, $private_token);
     }
 
     /* else {

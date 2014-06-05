@@ -159,16 +159,16 @@ function process_subscribed_channels($response_array, $access, &$resp, $is_incom
         if (stripos($channel_name, "tr_") === 0 
                 && ($requested_category_id === null || $requested_category_id === $channel_category_id)) {
             $resp .= '<track>';
-            $resp .= '<name>' . $channel_name . '</name>';
+            $resp .= '<name>' . htmlspecialchars($channel_name) . '</name>';
 
-            $resp .= '<description>' . $channel_description . '</description>';
+            $resp .= '<description>' . htmlspecialchars($channel_description) . '</description>';
             $resp .= '<category_id>' . $channel_category_id . '</category_id>';
 
             if ($channel_lang)
-                $resp .= '<lang>' . $channel_lang . '</lang>';
+                $resp .= '<lang>' . htmlspecialchars($channel_lang) . '</lang>';
 
             if ($channel_hname)
-                $resp .= '<hname>' . $channel_hname . '</hname>';
+                $resp .= '<hname>' . htmlspecialchars($channel_hname) . '</hname>';
 
             $resp .= '<access>' . $access . '</access>';
 

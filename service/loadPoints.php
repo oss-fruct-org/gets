@@ -81,16 +81,10 @@ if ($is_auth_token_defined) {
 }
 
 if (!($is_auth_token_defined && ($space === SPACE_PRIVATE))) {
-    $token_public = read_public_token();
-    // No token available, trying to receive it from geo2tag server
+    $token_public = get_public_token();
     if (!$token_public) {
-        $token_public = receive_public_token();
-        //$old_token = false;
-
-        if (!$token_public) {
-            send_error(1, 'Error: can\'t receive new token');
-            die();
-        }
+        send_error(1, 'Error: can\'t receive new token');
+        die();
     }
 }
 
@@ -134,7 +128,7 @@ function getChannelNames(&$token, $category_id) {
             }
 
             // Try receive new token from server
-            $token = receive_public_token();
+            $token = get_public_token();
             if (!$token) {
                 send_error(1, 'Error: can\'t receive new token');
                 die();
@@ -192,7 +186,7 @@ function getData($data_array, $request_type, &$xml, $location_condition, &$is_wr
         }
 
         // Try receive new token from server
-        $token = receive_public_token();
+        $token = get_public_token();
         if (!$token) {
             send_error(1, 'Error: can\'t receive new token');
             die();

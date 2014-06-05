@@ -65,15 +65,11 @@ $private_token = $auth_token;
 $public_token = null;
 
 if ($space === SPACE_ALL || $space === SPACE_PUBLIC) {
-    $public_token = read_public_token();
+    $public_token = get_public_token();
 
-    // No token available, trying to receive it from geo2tag server
     if (!$public_token) {
-        $public_token = receive_public_token();
-        if (!$public_token) {
-            send_error(1, 'Error: can\'t receive new token');
-            die();
-        }
+        send_error(1, 'Error: can\'t receive public token');
+        die();
     }
 }
 

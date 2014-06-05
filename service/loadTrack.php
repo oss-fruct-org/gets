@@ -36,13 +36,10 @@ if (!$dom->schemaValidate('schemes/loadTrack.xsd')) {
 $auth_token = get_request_argument($dom, 'auth_token');
 $channel_name = get_request_argument($dom, 'name');
 
-$public_token = read_public_token();
+$public_token = get_public_token();
 if (!$public_token) {
-    $public_token = receive_public_token();
-    if (!$public_token) {
-        send_error(1, 'Error: can\'t receive new token');
-        die();
-    }
+    send_error(1, 'Error: can\'t receive new token');
+    die();
 }
 
 try {

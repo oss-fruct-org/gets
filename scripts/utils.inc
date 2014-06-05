@@ -31,8 +31,8 @@ function receive_email_by_token($token) {
     session_id($sess_id);
     session_start();
 
-    if (isset($_SESSION['email'])) {
-        return $_SESSION['email'];
+    if (isset($_SESSION['cached_email'])) {
+        return $_SESSION['cached_email'];
     }
 
     $token = htmlspecialchars($token);
@@ -51,7 +51,7 @@ function receive_email_by_token($token) {
     }
 
     $email = (string) $emails[0];
-    $_SESSION['email'] = $email;
+    $_SESSION['cached_email'] = $email;
 
     return $email;
 }

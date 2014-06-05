@@ -9,6 +9,26 @@ function create_session_id() {
     return sha1('9EXyKVPgLthG' . GEO2TAG_USER . 'O1He7SYW7t3a' . GEO2TAG_PASSWORD);
 }
 
+function get_public_token() {
+    $public_token = read_public_token();
+
+    if (!$public_token) {
+        $public_token = receive_public_token();
+    } else {
+        auth_set_token($public_token);
+        if (!isset($_SESSION['login'])) {
+            // Session expired
+            session_unset();
+            session_destroy();
+
+            $public_token = receive_public_token();
+        }
+        session_commit();
+    }
+
+    return $public_token;
+}
+
 function read_public_token() {
     session_id(create_session_id());
     session_start();
@@ -38,31 +58,7 @@ function invalidate_public_token() {
 }
 
 function receive_public_token() {
-    $arr = array();
-    $arr['login'] = GEO2TAG_USER;
-    $arr['password'] = GEO2TAG_PASSWORD;
-
-    $request_json = json_encode($arr);
-    $response_json = process_request(LOGIN_METHOD_URL, $request_json, 'Content-Type:application/json');
-
-    if (!$response_json) {
-        send_error(1, 'Error: problem with request to geo2tag.');
-        die();
-    }
-
-    $response = json_decode($response_json, true);
-    if (!$response) {
-        send_error(1, 'Error: can\'t decode data from geo2tag.');
-        die();
-    }
-
-    $response_code = $response['errno'];
-
-    if ($response_code === INCORRECT_CREDENTIALS_ERROR) {
-        return false;
-    }
-
-    $token = auth_set_initial_public_token($response['auth_token'], GEO2TAG_EMAIL);
+    $token = auth_set_initial_public_token(GEO2TAG_USER, GEO2TAG_PASSWORD, GEO2TAG_EMAIL);
     session_commit();
 
     write_public_token($token);

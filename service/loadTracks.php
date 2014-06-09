@@ -82,7 +82,7 @@ if ($category_name) {
         foreach ($categories as $category) {
             // Category name equals requested name
             if ($category['name'] === $category_name) {
-                $requested_category_id = $category['id'];
+                $requested_category_id = (int) $category['id'];
                 break;
             }
         }
@@ -198,20 +198,6 @@ try {
         $response_array = process_json_request($method, $request_array, $public_token);
         process_subscribed_channels($response_array, 'r', $resp, $is_incomplete, $public_token, $processed_channels);
     }
-
-    /* else {
-        if ($space === SPACE_PUBLIC || $space === SPACE_ALL) {
-            $response_array = process_json_request(FILTER_CIRCLE_METHOD_URL, 
-                    Array('radius' => $radius, 'latitude' => $latitude, 'longitude' => $longitude), $public_token);
-            process_channels_in_radius($response_array, 'r', $resp);
-        }
-
-        if ($space === SPACE_PUBLIC || $space === SPACE_ALL) {
-            $response_array = process_json_request(FILTER_CIRCLE_METHOD_URL, 
-                    Array('radius' => $radius, 'latitude' => $latitude, 'longitude' => $longitude), $private_token);
-            process_channels_in_radius($response_array, 'r', $resp);
-        }
-    }*/
 } catch (Exception $e) {
     send_error(1, $e->getMessage());
     invalidate_public_token();

@@ -159,11 +159,25 @@ function getChannelNames(&$token, $category_id) {
 }
 
 function addItemIntoXml($item, &$xml) {
+    $description = $item['description'];
+    $description_json = json_decode($description, true);
+
+    if ($description_json && isset($description_json['description'])) {
+        $description = $description_json['description'];
+    }
+
     $xml .= '<Placemark>';
     $xml .= '<name><![CDATA[' . $item['title'] . ']]></name>';
-    $xml .= '<description><![CDATA[' .  $item['description'] . ']]></description>';
+    $xml .= '<description><![CDATA[' .  $description . ']]></description>';
     $xml .= '<ExtendedData><Data name="url"><value><![CDATA[' . $item['link'] . ']]></value></Data></ExtendedData>';
     $xml .= '<Point><coordinates>' . $item['latitude'] . ',' . $item['longitude'] . ',0.0' . '</coordinates></Point>';
+
+    foreach ($description_json as $key => $value) {
+        $field = $key;
+        $value = htmlspecialchars($value);
+        $xml .= "<Data name=\"$field\"><value>$value</value></Data>";
+    }
+
     $xml .= '</Placemark>';
 }
 

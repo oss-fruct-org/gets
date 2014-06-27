@@ -90,6 +90,7 @@ foreach ($response_array['channel']['items'] as $item) {
 
     $xml .= '<ExtendedData>';
     $xml .= '<Data name="url"><value>' . htmlspecialchars($item['link']) . '</value></Data>';
+    $xml .= '<Data name="time"><value>' . htmlspecialchars($item['pubDate']) . '</value></Data>';
 
     if ($description_json) {
         foreach ($description_json as $key => $value) {

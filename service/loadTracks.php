@@ -82,7 +82,7 @@ if ($category_name) {
         foreach ($categories as $category) {
             // Category name equals requested name
             if ($category['name'] === $category_name) {
-                $requested_category_id = (int) $category['id'];
+                $requested_category_id = $category['id'];
                 break;
             }
         }
@@ -113,6 +113,7 @@ function get_channel_info($channel_name, $token) {
 
 function process_subscribed_channels($response_array, $access, &$resp, $is_incomplete_channel, $token, &$processed_channels) {
     global $requested_category_id;
+
 
     if (!isset($response_array['channels'])) {
         return;
@@ -152,8 +153,7 @@ function process_subscribed_channels($response_array, $access, &$resp, $is_incom
             $channel_hname = get_array_element($desc_arr, 'hname');
         }
 
-        if (stripos($channel_name, "tr_") === 0 
-                && ($requested_category_id === null || $requested_category_id === $channel_category_id)) {
+        if (stripos($channel_name, "tr_") === 0 && ($requested_category_id === null || $requested_category_id === $channel_category_id)) {
             $resp .= '<track>';
             $resp .= '<name>' . htmlspecialchars($channel_name) . '</name>';
 

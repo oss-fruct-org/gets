@@ -169,14 +169,20 @@ function addItemIntoXml($item, &$xml) {
     $xml .= '<Placemark>';
     $xml .= '<name><![CDATA[' . $item['title'] . ']]></name>';
     $xml .= '<description><![CDATA[' .  $description . ']]></description>';
-    $xml .= '<ExtendedData><Data name="url"><value><![CDATA[' . $item['link'] . ']]></value></Data></ExtendedData>';
-    $xml .= '<Point><coordinates>' . $item['latitude'] . ',' . $item['longitude'] . ',0.0' . '</coordinates></Point>';
 
-    foreach ($description_json as $key => $value) {
-        $field = $key;
-        $value = htmlspecialchars($value);
-        $xml .= "<Data name=\"$field\"><value>$value</value></Data>";
+    $xml .= '<ExtendedData>';
+    $xml .= '<Data name="link"><value>' . htmlspecialchars($item['link']) . '</value></Data>';
+    $xml .= '<Data name="time"><value>' . htmlspecialchars($item['pubDate']) . '</value></Data>';
+
+    if ($description_json) {
+        foreach ($description_json as $key => $value) {
+            $field = $key;
+            $value = htmlspecialchars($value);
+            $xml .= "<Data name=\"$field\"><value>$value</value></Data>";
+        }
     }
+    $xml .= '</ExtendedData>';
+    $xml .= '<Point><coordinates>' . $item['latitude'] . ',' . $item['longitude'] . ',0.0' . '</coordinates></Point>';
 
     $xml .= '</Placemark>';
 }

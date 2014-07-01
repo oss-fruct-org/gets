@@ -56,4 +56,14 @@ function receive_email_by_token($token) {
     return $email;
 }
 
+function get_parameter($params, $name) {
+    if (array_key_exists($name, $params[0])) {
+        $value = $params[0][$name];
+        return $value;
+    } else {
+        trigger_error("Parameter ${name} didn't specified", E_USER_ERROR);
+        die();
+    }
+}
+
 ?>

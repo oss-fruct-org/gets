@@ -153,7 +153,7 @@ function process_subscribed_channels($response_array, $access, &$resp, $is_incom
             $channel_hname = get_array_element($desc_arr, 'hname');
         }
 
-        if (stripos($channel_name, "tr_") === 0 && ($requested_category_id === null || $requested_category_id === $channel_category_id)) {
+        if (stripos($channel_name, "tr_") === 0 && ($requested_category_id === null || $requested_category_id == $channel_category_id)) {
             $resp .= '<track>';
             $resp .= '<name>' . htmlspecialchars($channel_name) . '</name>';
 

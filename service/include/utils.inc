@@ -242,6 +242,19 @@ function get_categories($token = null) {
 }
 
 /**
+    Checks if channel for category_id exists and creates it otherwise
+    Params:
+        $auth_token - if not null channel will be private
+        $category_id - id of category
+    
+    Returns:
+        name of channel
+  */
+function ensure_category_channel($auth_token, $category_id) {
+
+}
+
+/**
     Like var_dump but outputs to error log instead of stdin
   */
 function dump_error_log($object) {

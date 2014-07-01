@@ -7,7 +7,12 @@
           <xs:complexType>
             <xs:sequence>
               <xs:element type="xs:string" name="auth_token"/>
-              <xs:element type="xs:string" name="channel"/>
+
+              <xs:choice>
+                <xs:element type="xs:string" name="channel"/>
+                <xs:element type="xs:integer" name="category_id"/>
+              </xs:choice>
+
               <xs:element type="xs:string" name="title"/>
               <xs:element type="xs:string" name="description"/>
               <xs:element type="xs:string" name="link"/>

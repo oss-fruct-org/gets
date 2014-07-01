@@ -40,6 +40,8 @@ xmlrpc_server_register_method($xmlrpc_server, "deleteChannel", "deleteChannel_fu
 xmlrpc_server_register_method($xmlrpc_server, "deleteTag2", "deleteTag2_func");
 xmlrpc_server_register_method($xmlrpc_server, "updateTag", "updateTag_func");
 xmlrpc_server_register_method($xmlrpc_server, "getChannelDescription", "getChannelDescription_func");
+xmlrpc_server_register_method($xmlrpc_server, "getCategoryChannel", "getCategoryChannel_func");
+
 
 /* process request */
 $request_xml = $HTTP_RAW_POST_DATA;

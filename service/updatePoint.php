@@ -35,6 +35,7 @@ if (!$dom->schemaValidate('schemes/updatePoint.xsd')) {
 }
 
 $auth_token = get_request_argument($dom, 'auth_token');
+$uuid = get_request_argument($dom, 'uuid');
 $channel_name = get_request_argument($dom, 'channel');
 $point_name = get_request_argument($dom, 'name');
 $point_category = get_request_argument($dom, 'category_id');
@@ -46,11 +47,15 @@ $new_longitude = get_request_argument($dom, 'longitude');
 $new_altitude = get_request_argument($dom, 'altitude');
 $new_latitude = get_request_argument($dom, 'latitude');
 
-$xmlrpc_array = array('channel' => $channel_name, 'gets_token' => $auth_token);
+$xmlrpc_array = array('gets_token' => $auth_token);
 if ($point_name)
     $xmlrpc_array['name'] = $point_name;
 if ($point_category)
     $xmlrpc_array['category_name'] = $point_category;
+if ($channel_name)
+    $xmlrpc_array['channel'] = $channel_name;
+if ($uuid)
+    $xmlrpc_array['uuid'] = $uuid;
 
 if ($new_label !== null) $xmlrpc_array['label'] = $new_label;
 if ($new_url !== null) $xmlrpc_array['url'] = $new_url;

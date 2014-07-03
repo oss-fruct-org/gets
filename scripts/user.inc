@@ -1,4 +1,7 @@
 <?php
+
+    require_once 'utils.inc';
+
 /*
     Function adds user to database
 
@@ -7,7 +10,8 @@
 	password - see geo2tag restrictions for password
 	email - valid email address
 
-    Example of using: curl -d "<methodCall><methodName>addUser</methodName><params><param><struct><member><name>login</name><value>user</value></member><member><name>password</name><value>pass</value></member><member><name>email</name><value>user@domain.com</value></member></struct></param></params></methodCall>" http://geo2tag.cs.prv/gets/geo2tag.php
+    Example of using: curl -d "<methodCall><methodName>addUser</methodName>
+    <params><param><struct><member><name>login</name><value>user</value></member><member><name>password</name><value>pass</value></member><member><name>email</name><value>user@domain.com</value></member></struct></param></params></methodCall>" http://geo2tag.cs.prv/gets/geo2tag.php
  */
 
     function adduser_func($method_name, $params, $app_data)
@@ -85,22 +89,34 @@
     Function checks user in database
 
     Params:
-	email - valid email address
+    gets_token - gets authentication token (aka google refresh_token).
 
-    Example of using: curl -d "<methodCall><methodName>checkUser</methodName><params><param><struct><member><name>email</name><value>user@domain.com</value></member></struct></param></params></methodCall>" http://geo2tag.cs.prv/gets/geo2tag.php
+    Example of using: curl -d "<methodCall><methodName>checkUser</methodName>
+    <params><param>
+    <struct>
+    <member>
+        <name>gets_token</name>
+        <value>uroofiehoxaidaowohlaeweiseegae</value>
+    </member>
+    </struct></param></params></methodCall>" http://geo2tag.cs.prv/gets/geo2tag.php
  */
 
     function checkuser_func($method_name, $params, $app_data)
     {
 	global $dbconn;
 
-	if (array_key_exists("email", $params[0])) 
-	    $email = $params[0]["email"];
+	if (array_key_exists("gets_token", $params[0])) 
+	    $gets_token = $params[0]["gets_token"];
 	else {
-	    trigger_error("Email did not specified", E_USER_ERROR);
+	    trigger_error("gets_token did not specified", E_USER_ERROR);
 	    die();
 	}
-	$email = pg_escape_string($email);
+
+    $email = receive_email_by_token($gets_token);
+    if (!$email) {
+        trigger_error("Can't receive email", E_USER_ERROR);
+        die();
+    }
 
 	/* set initial values */
 	$login = $email;

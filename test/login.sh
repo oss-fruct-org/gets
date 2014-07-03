@@ -3,10 +3,19 @@
 #./reset-database.sh > /dev/null
 source ./config.sh
 
-curl -d@- "${GEO2TAG_SERVER}/service/login"  <<-EOF | ./json.sh auth_token > token.txt
+if [ "$#" -eq 2 ]; then
+    LOGIN=$1
+    PASSWORD=$2
+fi
+
+curl -d@- "${GEO2TAG_SERVER}/service/login"  <<-EOF | ./json.sh auth_token > token2.txt
 {
-    "login" : "delzex@gmail.com",
-    "password" : "delzex@gmail.com"
+    "login" : "${LOGIN}",
+    "password" : "${PASSWORD}"
 }
 EOF
+
+echo -n 'p:' > token.txt
+cat token2.txt >> token.txt
+rm -f token2.txt
 

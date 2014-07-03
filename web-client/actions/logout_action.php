@@ -44,6 +44,12 @@ if (isset($_SESSION['g2t_token'])) {
         }
         curl_close($ch);
     }
+} elseif (isset($_SESSION['guestsession'])) {
+    if ($_SESSION['guestsession'] === 1) {
+        unset($_SESSION['guestsession']);
+        session_destroy();
+        header("Location:../login.php");
+    }
 } else {
     header("Location:../login.php");
 }

@@ -1,0 +1,9 @@
+create or replace function safe_cast_to_json(text) returns json as $$
+begin
+    return cast($1 as json);
+exception
+    when invalid_text_representation then
+        return '{}'::json;
+end;
+$$ language plpgsql immutable;
+

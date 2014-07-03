@@ -3,6 +3,8 @@
 include_once('../include/methods_url.inc');
 include_once('../include/utils.inc');
 include_once('../include/public_token.inc');
+include_once('../include/auth.inc');
+require_once 'client.php';
 
 $id = $_GET['id'];
 if (!$id) {
@@ -24,8 +26,13 @@ if (!$auth_token) {
     die();
 }
 
-session_id($auth_token);
-session_start();
+try {
+    auth_set_token($auth_token);
+    auth_get_google_token();
+} catch (GetsAuthException $e) {
+    send_error(1, $e->getMessage());
+    die();
+}
 
 $mimeType = $_SERVER['CONTENT_TYPE'];
 $tmp = tempnam('/tmp', 'gets_store_content_');
@@ -33,7 +40,7 @@ $tmp = tempnam('/tmp', 'gets_store_content_');
 file_put_contents($tmp, file_get_contents('php://input'));
 
 try {
-    require_once 'client.php';
+    $service = create_service();
     $root = check_content_directory($service);
     $file = upload_file($service, $title, $mimeType, $root, $tmp);
 } catch (Exception $e) {

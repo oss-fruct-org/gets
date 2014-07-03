@@ -2,8 +2,16 @@
 include_once('include/methods_url.inc');
 include_once('include/utils.inc');
 include_once('include/public_token.inc');
+include_once('include/auth.inc');
 
 header ('Content-Type:text/xml');
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    header('Access-Control-Allow-Origin: *');
+    header('Access-Control-Allow-Methods: POST, GET, PUT, DELETE');
+    header('Access-Control-Allow-Headers: X-Requested-With, Content-Type');
+} else {
+    header('Access-Control-Allow-Origin: *');
+}
 
 $xml_post = file_get_contents('php://input');
 if (!$xml_post) {
@@ -25,62 +33,42 @@ if (!$dom->schemaValidate('schemes/loadTrack.xsd')) {
     die();
 }
 
-$auth_token_element = $dom->getElementsByTagName('auth_token');
-$is_auth_token_defined = $auth_token_element->length > 0;
+$auth_token = get_request_argument($dom, 'auth_token');
+$channel_name = get_request_argument($dom, 'name');
 
-$name_element = $dom->getElementsByTagName('name');
-$is_name_defined = $name_element->length > 0;
+$public_token = read_public_token();
+if (!$public_token) {
+    $public_token = receive_public_token();
+    if (!$public_token) {
+        send_error(1, 'Error: can\'t receive new token');
+        die();
+    }
+}
 
-$old_token = true;
-if ($is_auth_token_defined) {
-    $data_array['auth_token'] = $auth_token_element->item(0)->nodeValue;
-    $old_token = false;
-} else {
-    $token = read_public_token();
-
-    // No token available, trying to receive it from geo2tag server
-    if (!$token) {
-        $token = receive_public_token();
-        $old_token = false;
-
-        if (!$token) {
-            send_error(1, 'Error: can\'t receive new token');
+try {
+    if ($auth_token) {
+        try {
+            $response_array = process_json_request(FILTER_CHANNEL_METHOD_URL, Array('channel' => $channel_name, 'amount' => 100), $auth_token);
+        } catch (ChannelNotSubscribedException $e) {
+            $response_array = process_json_request(FILTER_CHANNEL_METHOD_URL, Array('channel' => $channel_name, 'amount' => 100), $public_token);
         }
+    } else {
+        $response_array = process_json_request(FILTER_CHANNEL_METHOD_URL, Array('channel' => $channel_name, 'amount' => 100), $public_token);
     }
 
-    $data_array['auth_token'] = $token;
-}
-
-$data_array['channel'] = $name_element->item(0)->nodeValue;
-$data_array['amount'] = 100;
-
-$data_json = json_encode($data_array);
-$response_json = process_request(FILTER_CHANNEL_METHOD_URL, $data_json, 'Content-Type:application/json');
-
-if (!$response_json) {
-    send_error(1, 'Error: problem with request to geo2tag.');
+} catch (Exception $e) {
+    send_error(1, $e->getMessage());
     die();
 }
 
-$response_array = json_decode($response_json, true);
-if (!$response_array) {
-    send_error(1, 'Error: can\'t decode data from geo2tag.');
-    die();
-}
 
-$response_code = check_errors($response_array['errno']);
-if ($response_code !== "Ok") {
-    send_error(1, $response_code);
-    die();
-}
-
-// Output points
 $xml = '<kml xmlns="http://www.opengis.net/kml/2.2">';
 $xml .= '<Document>';
 $xml .= '<name>' . $response_array['channel']['name'] . '.kml</name>';
 $xml .= '<open>1</open>';
 $xml .= '<Style id="styleDocument"><LabelStyle><color>ff0000cc</color></LabelStyle></Style>';
 
+// Output points
 foreach ($response_array['channel']['items'] as $item) {
     $description = $item['description'];
 
@@ -95,7 +83,7 @@ foreach ($response_array['channel']['items'] as $item) {
 
     $xml .= '<Placemark>';
     $xml .= '<name>' . htmlspecialchars($item['title']) . '</name>';
-    
+
     if (!$description_json)
         $xml .= '<description>' . '<![CDATA[' .  $item['description'] . ']]>' . '</description>';
     else if ($inner_description)
@@ -110,13 +98,13 @@ foreach ($response_array['channel']['items'] as $item) {
         foreach ($description_json as $key => $value) {
             $field = $key;
             $value = htmlspecialchars($value);
-        
+
             $xml .= "<Data name=\"$field\"><value>$value</value></Data>";
         }
     }
 
     $xml .= '</ExtendedData>';
-    
+
     $xml .= '<Point><coordinates>' . $item['latitude'] . ',' . $item['longitude'] . ',0.0' . '</coordinates></Point>';
     $xml .= '</Placemark>';
 }

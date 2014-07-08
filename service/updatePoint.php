@@ -40,6 +40,11 @@ $channel_name = get_request_argument($dom, 'channel');
 $point_name = get_request_argument($dom, 'name');
 $point_category = get_request_argument($dom, 'category_id');
 
+if (!$uuid && !$channel_name && !$point_name && !$point_category) {
+    send_error(1, 'No filter criteria specified');
+    die();
+}
+
 $new_label = get_request_argument($dom, 'title');
 $new_url = get_request_argument($dom, 'link');
 $new_description = get_request_argument($dom, 'description');

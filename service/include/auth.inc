@@ -55,7 +55,7 @@ function auth_set_initial_token($access_token, $email) {
 function auth_set_initial_public_token($login, $password, $email) {
     $f = fopen('/dev/urandom', 'rb');
     if ($f) {
-        $gets_token = sha1(fread($f, 16));
+        $gets_token = 'p:' . sha1(fread($f, 16));
         fclose($f);
     } else {
         $gets_token = 'p:' . sha1($login . $password . $email);

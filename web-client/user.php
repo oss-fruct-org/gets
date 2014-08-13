@@ -1,13 +1,5 @@
 <?php
 session_start();
-if (!isset($_SESSION['g2t_token']) && !isset($_SESSION['guestsession'])) {
-    header("Location:login.php");
-}
-if (isset($_SESSION['guestsession'])) {
-    if ($_SESSION['guestsession'] !== 1) {
-        header("Location:login.php");
-    }
-}
 ?>
 <html>
     <head>
@@ -20,8 +12,8 @@ if (isset($_SESSION['guestsession'])) {
         <div class="main-container">
             <div class="main-header">
                 <?php
-                include('widgets/header.php');
-                include('widgets/menu.php');
+                include('widgets/main/header.inc');
+                include('widgets/main/menu.inc');
                 echo getMenuAsString(basename(__FILE__, '.php'));
                 ?>
             </div>
@@ -37,7 +29,7 @@ if (isset($_SESSION['guestsession'])) {
             </div>
             <div class="main-footer">
                 <?php
-                include('widgets/footer.php');
+                include('widgets/main/footer.inc');
                 ?>
             </div>
         </div>

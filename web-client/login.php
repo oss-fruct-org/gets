@@ -14,14 +14,28 @@ if (isset($_SESSION['guestsession'])) {
         <?php
         include_once('html_headers.php');		
         ?>
+        <script src="js/jquery-ui/js/jquery-1.10.2.js"></script>
         <script src="js/scripts.js"></script>
-	<title>GeTS Web Client</title>	
+        <script>
+            $( document ).ready(function() {
+                var returnUrl = $.getUrlVar('return_url');
+                console.log('returnUrl: ' + returnUrl);
+                if (typeof(returnUrl) !== 'undefined' || returnUrl  !== '') {
+                    $(' #return-url-input ').val(returnUrl);                   
+                } 
+                
+                $( '#googleAuth' ).on('click', function() { 
+                    authorizeGoogle(returnUrl);
+                });   
+            });    
+        </script>
+	<title>GeTS Web Client</title>       
     </head>
     <body>
         <div class="main-container">
             <div class="main-header">
                 <?php
-                include('widgets/header.php');
+                include('widgets/main/header.inc');
                 ?>
             </div>
             <?php
@@ -37,21 +51,19 @@ if (isset($_SESSION['guestsession'])) {
             ?>
             <div class="main-content">
                 <div class="login-element">
-                    <form action="actions/login_action.php" method="post">
+                    <form action="actions/login.php" method="post">
                         <p><input class="login-name" type="text" name="login_name" placeholder="Login"/></p>
                         <p><input class="login-password" type="password" name="login_password" placeholder="Password"/></p>
-                        <p><input class="login-button" type="submit" name="submitlogin" value="Login"/></p>
+                        <input id="return-url-input" type="hidden" name="return_url"/>
+                        <p><input class="main-button-style" type="submit" name="submitlogin" value="Login"/></p>
                     </form>
                     <p align="center">or</p>
-                    <p><input class="login-button" type="button" value="Login with Google" onclick="authorizeGoogle();"/></p>
-                    <form action="actions/login_guest_action.php" method="post">
-                        <p><input class="login-button" type="submit" name="guestsession" value="Enter as Guest"/></p>
-                    </form>
+                    <p><input id="googleAuth" class="main-button-style" type="button" value="Login with Google"/></p>
                 </div>
             </div>
             <div class="main-footer">
                 <?php
-                include('widgets/footer.php');
+                include('widgets/main/footer.inc');
                 ?>
             </div>
         </div>

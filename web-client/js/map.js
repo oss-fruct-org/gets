@@ -46,6 +46,13 @@ function placeTrackOnMap() {
     
     for (var i = 0; i < track.points.length; i++) {
         L.marker(coordinatesArray[i], {title: track.points[i].name}).addTo(map)
-            .bindPopup('<b>' + track.points[i].name + '</b><br>' + track.points[i].description);
+            .bindPopup(
+                '<b>' + track.points[i].name + '</b><br>' + 
+                track.points[i].description + '<br>' + 
+                track.points[i].coordinates + '<br>' +
+                '<a href="' + track.points[i].url + '">' + track.points[i].url + '</a>' + 
+                '<audio controls><source type="audio/mpeg" src="' + track.points[i].audio + '"></audio>' + 
+                '<br><br><b>Track</b>: ' + track.hname
+            );
     }
 }

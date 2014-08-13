@@ -18,7 +18,7 @@ html, body {
     margin-top: -75px;
     margin-left: -102px;
     width: 205px;
-    height: 275px;
+    height: 230px;
     background-color: white;
     -moz-border-radius: 15px;
     border-radius: 15px;
@@ -26,7 +26,7 @@ html, body {
     box-shadow: 0 0 15px rgba(0,0,0,0.5);
 }
 
-.login-button {
+.main-button-style {
     -moz-box-shadow:inset 0px 1px 0px 0px #ffffff;
     -webkit-box-shadow:inset 0px 1px 0px 0px #ffffff;
     box-shadow:inset 0px 1px 0px 0px #ffffff;
@@ -63,16 +63,40 @@ html, body {
     text-shadow:1px 1px 0px #ffffff;
 }
 
-.login-button:hover {
+.main-button-style:hover {
     background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #dfdfdf), color-stop(1, #ededed) );
     background:-moz-linear-gradient( center top, #dfdfdf 5%, #ededed 100% );
     filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#dfdfdf', endColorstr='#ededed');
     background-color:#dfdfdf;
 }
 
-.login-button:active {
+.main-button-style:active {
     position:relative;
     top:1px;
+}
+
+.sign-in-button {
+    display: inline-block;
+    position: absolute;
+    width: 100px;
+    height: 50px;
+    line-height: 50px;
+    text-align: center;
+    right: 0;
+    text-decoration: none;
+    color: inherit;
+}
+
+.sign-in-button:hover {
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+#map {
+    min-width: 600px;
+    min-height: 600px;
+    width: 100%;
+    height: 100%;
 }
 
 .login-name {
@@ -135,6 +159,7 @@ html, body {
 .main-footer {
     position: absolute;
     bottom: 0;
+    left: 0;
     width: 100%;
     height: 50px;   /* Height of the footer */
     background-color: #bcbcbc;
@@ -151,25 +176,17 @@ html, body {
 }
 
 .content-table {
-    //position: fixed;
+    position: fixed;
     display: block; 
-    left: 0%;
- //   //margin-top: 10px;
-    
-//    width: 1000px;
-    //height: auto;
-    //min-height: 100%;
-//    position: relative;
-    margin-top: 10px;
+    left: 0px;
+    width: 1100px;
 }
 
 .main-menu {
     position: absolute;
     display: inline-block;
     left: 400px;
-    width: 400px;
     height: 50px;
-    //margin-top: -50px;
 }
 
 .main-menu .menu-item {
@@ -222,4 +239,349 @@ html, body {
     display: inline-block;
     position: relative;
     margin-top: 15px;
+}
+
+.action-menu {
+    width: 400px;
+}
+
+.tracks-container {
+    display: block;
+    position: absolute;
+    width: 400px;
+    border-color: #bbbbbb;
+    border-style: solid;
+    border-width: 1px;
+    top: 0;
+    left: 0;
+    background-color: #f5f5f5;   
+}
+
+.tracks-container-inner-content {
+    padding: 10px;
+    overflow: auto;
+}
+
+.back-button-continer {
+    display: block;
+    position: relative;
+    height: 50px;
+    background-color: #f5f5f5;
+    border-color: #bbbbbb;
+    border-style: outset;
+    border-width: 1px;
+}
+
+.back-button-continer:hover {
+    background-color: #bcbcbc;
+    cursor: pointer;
+}
+
+.back-button-continer:active {
+    top: 1px;
+}
+
+.back-button-icon {
+    display: block;
+    position: relative;
+    top: 50%;
+    left: 50%;
+    margin-top: -8px;
+    margin-left: -8px;
+}
+
+.main-block, .tracks-edit-input-item, .tracks-list-container {
+    display: block;
+    position: relative;
+    margin-top: 10px;
+}
+
+.label-column {
+    display: block;
+    position: relative;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.tracks-edit-track-name {
+    display: block;
+    position: relative;
+}
+
+.line-input-width-fit {
+    display: block;
+    position: relative;
+    padding: 2px;
+    width: 100%;
+    height: 30px;
+    line-height: 20px;
+    -webkit-box-sizing : border-box;‌
+    -moz-box-sizing : border-box;
+    box-sizing : border-box;
+}
+
+.textarea-width-fit {
+    display: block;
+    position: relative;
+    padding: 2px;
+    width: 100%;
+    height: 100px;
+    line-height: 20px;
+    -webkit-box-sizing : border-box;‌
+    -moz-box-sizing : border-box;
+    box-sizing : border-box;
+}
+
+.coords-input-item {
+    display: inline-block;
+    position: relative;
+    width: 32%;
+    letter-spacing: normal;
+}
+
+.toolbar, coords-input-container {
+    display: block;
+    position: relative;
+    height: 50px;
+    margin: 0;
+    padding: 0;
+    /* This property is using to get rid of spaces between "inline-block elements" */
+    letter-spacing: -0.3em;
+}
+
+.one-button-toolbar-button-container {
+    display: inline-block;
+    position: relative;
+    width: 99.7%;
+    height: 50px;
+    background-color: #f5f5f5;
+    border-color: #bbbbbb;
+    border-style: outset;
+    border-width: 1px;
+    border-collapse: collapse;
+    letter-spacing: normal;
+}
+
+.one-button-toolbar-button-container:hover {
+    background-color: #bcbcbc;
+    cursor: pointer;
+}
+
+.one-button-toolbar-button-container:active {
+    top: 1px;
+}
+
+.two-button-toolbar-button-container {
+    display: inline-block;
+    position: relative;
+    width: 49.45%;
+    height: 50px;
+    background-color: #f5f5f5;
+    border-color: #bbbbbb;
+    border-style: outset;
+    border-width: 1px;
+    border-collapse: collapse;
+    letter-spacing: normal;
+}
+
+.two-button-toolbar-button-container:hover {
+    background-color: #bcbcbc;
+    cursor: pointer;
+}
+
+.two-button-toolbar-button-container:active {
+    top: 1px;
+}
+
+.three-button-toolbar-button-container {
+    display: inline-block;
+    position: relative;
+    width: 32.8%;
+    height: 50px;
+    background-color: #f5f5f5;
+    border-color: #bbbbbb;
+    border-style: outset;
+    border-width: 1px;
+    border-collapse: collapse;
+    letter-spacing: normal;
+}
+
+.three-button-toolbar-button-container:hover {
+    background-color: #bcbcbc;
+    cursor: pointer;
+}
+
+.three-button-toolbar-button-container:active {
+    top: 1px;
+}
+
+.toolbar-button-icon {
+    display: block;
+    position: relative;
+    top: 50%;
+    left: 50%;
+    margin-top: -8px;
+    margin-left: -8px;
+}
+
+.button-w-icon {
+    display: inline-block;
+    position: relative;
+    width: 30px;
+    height: 30px;
+    background-color: #f5f5f5;
+    border-color: #bbbbbb;
+    border-style: outset;
+    border-width: 1px;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.button-w-icon:hover {
+    background-color: #bcbcbc;
+    cursor: pointer;
+}
+
+.button-w-icon:active {
+    top: 1px;
+}
+
+.button-w-icon img{
+    display: block;
+    position: relative;
+    top: 50%;
+    left: 50%;
+    margin-top: -8px;
+    margin-left: -8px;
+}
+
+.search-input {
+    padding-left: 30px;
+    background-image: url('../images/icons/search.png');
+    background-repeat: no-repeat;
+    background-position: 8px center; 
+}
+
+.main-list {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+    height: 210px;
+    overflow-y: auto;
+}
+
+.main-list li {
+    height: 40px;
+    border-color: #bbbbbb;
+    border-style: solid;
+    border-width: 1px;   
+    background-color: #f5f5f5;
+    border-collapse: collapse;
+}
+
+a.transition-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+.main-list li:hover {
+    background-color: #bcbcbc;
+    cursor: pointer;
+}
+
+.big-text {
+    font-size: 20pt;
+}
+
+.bold-text {
+    font-weight: bold;
+}
+
+.fixed-height-container-small {
+    max-height: 100px;
+}
+
+.ellipsis-text {
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis;
+}
+
+.overflow-auto {
+    overflow: auto;
+}
+
+.width-half {
+    width: 50%;
+}
+
+.width-three-fourths {
+    width: 75%;
+}
+
+.hidden {
+    visibility: hidden;
+    z-index: 0;
+}
+
+.visible {
+    visibility: visible;
+    z-index: 1;
+}
+
+.padding-std {
+    padding: 10px;
+}
+
+.block {
+    display: block;
+}
+
+.inline-block {
+    display: inline-block;
+    width: 100%;
+}
+
+/* Message box styles*/
+#message-box {
+    display: none;
+    position: absolute;
+    width: 378px;
+    border: 1px solid;
+    padding:15px 10px 15px 10px;
+    bottom: 50px;
+    left: 0;
+    z-index: 100;
+}
+.info-message-box {
+    color: #00529B;
+    background-color: #BDE5F8;
+}
+.success-message-box {
+    color: #4F8A10;
+    background-color: #DFF2BF;
+}
+.warning-message-box {
+    color: #9F6000;
+    background-color: #FEEFB3;
+}
+.error-message-box {
+    color: #D8000C;
+    background-color: #FFBABA;
+}
+.close-icon {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    border: 1px solid;
+    padding: 2px;
+    font-size: 14px;
+    width: 1em;
+    height: 1em;
+    line-height: 1em;
+    text-align: center;               
+}
+.close-icon:hover {
+    cursor: pointer;
 }

@@ -6,10 +6,11 @@
 
     Params:
 	name - any non existent name of category (max 300 symbols)
+	projectID - the project ID (max 300 symbols, non required)
 	description - any short category description (max 2048 symbols, not required)
 	url - any url for corresponded category (max 2048 symbols, not required)
 
-    Example of using: curl -d "<methodCall><methodName>addCategory</methodName><params><param><struct><member><name>name</name><value>shops</value></member><member><name>description</name><value>Shops, markets, etc.</value></member><member><name>url</name><value>http://en.wikipedia.org/wiki/Market</value></member></struct></param></params></methodCall>" http://geo2tag.cs.prv/gets/geo2tag.php
+    Example of using: curl -d "<methodCall><methodName>addCategory</methodName><params><param><struct><member><name>name</name><value>shops</value></member><member><name>projectID</name><value>gets2</value></member><member><name>description</name><value>Shops, markets, etc.</value></member><member><name>url</name><value>http://en.wikipedia.org/wiki/Market</value></member></struct></param></params></methodCall>" http://geo2tag.cs.prv/gets/geo2tag.php
  */
 
     function addcategory_func($method_name, $params, $app_data)
@@ -32,6 +33,14 @@
 	} else {
 	    $description = "NULL";
 	}
+
+	if (array_key_exists("projectID", $params[0])) {
+	    $projectID = $params[0]["projectID"];
+	    $projectID = pg_escape_string($projectID);
+	    $projectID = "'$projectID'";
+	} else {
+	    $projectID = "NULL";
+	}
 	    
 	if (array_key_exists("url", $params[0])) {
 	    $url = $params[0]["url"];
@@ -41,9 +50,14 @@
 	    $url = "NULL";
 	}
 
-	/* check availability user name */
+	/* check availability category name */
 
-	$sql_request = "select count(*) from category where category.name=$name;";
+	if ($projectID != "NULL")
+	{
+	    $sql_request = "select count(*) from category where category.name=$name and category.owner_id=$projectID;";
+	} else {
+	    $sql_request = "select count(*) from category where category.name=$name;";
+	}
 	$res = pg_query($dbconn, $sql_request);
 
 	if (!$res) {
@@ -58,7 +72,7 @@
 	    die();
 	}
 
-	$sql_request = "insert into category (name, description, url) values ($name, $description, $url);";
+	$sql_request = "insert into category (name, description, url, owner_id) values ($name, $description, $url, $projectID);";
 	$res = pg_query($dbconn, $sql_request);
 
 	if (!$res) {
@@ -88,14 +102,23 @@
     Function gets list of categories
 
     Params:
+	projectID - the project ID (max 300 symbols, non required)
 
-    Example of using: curl -d "<methodCall><methodName>getCategories</methodName></methodCall>" http://geo2tag.cs.prv/gets/geo2tag.php
+    Example of using: curl -d "<methodCall><methodName>getCategories</methodName><params><param><struct><member><name>projectID</name><value>gets2</value></member></struct></param></params></methodCall>" http://geo2tag.cs.prv/gets/geo2tag.php
  */
     function getcategories_func($method_name, $params, $app_data)
     {
 	global $dbconn;
 
-	$sql_request = "select * from category;";
+	if (array_key_exists("projectID", $params[0])) {
+	    $projectID = $params[0]["projectID"];
+	    $projectID = pg_escape_string($projectID);
+	    $projectID = "'$projectID'";
+	} else {
+	    $projectID = "NULL";
+	}
+
+	$sql_request = "select * from category where category.owner_id=$projectID;";
 	$res = pg_query($dbconn, $sql_request);
 	if (!$res) {
 	    trigger_error("SQL error", E_USER_ERROR);

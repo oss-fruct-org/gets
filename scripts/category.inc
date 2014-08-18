@@ -6,11 +6,11 @@
 
     Params:
 	name - any non existent name of category (max 300 symbols)
-	projectID - the project ID (max 300 symbols, non required)
+	projectName - the project name or main admin login (max 300 symbols, non required)
 	description - any short category description (max 2048 symbols, not required)
 	url - any url for corresponded category (max 2048 symbols, not required)
 
-    Example of usage: curl -d "<methodCall><methodName>addCategory</methodName><params><param><struct><member><name>name</name><value>shops</value></member><member><name>projectID</name><value>gets2</value></member><member><name>description</name><value>Shops, markets, etc.</value></member><member><name>url</name><value>http://en.wikipedia.org/wiki/Market</value></member></struct></param></params></methodCall>" http://geo2tag.cs.prv/gets/geo2tag.php
+    Example of usage: curl -d "<methodCall><methodName>addCategory</methodName><params><param><struct><member><name>name</name><value>shops</value></member><member><name>projectName</name><value>gets2</value></member><member><name>description</name><value>Shops, markets, etc.</value></member><member><name>url</name><value>http://en.wikipedia.org/wiki/Market</value></member></struct></param></params></methodCall>" http://geo2tag.cs.prv/gets/geo2tag.php
  */
 
     function addcategory_func($method_name, $params, $app_data)
@@ -34,12 +34,12 @@
 	    $description = "NULL";
 	}
 
-	if (array_key_exists("projectID", $params[0])) {
-	    $projectID = $params[0]["projectID"];
-	    $projectID = pg_escape_string($projectID);
-	    $projectID = "'$projectID'";
+	if (array_key_exists("projectName", $params[0])) {
+	    $projectName = $params[0]["projectName"];
+	    $projectName = pg_escape_string($projectName);
+	    $projectName = "'$projectName'";
 	} else {
-	    $projectID = "NULL";
+	    $projectName = "NULL";
 	}
 	    
 	if (array_key_exists("url", $params[0])) {
@@ -50,11 +50,15 @@
 	    $url = "NULL";
 	}
 
+	/* check project name if exists */
+	if ($projectName != "NULL") {
+	}
+
 	/* check availability category name */
 
-	if ($projectID != "NULL")
+	if ($projectName != "NULL")
 	{
-	    $sql_request = "select count(*) from category,users where category.name=$name and category.owner_id=users.id and users.login=$projectID;";
+	    $sql_request = "select count(*) from category,users where category.name=$name and category.owner_id=users.id and users.login=$projectName;";
 	} else {
 	    $sql_request = "select count(*) from category where category.name=$name;";
 	}
@@ -72,7 +76,7 @@
 	    die();
 	}
 
-	$sql_request = "insert into category (name, description, url, owner_id) values ($name, $description, $url, $projectID);";
+	$sql_request = "insert into category (name, description, url, owner_id) values ($name, $description, $url, $projectName);";
 	$res = pg_query($dbconn, $sql_request);
 
 	if (!$res) {
@@ -102,23 +106,27 @@
     Function gets list of categories
 
     Params:
-	projectID - the project ID (max 300 symbols, non required)
+	projectName - the project name or main admin login (max 300 symbols, non required)
 
-    Example of usage: curl -d "<methodCall><methodName>getCategories</methodName><params><param><struct><member><name>projectID</name><value>gets2</value></member></struct></param></params></methodCall>" http://geo2tag.cs.prv/gets/geo2tag.php
+    Example of usage: curl -d "<methodCall><methodName>getCategories</methodName><params><param><struct><member><name>projectName</name><value>gets2</value></member></struct></param></params></methodCall>" http://geo2tag.cs.prv/gets/geo2tag.php
  */
     function getcategories_func($method_name, $params, $app_data)
     {
 	global $dbconn;
 
-	if (array_key_exists("projectID", $params[0])) {
-	    $projectID = $params[0]["projectID"];
-	    $projectID = pg_escape_string($projectID);
-	    $projectID = "'$projectID'";
+	if ($params > 0 && array_key_exists("projectName", $params[0])) {
+	    $projectName = $params[0]["projectName"];
+	    $projectName = pg_escape_string($projectName);
+	    $projectName = "'$projectName'";
 	} else {
-	    $projectID = "NULL";
+	    $projectName = "NULL";
 	}
 
-	$sql_request = "select category.id, category.name, category.description, category.url from category, users where category.owner_id=users.id and users.login=$projectID;";
+	if ($projectName != "NULL") {
+	    $sql_request = "select category.id, category.name, category.description, category.url from category, users where category.owner_id=users.id and users.login=$projectName;";
+	} else {
+	    $sql_request = "select category.id, category.name, category.description, category.url from category";
+	}
 	$res = pg_query($dbconn, $sql_request);
 	if (!$res) {
 	    trigger_error("SQL error", E_USER_ERROR);

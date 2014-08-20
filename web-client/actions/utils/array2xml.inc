@@ -20,7 +20,7 @@ function array2xml($array, $wrap='params', $upper=true) {
             $key = strtoupper($key);
         }
         // append to XML string
-        $xml .= "<$key>" . htmlspecialchars(trim($value)) . "</$key>";
+        $xml .= "<$key>" . $value . "</$key>";
     }
     // close wrap TAG if needed
     if ($wrap != null) {

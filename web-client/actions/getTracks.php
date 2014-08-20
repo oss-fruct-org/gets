@@ -20,8 +20,10 @@ if (filter_input(INPUT_SERVER, 'REQUEST_METHOD') == 'POST') {
         $auth_token_array = array();
         $auth_token_array['auth_token'] = $_SESSION['g2t_token'];
         $combined_array = array_merge($auth_token_array, $post_data_array);
+        $data = array2xml($combined_array, 'params', false);
+    } else {
+        $data = array2xml($post_data_array, 'params', false);
     }
-    $data = array2xml($post_data_array, 'params', false);
     echo process_request(LOAD_TRACKS_METHOD_URL, '<request>' . $data . '</request>', 'Content-Type: text/xml');   
 } else {
     die('Not POST request');

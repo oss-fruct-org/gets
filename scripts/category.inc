@@ -6,10 +6,11 @@
 
     Params:
 	name - any non existent name of category (max 300 symbols)
+	projectName - the project name or main admin login (max 300 symbols, non required)
 	description - any short category description (max 2048 symbols, not required)
 	url - any url for corresponded category (max 2048 symbols, not required)
 
-    Example of using: curl -d "<methodCall><methodName>addCategory</methodName><params><param><struct><member><name>name</name><value>shops</value></member><member><name>description</name><value>Shops, markets, etc.</value></member><member><name>url</name><value>http://en.wikipedia.org/wiki/Market</value></member></struct></param></params></methodCall>" http://geo2tag.cs.prv/gets/geo2tag.php
+    Example of usage: curl -d "<methodCall><methodName>addCategory</methodName><params><param><struct><member><name>name</name><value>shops</value></member><member><name>projectName</name><value>gets2</value></member><member><name>description</name><value>Shops, markets, etc.</value></member><member><name>url</name><value>http://en.wikipedia.org/wiki/Market</value></member></struct></param></params></methodCall>" http://geo2tag.cs.prv/gets/geo2tag.php
  */
 
     function addcategory_func($method_name, $params, $app_data)
@@ -32,6 +33,14 @@
 	} else {
 	    $description = "NULL";
 	}
+
+	if (array_key_exists("projectName", $params[0])) {
+	    $projectName = $params[0]["projectName"];
+	    $projectName = pg_escape_string($projectName);
+	    $projectName = "'$projectName'";
+	} else {
+	    $projectName = "NULL";
+	}
 	    
 	if (array_key_exists("url", $params[0])) {
 	    $url = $params[0]["url"];
@@ -41,9 +50,18 @@
 	    $url = "NULL";
 	}
 
-	/* check availability user name */
+	/* check project name if exists */
+	if ($projectName != "NULL") {
+	}
 
-	$sql_request = "select count(*) from category where category.name=$name;";
+	/* check availability category name */
+
+	if ($projectName != "NULL")
+	{
+	    $sql_request = "select count(*) from category,users where category.name=$name and category.owner_id=users.id and users.login=$projectName;";
+	} else {
+	    $sql_request = "select count(*) from category where category.name=$name;";
+	}
 	$res = pg_query($dbconn, $sql_request);
 
 	if (!$res) {
@@ -58,7 +76,7 @@
 	    die();
 	}
 
-	$sql_request = "insert into category (name, description, url) values ($name, $description, $url);";
+	$sql_request = "insert into category (name, description, url, owner_id) values ($name, $description, $url, $projectName);";
 	$res = pg_query($dbconn, $sql_request);
 
 	if (!$res) {
@@ -88,14 +106,27 @@
     Function gets list of categories
 
     Params:
+	projectName - the project name or main admin login (max 300 symbols, non required)
 
-    Example of using: curl -d "<methodCall><methodName>getCategories</methodName></methodCall>" http://geo2tag.cs.prv/gets/geo2tag.php
+    Example of usage: curl -d "<methodCall><methodName>getCategories</methodName><params><param><struct><member><name>projectName</name><value>gets2</value></member></struct></param></params></methodCall>" http://geo2tag.cs.prv/gets/geo2tag.php
  */
     function getcategories_func($method_name, $params, $app_data)
     {
 	global $dbconn;
 
-	$sql_request = "select * from category;";
+	if ($params > 0 && array_key_exists("projectName", $params[0])) {
+	    $projectName = $params[0]["projectName"];
+	    $projectName = pg_escape_string($projectName);
+	    $projectName = "'$projectName'";
+	} else {
+	    $projectName = "NULL";
+	}
+
+	if ($projectName != "NULL") {
+	    $sql_request = "select category.id, category.name, category.description, category.url from category, users where category.owner_id=users.id and users.login=$projectName;";
+	} else {
+	    $sql_request = "select category.id, category.name, category.description, category.url from category";
+	}
 	$res = pg_query($dbconn, $sql_request);
 	if (!$res) {
 	    trigger_error("SQL error", E_USER_ERROR);
@@ -113,7 +144,7 @@
 	login - geo2tag admin login
 	password - geo2tag admin password
 
-    Example of using: curl -d "<methodCall><methodName>deleteCategory</methodName><params><param><struct><member><name>id</name><value>2</value></member><member><name>login</name><value>root</value></member><member><name>password</name><value>pass</value></member></struct></param></params></methodCall>" http://geo2tag.cs.prv/gets/geo2tag.php
+    Example of usage: curl -d "<methodCall><methodName>deleteCategory</methodName><params><param><struct><member><name>id</name><value>2</value></member><member><name>login</name><value>root</value></member><member><name>password</name><value>pass</value></member></struct></param></params></methodCall>" http://geo2tag.cs.prv/gets/geo2tag.php
  */
     function deletecategory_func($method_name, $params, $app_data)
     {

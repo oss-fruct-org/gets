@@ -183,7 +183,7 @@ function addItemIntoXml($item, &$xml, $is_private) {
         }
     }
     $xml .= '</ExtendedData>';
-    $xml .= '<Point><coordinates>' . $item['latitude'] . ',' . $item['longitude'] . ',0.0' . '</coordinates></Point>';
+    $xml .= '<Point><coordinates>' . $item['longitude'] . ',' . $item['latitude'] . ',0.0' . '</coordinates></Point>';
 
     $xml .= '</Placemark>';
 }

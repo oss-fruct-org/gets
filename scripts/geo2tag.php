@@ -26,7 +26,7 @@ set_error_handler('return_xmlrpc_error');
 $xmlrpc_server = xmlrpc_server_create();
 
 global $dbconn;
-$dbconn = pg_connect("dbname=geo2tag user=geo2tag password=geo2tag");
+$dbconn = pg_connect("host=geo2tag.cs.prv dbname=geo2tag user=geo2tag password=geo2tag");
 
 /* register methods */
 xmlrpc_server_register_method($xmlrpc_server, "addUser", "adduser_func");
@@ -44,6 +44,7 @@ xmlrpc_server_register_method($xmlrpc_server, "getCategoryChannel", "getCategory
 
 
 /* process request */
+if (!isset($HTTP_RAW_POST_DATA)) $HTTP_RAW_POST_DATA = file_get_contents('php://input');
 $request_xml = $HTTP_RAW_POST_DATA;
 
 $response = xmlrpc_server_call_method($xmlrpc_server, $request_xml, '');

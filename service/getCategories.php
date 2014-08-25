@@ -1,6 +1,7 @@
 <?php
 include_once('include/methods_url.inc');
 include_once('include/utils.inc');
+include_once('include/config.inc');
 
 header('Content-Type:text/xml');
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {

@@ -103,7 +103,7 @@ foreach ($response_array['channel']['items'] as $item) {
 
     $xml .= '</ExtendedData>';
 
-    $xml .= '<Point><coordinates>' . $item['latitude'] . ',' . $item['longitude'] . ',0.0' . '</coordinates></Point>';
+    $xml .= '<Point><coordinates>' . $item['longitude'] . ',' . $item['latitude'] . ',0.0' . '</coordinates></Point>';
     $xml .= '</Placemark>';
 }
 

@@ -1,9 +1,5 @@
 <?php
 
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
-}
-
 function getMenuAsString($file_name) {
     $menu_string = 
         '<table class="main-menu" border="0" cellpadding="0" cellspacing="0">' .

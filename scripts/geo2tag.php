@@ -13,11 +13,11 @@ function return_xmlrpc_error($errno,$errstr,$errfile=NULL,$errline=NULL
     if(!$xmlrpc_server)die("Error: $errstr in '$errfile', line '$errline'");
 
     header("Content-type: text/xml; charset=UTF-8");
-    print(xmlrpc_encode(array(
-        'faultCode'=>$errno
-        ,'faultString'=>"Remote XMLRPC Error from
-          ".$_SERVER['HTTP_HOST'].": $errstr in at $errfile:$errline"
-    )));
+    print("<?xml version=\"1.0\" encoding=\"utf-8\"?>
+<fault><value><struct><member><name>faultCode</name><value><int>$errno</int></value></member>
+<member><name>faultString</name><value>
+<string>Remote XMLRPC Error from ".$_SERVER['HTTP_HOST'].": $errstr in at $errfile:$errline</string>
+</value></member></struct></value></fault>\n");
     die();
 } 
 set_error_handler('return_xmlrpc_error');

@@ -56,7 +56,7 @@ if (!$category_id_defined) {
     $xmlrpc_request = xmlrpc_encode_request('getCategoryChannel',
             array('gets_token' => $auth_token,
                 'category_id' => $category_id_element->item(0)->nodeValue));
-    $xmlrpc_response =  process_request(ADDITIONAL_FUNCTIONS_METHOD_URL, $xmlrpc_request, 'Content-Type: text/xml');
+    $xmlrpc_response =  process_request(GETS_SCRIPTS_URL, $xmlrpc_request, 'Content-Type: text/xml');
     $xmlrpc = xmlrpc_decode($xmlrpc_response);
 
     if (is_array($xmlrpc) && xmlrpc_is_fault($xmlrpc)) {

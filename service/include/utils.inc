@@ -209,7 +209,7 @@ function get_array_element($array, $field, $default_value = null) {
  */
 function get_categories($token = null) {
     $categories_request_content = '<?xml version="1.0" encoding="UTF-8"?><methodCall><methodName>getCategories</methodName></methodCall>';
-    $categories_response = process_request(ADDITIONAL_FUNCTIONS_METHOD_URL,
+    $categories_response = process_request(GETS_SCRIPTS_URL,
                                     $categories_request_content,
                                     'Content-Type: text/xml');
 

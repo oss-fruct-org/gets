@@ -139,7 +139,7 @@ function auth_refresh_geo2tag_access() {
     } else {
         $data = "<methodCall><methodName>checkUser</methodName>"
             . "<params><param><struct><member><name>gets_token</name><value>{$gets_token}</value></member></struct></param></params></methodCall>";
-        $response =  process_request(ADDITIONAL_FUNCTIONS_METHOD_URL, $data, 'Content-Type: text/xml');
+        $response =  process_request(GETS_SCRIPTS_URL, $data, 'Content-Type: text/xml');
 
         $dom_response = new DOMDocument();
         $dom_response->loadXML($response);

@@ -1,6 +1,7 @@
 <?php
 define('GEO2TAG_SERVER_URL', 'geo2tag.cs.prv');
 define('GETS_SERVER_URL', 'oss.fruct.org/projects/gets/service');
+define('GETS_SCRIPTS_URL', 'geo2tag.cs.prv/gets/geo2tag.php');
 define('UPLOAD_URL', 'http://oss.fruct.org/projects/gets/service/files/postFile.php');
 
 define('GEO2TAG_USER', 'gets2');

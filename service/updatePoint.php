@@ -72,7 +72,7 @@ if ($new_altitude !== null) $xmlrpc_array['altitude'] = $new_altitude;
 
 $xmlrpc_request = xmlrpc_encode_request('updateTag', $xmlrpc_array);
 
-$xmlrpc_response =  process_request(ADDITIONAL_FUNCTIONS_METHOD_URL, $xmlrpc_request, 'Content-Type: text/xml');
+$xmlrpc_response =  process_request(GETS_SCRIPTS_URL, $xmlrpc_request, 'Content-Type: text/xml');
 $xmlrpc = xmlrpc_decode($xmlrpc_response);
 
 if (is_array($xmlrpc) && xmlrpc_is_fault($xmlrpc)) {

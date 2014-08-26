@@ -163,9 +163,9 @@ function send_result($code, $message, $content) {
 	$xml_response .= '<response><status>';
 	$xml_response .= '<code>' . $code . '</code>';
 	$xml_response .= '<message>' . $message . '</message>';
-	$xml_response .= '</status>';
+	$xml_response .= "</status>\n";
 	$xml_response .= '<content>' . $content . '</content>';
-	$xml_response .= '</response>';
+	$xml_response .= "</response>\n";
 	echo $xml_response;
 }
 

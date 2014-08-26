@@ -100,7 +100,7 @@ if ($category_name) {
 
 function get_channel_info($channel_name, $token) {
     $request = xmlrpc_encode_request('getChannelDescription', array('channel' => $channel_name, 'gets_token' => $token));
-    $response = process_request(ADDITIONAL_FUNCTIONS_METHOD_URL, $request, 'Content-Type: text/xml');
+    $response = process_request(GETS_SCRIPTS_URL, $request, 'Content-Type: text/xml');
 
     $xmlrpc = xmlrpc_decode($response);
     if (!is_array($xmlrpc) || xmlrpc_is_fault($xmlrpc)) {

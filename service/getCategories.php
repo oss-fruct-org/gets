@@ -34,8 +34,7 @@ if (!$dom->schemaValidate('schemes/getCategories.xsd')) {
 
 $auth_token_element = $dom->getElementsByTagName('auth_token');
 
-$data = '<methodCall><methodName>getCategories</methodName><params><param><struct><member><name>projectID</name><value>'.$GEO2TAG_USER.'</value></member></struct></param></params></methodCall>';
-
+$data = '<methodCall><methodName>getCategories</methodName><params><param><struct><member><name>projectName</name><value>'.GEO2TAG_USER.'</value></member></struct></param></params></methodCall>';
 $response =  process_request(GETS_SCRIPTS_URL, $data, 'Content-Type: text/xml');
 if (!$response) {
 	send_error(1, 'Error: problem with request to geo2tag.');

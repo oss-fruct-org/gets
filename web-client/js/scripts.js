@@ -753,6 +753,49 @@ function removeTrack() {
     window.location.replace('#form=main');
 }
 
+function removePoint() {
+    if (typeof track === 'undefined' || track == null) {
+        return;
+    }
+    if (typeof track.name === 'undefined' || track.name == null) {
+        return;
+    }
+    if (typeof point === 'undefined' || point == null) {
+        return;
+    }
+    if (typeof point.name === 'undefined' || point.name == null) {
+        return;
+    }
+    
+    var removePointRequest = $.ajax({
+        url: 'actions/removePoint.php',
+        type: 'POST',
+        async: false, 
+        contentType: 'application/json', 
+        dataType: 'xml', 
+        data: JSON.stringify({
+            channel: track.name, 
+            name: track.name, 
+            category_id: track.categoryId
+        })
+    });
+    
+    removePointRequest.fail(function( jqXHR, textStatus ) {
+        console.log('removePoint: removePointRequest failed ' + textStatus);
+        return;
+    });
+      
+    if ($( removePointRequest.responseText ).find('code').text() !== '0') {
+        console.log('removePoint: ' + $( removePointRequest.responseText ).find('message').text());
+        return;
+    }
+    
+    needTrackUpdate = true;
+    showMessage('Point "' + point.name + '" was successfully removed from track "' + track.hname + '"', SUCCESS_MESSAGE);
+    
+    window.location.replace('#form=track_info&track_id=' + track.name);
+}
+
 function downloadPoints() {
     if (!checkGeoInput()) {
         console.log('Incorrect input.');

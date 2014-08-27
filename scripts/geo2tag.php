@@ -16,7 +16,7 @@ function return_xmlrpc_error($errno,$errstr,$errfile=NULL,$errline=NULL
     print("<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <fault><value><struct><member><name>faultCode</name><value><int>$errno</int></value></member>
 <member><name>faultString</name><value>
-<string>Remote XMLRPC Error from ".$_SERVER['HTTP_HOST'].": $errstr in at $errfile:$errline</string>
+<string>Remote XMLRPC Error from ".$_SERVER['HTTP_HOST'].": $errstr at $errfile:$errline</string>
 </value></member></struct></value></fault>\n");
     die();
 } 
@@ -49,7 +49,7 @@ $request_xml = $HTTP_RAW_POST_DATA;
 
 $response = xmlrpc_server_call_method($xmlrpc_server, $request_xml, '');
 
-header('Content-Type: text/xml');
+header('Content-Type: text/xml; charset=UTF-8');
 echo $response;
 
 xmlrpc_server_destroy($xmlrpc_server);

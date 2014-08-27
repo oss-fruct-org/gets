@@ -52,6 +52,26 @@
 
 	/* check project name if exists */
 	if ($projectName != "NULL") {
+	    $sql_request = "select id from users where users.login=$projectName;";
+	    $res = pg_query($dbconn, $sql_request);
+	    
+	    if (!$res) {
+		trigger_error("SQL error", E_USER_ERROR);
+		die();
+	    }
+
+	    $row = pg_fetch_row($res);
+	    if (!$row) {
+		trigger_error("SQL error", E_USER_ERROR);
+		die();
+	    }
+	    $projectID=$row[0];
+	    if (!$projectID > 0) {
+		trigger_error("The project name doesn't exists");
+		die();
+	    }
+	}else{
+	    $projectID=0;
 	}
 
 	/* check availability category name */
@@ -76,7 +96,7 @@
 	    die();
 	}
 
-	$sql_request = "insert into category (name, description, url, owner_id) values ($name, $description, $url, $projectName);";
+	$sql_request = "insert into category (name, description, url, owner_id) values ($name, $description, $url, $projectID);";
 	$res = pg_query($dbconn, $sql_request);
 
 	if (!$res) {

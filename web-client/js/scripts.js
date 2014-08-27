@@ -18,6 +18,7 @@ var TRACK_INFO = 'track_info';
 var POINT_INFO = 'point_info';
 var ADD_TRACK = 'add_track';
 var ADD_POINT = 'add_point';
+var EDIT_TRACK = 'edit_track';
 
 // Message types
 var INFO_MESSAGE = 0;
@@ -47,70 +48,6 @@ var guid = (function() {
     return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
            s4() + '-' + s4() + s4() + s4();
   };
-})();
-
-
-var _log = (function (undefined) {
-    var Log = Error; // does this do anything?  proper inheritance...?
-    Log.prototype.write = function (args) {
-        /// <summary>
-        /// Paulirish-like console.log wrapper.  Includes stack trace via @fredrik SO suggestion (see remarks for sources).
-        /// </summary>
-        /// <param name="args" type="Array">list of details to log, as provided by `arguments`</param>
-        /// <remarks>Includes line numbers by calling Error object -- see
-        /// * http://paulirish.com/2009/log-a-lightweight-wrapper-for-consolelog/
-        /// * http://stackoverflow.com/questions/13815640/a-proper-wrapper-for-console-log-with-correct-line-number
-        /// * http://stackoverflow.com/a/3806596/1037948
-        /// </remarks>
-
-        // via @fredrik SO trace suggestion; wrapping in special construct so it stands out
-        var suffix = {
-            "@": (this.lineNumber
-                    ? this.fileName + ':' + this.lineNumber + ":1" // add arbitrary column value for chrome linking
-                    : extractLineNumberFromStack(this.stack)
-                    )
-        };
-
-        args = args.concat([suffix]);
-        // via @paulirish console wrapper
-        if (console && console.log) {
-            if (console.log.apply) {
-                console.log.apply(console, args);
-            } else {
-                console.log(args);
-            } // nicer display in some browsers
-        }
-    };
-    var extractLineNumberFromStack = function (stack) {
-        /// <summary>
-        /// Get the line/filename detail from a Webkit stack trace.  See http://stackoverflow.com/a/3806596/1037948
-        /// </summary>
-        /// <param name="stack" type="String">the stack string</param>
-
-        // correct line number according to how Log().write implemented
-        var line = stack.split('\n')[3];
-        // fix for various display text
-        line = (line.indexOf(' (') >= 0
-                ? line.split(' (')[1].substring(0, line.length - 1)
-                : line.split('at ')[1]
-                );
-        return line;
-    };
-
-    return function (params) {
-        /// <summary>
-        /// Paulirish-like console.log wrapper
-        /// </summary>
-        /// <param name="params" type="[...]">list your logging parameters</param>
-
-        // only if explicitly true somewhere
-        if (typeof DEBUGMODE === typeof undefined || !DEBUGMODE)
-            return;
-
-        // call handler extension which provides stack trace
-        Log().write(Array.prototype.slice.call(arguments, 0)); // turn into proper array
-    };//--	fn	_log
-
 })();
 
 function getXmlHttp() {
@@ -344,7 +281,10 @@ function changeForm() {
         showAddTrack();
     } else if (form === ADD_POINT) {
         showAddPoint();
-    }else if (typeof(form) === 'undefined') {
+    } else if (form === EDIT_TRACK) {
+        showAddTrack();
+        placeTrackInfoInEdit();       
+    } else if (typeof(form) === 'undefined') {
         window.location.hash = 'form=main';
         showTrackMain();
     } 
@@ -476,6 +416,8 @@ function getListOfTracksAsArray(paramsObj) {
         console.log('An error occurred while processing the request');
         return;
     }
+    
+    console.log(requestXHR.responseText);
       
     var responseXML = requestXHR.responseXML;
     var requestXHRRespCode = responseXML.getElementsByTagName('code')[0].childNodes[0].nodeValue;
@@ -569,7 +511,7 @@ function getTrackAsObject(paramsObj) {
 }
 
 function addTrack(paramsObj) {
-    if (typeof(paramsObj) == 'undefined' && paramsObj == null) {
+    if (typeof paramsObj === 'undefined' || paramsObj == null) {
         console.log('addTrack: paramsObj is undefined or null');
         return;
     }
@@ -583,8 +525,11 @@ function addTrack(paramsObj) {
             break;
         }
     }
-
+    
     paramsObj.unshift({name: 'name', value: track_name});
+    if ($.getHashVar('form') === EDIT_TRACK) {
+        paramsObj.push({name: 'update', value: 'true'});
+    }
     
     var newParamsObj = {};
     
@@ -601,6 +546,8 @@ function addTrack(paramsObj) {
             newParamsObj.category_id = paramsObj[i].value;
         } else if (paramsObj[i].name === 'lang') {
             newParamsObj.lang = paramsObj[i].value;
+        } else if (paramsObj[i].name === 'update') {
+            newParamsObj.update = paramsObj[i].value;
         }
     }
     
@@ -951,6 +898,7 @@ function placeTrackInTrackInfo() {
     }
     
     $( '#tracks-info-add' ).attr('href', '#form=add_point&track_id=' + track.name);
+    $( '#tracks-info-edit' ).attr('href', '#form=edit_track&track_id=' + track.name);
       
     if (track.categoryId === '-1') {
         $( '#tracks-info-category' ).text('Category: None');
@@ -1012,9 +960,9 @@ function placePointInPointInfo() {
         return;
     }
     
-    // do not update point info if this is the same point as before
+    // do not update point info if this is the same one as before
     if (typeof point !== 'undefined' && point != null) {
-        if (point.name.toLowerCase().indexOf(pointName.toLowerCase()) !== -1) {
+        if (point.name.toLowerCase() === pointName.toLowerCase()) {
             return;
         }
     }
@@ -1077,6 +1025,14 @@ function placePointInPointInfo() {
                
         $(pointsInfoRemove).removeClass('disabled-element');
     }
+}
+
+function placeTrackInfoInEdit() {
+    $( '#tracks-edit-track-name-input' ).val(track.hname);
+    $( '#tracks-edit-track-desc-input' ).val(track.description);
+    //$( '#tracks-edit-track-url-input' ).val(track.);
+    //$( '#tracks-edit-track-category-input option:selected' ).val();
+    //$( '#tracks-edit-track-lang-input' ).val();
 }
 
 
@@ -1147,7 +1103,10 @@ function showTrackPointInfo() {
     $( '#tracks-point-info-page' ).removeClass( 'hidden' ).addClass( 'visible' );
 }
 
-function showAddTrack() {
+function showAddTrack() {   
+    // Clear all input
+    clearAllInputFields($( '#tracks-edit-track-page' ));
+    
     if (!editTrackCategoriesSet) {
         checkCategories();
         var editTrackCategories = $( '#tracks-edit-track-category-input' );
@@ -1171,8 +1130,13 @@ function showAddTrack() {
     $( '#tracks-edit-track-page' ).removeClass( 'hidden' ).addClass( 'visible' );
 }
 
+
+
 function showAddPoint() {
     checkTrack();
+    
+    // Clear all input
+    clearAllInputFields($( '#tracks-edit-point-page' ));
     
     if (!editPointCategoriesSet) {
         checkCategories();
@@ -1445,4 +1409,17 @@ function disableTempMarker() {
 function resetFileInput(fileInputElement) {
     $( fileInputElement ).wrap('<form>').closest('form').get(0).reset();
     $( fileInputElement ).unwrap();
+}
+
+/*
+ * Function clears values of all input elements contained in the given element
+ */
+function clearAllInputFields(element) {
+    // clear all text input 
+    $( element ).find('input[type!="button"][type!="file"]').val('');
+    // And then clear all file input
+    var fileElements = $( element ).find('input[type="file"]');
+    for (var i = 0, len = fileElements.length; i < len; i++) {
+        resetFileInput(fileElements[i]);
+    }
 }

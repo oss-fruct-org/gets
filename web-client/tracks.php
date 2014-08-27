@@ -143,6 +143,15 @@ include_once('actions/utils/utils.inc');
                     }
                 });
                 
+                $( '#tracks-point-info-remove' ).on('click', function() {
+                    console.log('Remove point clicked');
+                    if (IS_LOGGED_IN && track.access !== 'r') {
+                        if (confirm('Are you sure you want to remove this point? (This action cannot be cancelled.)')) {
+                            removePoint();
+                        }
+                    }
+                });
+                
                 $( '#tracks-edit-point-audio-input-clear' ).on('click', function () {
                     resetFileInput($( '#tracks-edit-point-audio-input' ));
                 });

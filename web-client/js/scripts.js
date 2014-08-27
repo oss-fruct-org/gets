@@ -350,50 +350,42 @@ function changeForm() {
     } 
 }
 
-function getCategoriesAsArray(token) {
-    var request;
-    var categoriesArray = new Array();
+function getCategoriesAsArray() {    
+    var getCategoriesRequest = $.ajax({
+        url: 'actions/getCategories.php',
+        type: 'POST',
+        async: false, 
+        contentType: 'application/json', 
+        dataType: 'xml', 
+        data: ''
+    });
     
-    if (typeof(token) === 'undefined') {
-       request = form_request('');
-    } else {
-        request = form_request('<auth_token>' + token + '</auth_token>');
-    }
+    console.log(getCategoriesRequest.responseText);
     
-    var requestXHR = getXmlHttp();
-    requestXHR.open('POST', 'http://oss.fruct.org/projects/gets/service/getCategories.php', false);
-    requestXHR.setRequestHeader('Content-Type', 'text/xml');
-    requestXHR.send(request);
-    if (requestXHR.status !== 200) {
-        console.log('An error occurred while processing the request');
-        return;
-    }
-    
-    try {
-        var responseXML = requestXHR.responseXML;
-        var requestXHRRespCode = responseXML.getElementsByTagName('code')[0].childNodes[0].nodeValue;
-        if (requestXHRRespCode != 0) {
-            console.log(responseXML.getElementsByTagName('message')[0].childNodes[0].nodeValue);
-            return null;
-        }
-
-        var categoryElementList = responseXML.getElementsByTagName('category');
-        for (var i = 0; i < categoryElementList.length; i++) {
-            var categoryObj = new Object();
-            categoryObj.id = categoryElementList[i].getElementsByTagName('id')[0].childNodes[0].nodeValue;
-            categoryObj.name = categoryElementList[i].getElementsByTagName('name')[0].childNodes[0].nodeValue;
-            categoryObj.description = categoryElementList[i].getElementsByTagName('description')[0].childNodes[0].nodeValue;
-            categoryObj.url = categoryElementList[i].getElementsByTagName('url')[0].childNodes[0].nodeValue;
-
-            categoriesArray.push(categoryObj);
-        }
-
-        console.log(categoriesArray);
-        return categoriesArray;
-    } catch (e) {
-        console.log(e.message);
+    getCategoriesRequest.fail(function( jqXHR, textStatus ) {
+        console.log('getCategoriesAsArray: getCategoriesRequest failed ' + textStatus);
         return null;
-    }   
+    });
+      
+    if ($( getCategoriesRequest.responseText ).find('code').text() !== '0') {
+        console.log('getCategoriesAsArray: ' + $( getCategoriesRequest.responseText ).find('message').text());
+        return null;
+    }
+
+    var categoryElementList = $( getCategoriesRequest.responseText ).find('category');
+    var categoriesArray = [];
+    for (var i = 0; i < categoryElementList.length; i++) {
+        var categoryObj = {};
+        categoryObj.id = $( categoryElementList[i] ).find('id').length ? $( categoryElementList[i] ).find('id').text() : 'undefined';
+        categoryObj.name = $( categoryElementList[i] ).find('name').length ? $( categoryElementList[i] ).find('name').text() : 'undefined';
+        categoryObj.description = $( categoryElementList[i] ).find('description').length ? $( categoryElementList[i] ).find('description').text() : 'undefined';
+        categoryObj.url = $( categoryElementList[i] ).find('url').length ? $( categoryElementList[i] ).find('url').text() : 'undefined';
+
+        categoriesArray.push(categoryObj);
+    }
+
+    console.log(categoriesArray);
+    return categoriesArray;
 }
 
 function getPointsAsArray(paramsObj) {
@@ -759,6 +751,49 @@ function removeTrack() {
     showMessage('Track "' + track.hname + '" was successfully removed', SUCCESS_MESSAGE);
     
     window.location.replace('#form=main');
+}
+
+function removePoint() {
+    if (typeof track === 'undefined' || track == null) {
+        return;
+    }
+    if (typeof track.name === 'undefined' || track.name == null) {
+        return;
+    }
+    if (typeof point === 'undefined' || point == null) {
+        return;
+    }
+    if (typeof point.name === 'undefined' || point.name == null) {
+        return;
+    }
+    
+    var removePointRequest = $.ajax({
+        url: 'actions/removePoint.php',
+        type: 'POST',
+        async: false, 
+        contentType: 'application/json', 
+        dataType: 'xml', 
+        data: JSON.stringify({
+            channel: track.name, 
+            name: track.name, 
+            category_id: track.categoryId
+        })
+    });
+    
+    removePointRequest.fail(function( jqXHR, textStatus ) {
+        console.log('removePoint: removePointRequest failed ' + textStatus);
+        return;
+    });
+      
+    if ($( removePointRequest.responseText ).find('code').text() !== '0') {
+        console.log('removePoint: ' + $( removePointRequest.responseText ).find('message').text());
+        return;
+    }
+    
+    needTrackUpdate = true;
+    showMessage('Point "' + point.name + '" was successfully removed from track "' + track.hname + '"', SUCCESS_MESSAGE);
+    
+    window.location.replace('#form=track_info&track_id=' + track.name);
 }
 
 function downloadPoints() {

@@ -16,4 +16,5 @@ define('LOAD_TRACK_METHOD_URL', 'http://' . GETS_SERVER_URL . 'loadTrack.php');
 define('ADD_TRACK_METHOD_URL', 'http://' . GETS_SERVER_URL . 'createTrack.php');
 define('REMOVE_TRACK_METHOD_URL', 'http://' . GETS_SERVER_URL . 'deleteTrack.php');
 define('GET_UPLOAD_LINK_METHOD_URL', 'http://' . GETS_SERVER_URL . 'files/uploadFile.php');
+define('REMOVE_POINT_METHOD_URL', 'http://' . GETS_SERVER_URL . 'deletePoint.php');
 ?>

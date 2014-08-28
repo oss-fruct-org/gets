@@ -1,6 +1,7 @@
 <?php
 include_once('include/methods_url.inc');
 include_once('include/utils.inc');
+include_once('include/config.inc');
 
 header('Content-Type:text/xml');
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -33,9 +34,8 @@ if (!$dom->schemaValidate('schemes/getCategories.xsd')) {
 
 $auth_token_element = $dom->getElementsByTagName('auth_token');
 
-$data = '<methodCall><methodName>getCategories</methodName></methodCall>';
-
-$response =  process_request(ADDITIONAL_FUNCTIONS_METHOD_URL, $data, 'Content-Type: text/xml');
+$data = '<methodCall><methodName>getCategories</methodName><params><param><struct><member><name>projectName</name><value>'.GEO2TAG_USER.'</value></member></struct></param></params></methodCall>';
+$response =  process_request(GETS_SCRIPTS_URL, $data, 'Content-Type: text/xml');
 if (!$response) {
 	send_error(1, 'Error: problem with request to geo2tag.');
 	die();

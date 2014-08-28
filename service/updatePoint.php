@@ -35,9 +35,15 @@ if (!$dom->schemaValidate('schemes/updatePoint.xsd')) {
 }
 
 $auth_token = get_request_argument($dom, 'auth_token');
+$uuid = get_request_argument($dom, 'uuid');
 $channel_name = get_request_argument($dom, 'channel');
 $point_name = get_request_argument($dom, 'name');
 $point_category = get_request_argument($dom, 'category_id');
+
+if (!$uuid && !$channel_name && !$point_name && !$point_category) {
+    send_error(1, 'No filter criteria specified');
+    die();
+}
 
 $new_label = get_request_argument($dom, 'title');
 $new_url = get_request_argument($dom, 'link');
@@ -46,11 +52,15 @@ $new_longitude = get_request_argument($dom, 'longitude');
 $new_altitude = get_request_argument($dom, 'altitude');
 $new_latitude = get_request_argument($dom, 'latitude');
 
-$xmlrpc_array = array('channel' => $channel_name, 'gets_token' => $auth_token);
+$xmlrpc_array = array('gets_token' => $auth_token);
 if ($point_name)
     $xmlrpc_array['name'] = $point_name;
 if ($point_category)
     $xmlrpc_array['category_name'] = $point_category;
+if ($channel_name)
+    $xmlrpc_array['channel'] = $channel_name;
+if ($uuid)
+    $xmlrpc_array['uuid'] = $uuid;
 
 if ($new_label !== null) $xmlrpc_array['label'] = $new_label;
 if ($new_url !== null) $xmlrpc_array['url'] = $new_url;
@@ -62,7 +72,7 @@ if ($new_altitude !== null) $xmlrpc_array['altitude'] = $new_altitude;
 
 $xmlrpc_request = xmlrpc_encode_request('updateTag', $xmlrpc_array);
 
-$xmlrpc_response =  process_request(ADDITIONAL_FUNCTIONS_METHOD_URL, $xmlrpc_request, 'Content-Type: text/xml');
+$xmlrpc_response =  process_request(GETS_SCRIPTS_URL, $xmlrpc_request, 'Content-Type: text/xml');
 $xmlrpc = xmlrpc_decode($xmlrpc_response);
 
 if (is_array($xmlrpc) && xmlrpc_is_fault($xmlrpc)) {

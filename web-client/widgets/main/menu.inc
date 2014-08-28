@@ -1,4 +1,5 @@
 <?php
+
 function getMenuAsString($file_name) {
     $menu_string = 
         '<table class="main-menu" border="0" cellpadding="0" cellspacing="0">' .
@@ -11,12 +12,14 @@ function getMenuAsString($file_name) {
             
             '<td class="' . ($file_name === 'polygons' ? 'menu-item-selected' : 
                 'menu-item') . '"><a href="polygons.php"><span>Polygons</span></a></td>' .
-                        
-            '<td class="menu-item"><a href="actions/logout_action.php"><span>' . 
-                'Logout</span></a></td></tr>' . 
-            
-        '</table>'
-    ;
+                                   
+        '</table>';
+        $menu_string .= 
+            '<a class="sign-in-button" ' . 
+                'href=" ' . (isset($_SESSION['g2t_token']) ? 'actions/logout.php' : 'login.php') . 
+                '?return_url=' . $file_name . '.php">' . 
+                (isset($_SESSION['g2t_token']) ? 'Sign out' : 'Sign in') . 
+            '</a>';
     
     return $menu_string;
 }

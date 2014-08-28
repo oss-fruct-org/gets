@@ -81,7 +81,7 @@ function process_json_request($method, $array, $gets_token = null, $allow_token_
         case WRONG_TOKEN_ERROR:
             throw new WrongTokenException($error_str, $response_code);
         default:
-            throw new Exception(check_errors($response_code), $response_code);
+            throw new Exception($error_str, $response_code);
         }
     }
 
@@ -163,9 +163,9 @@ function send_result($code, $message, $content) {
 	$xml_response .= '<response><status>';
 	$xml_response .= '<code>' . $code . '</code>';
 	$xml_response .= '<message>' . $message . '</message>';
-	$xml_response .= '</status>';
+	$xml_response .= "</status>\n";
 	$xml_response .= '<content>' . $content . '</content>';
-	$xml_response .= '</response>';
+	$xml_response .= "</response>\n";
 	echo $xml_response;
 }
 
@@ -209,7 +209,7 @@ function get_array_element($array, $field, $default_value = null) {
  */
 function get_categories($token = null) {
     $categories_request_content = '<?xml version="1.0" encoding="UTF-8"?><methodCall><methodName>getCategories</methodName></methodCall>';
-    $categories_response = process_request(ADDITIONAL_FUNCTIONS_METHOD_URL,
+    $categories_response = process_request(GETS_SCRIPTS_URL,
                                     $categories_request_content,
                                     'Content-Type: text/xml');
 
@@ -239,6 +239,19 @@ function get_categories($token = null) {
     }
 
     return $ret;
+}
+
+/**
+    Checks if channel for category_id exists and creates it otherwise
+    Params:
+        $auth_token - if not null channel will be private
+        $category_id - id of category
+    
+    Returns:
+        name of channel
+  */
+function ensure_category_channel($auth_token, $category_id) {
+
 }
 
 /**

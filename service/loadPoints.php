@@ -81,16 +81,10 @@ if ($is_auth_token_defined) {
 }
 
 if (!($is_auth_token_defined && ($space === SPACE_PRIVATE))) {
-    $token_public = read_public_token();
-    // No token available, trying to receive it from geo2tag server
+    $token_public = get_public_token();
     if (!$token_public) {
-        $token_public = receive_public_token();
-        //$old_token = false;
-
-        if (!$token_public) {
-            send_error(1, 'Error: can\'t receive new token');
-            die();
-        }
+        send_error(1, 'Error: can\'t receive new token');
+        die();
     }
 }
 
@@ -134,7 +128,7 @@ function getChannelNames(&$token, $category_id) {
             }
 
             // Try receive new token from server
-            $token = receive_public_token();
+            $token = get_public_token();
             if (!$token) {
                 send_error(1, 'Error: can\'t receive new token');
                 die();
@@ -164,12 +158,33 @@ function getChannelNames(&$token, $category_id) {
     return $channels_name_array;
 }
 
-function addItemIntoXml($item, &$xml) {
+function addItemIntoXml($item, &$xml, $is_private) {
+    $description = $item['description'];
+    $description_json = json_decode($description, true);
+
+    if ($description_json && isset($description_json['description'])) {
+        $description = $description_json['description'];
+    }
+
     $xml .= '<Placemark>';
     $xml .= '<name><![CDATA[' . $item['title'] . ']]></name>';
-    $xml .= '<description><![CDATA[' .  $item['description'] . ']]></description>';
-    $xml .= '<ExtendedData><Data name="url"><value><![CDATA[' . $item['link'] . ']]></value></Data></ExtendedData>';
-    $xml .= '<Point><coordinates>' . $item['latitude'] . ',' . $item['longitude'] . ',0.0' . '</coordinates></Point>';
+    $xml .= '<description><![CDATA[' .  $description . ']]></description>';
+
+    $xml .= '<ExtendedData>';
+    $xml .= '<Data name="link"><value>' . htmlspecialchars($item['link']) . '</value></Data>';
+    $xml .= '<Data name="time"><value>' . htmlspecialchars($item['pubDate']) . '</value></Data>';
+    $xml .= '<Data name="access"><value>' . ($is_private ? 'rw' : 'r') . '</value></Data>';
+
+    if ($description_json) {
+        foreach ($description_json as $key => $value) {
+            $field = $key;
+            $value = htmlspecialchars($value);
+            $xml .= "<Data name=\"$field\"><value>$value</value></Data>";
+        }
+    }
+    $xml .= '</ExtendedData>';
+    $xml .= '<Point><coordinates>' . $item['longitude'] . ',' . $item['latitude'] . ',0.0' . '</coordinates></Point>';
+
     $xml .= '</Placemark>';
 }
 
@@ -180,7 +195,7 @@ function process_load_points_request($data_array, $request_type) {
     return process_json_request($request_type, $data_array, $auth_token, false);
 }
 
-function getData($data_array, $request_type, &$xml, $location_condition, &$is_wrong_token_error) {
+function getData($data_array, $request_type, &$xml, $location_condition, &$is_wrong_token_error, $is_private) {
     global $token_user;
     $auth_token = $data_array['auth_token'];
     try {
@@ -192,7 +207,7 @@ function getData($data_array, $request_type, &$xml, $location_condition, &$is_wr
         }
 
         // Try receive new token from server
-        $token = receive_public_token();
+        $token = get_public_token();
         if (!$token) {
             send_error(1, 'Error: can\'t receive new token');
             die();
@@ -217,18 +232,18 @@ function getData($data_array, $request_type, &$xml, $location_condition, &$is_wr
     if ($location_condition) {
         foreach($response_array['channels'] as $channel) {
             foreach($channel['channel']['items'] as $item) {
-                addItemIntoXml($item, $xml);
+                addItemIntoXml($item, $xml, $is_private);
             }
         }
     } else {
         foreach($response_array['channel']['items'] as $item) {
-            addItemIntoXml($item, $xml);
+            addItemIntoXml($item, $xml, $is_private);
         }	
     }
 }
 
 function makeRequestBasedOnConditions(&$xml, $category_condition, $location_condition, 
-        $channels_name_array, $latitude_element, $longitude_element, $radius_element, $is_wrong_token_error, $token) {
+        $channels_name_array, $latitude_element, $longitude_element, $radius_element, $is_wrong_token_error, $token, $is_private) {
     
     $data_array = array();
     $data_array['auth_token'] = $token;
@@ -243,14 +258,14 @@ function makeRequestBasedOnConditions(&$xml, $category_condition, $location_cond
         $request_type = LOAD_POINTS_METHOD_URL;
         foreach ($channels_name_array as $channel_name) {
             $data_array['channel'] = $channel_name;
-            getData($data_array, $request_type, $xml, $location_condition, $is_wrong_token_error);
+            getData($data_array, $request_type, $xml, $location_condition, $is_wrong_token_error, $is_private);
         }
     } else if ($category_condition) {
         $data_array['amount'] = 10000;
         $request_type = FILTER_CHANNEL_METHOD_URL;
         foreach ($channels_name_array as $channel_name) {
             $data_array['channel'] = $channel_name;
-            getData($data_array, $request_type, $xml, $location_condition, $is_wrong_token_error);
+            getData($data_array, $request_type, $xml, $location_condition, $is_wrong_token_error, $is_private);
         }
     } else {
         $data_array['latitude'] = floatval($latitude_element->item(0)->nodeValue);
@@ -259,7 +274,7 @@ function makeRequestBasedOnConditions(&$xml, $category_condition, $location_cond
         $data_array['time_from'] = '01 01 1999 00:00:00.000';
         $data_array['time_to'] = '01 01 2099 00:00:00.000';
         $request_type = LOAD_POINTS_METHOD_URL;
-        getData($data_array, $request_type, $xml, $location_condition, $is_wrong_token_error);
+        getData($data_array, $request_type, $xml, $location_condition, $is_wrong_token_error, $is_private);
     }
 }
 
@@ -294,21 +309,21 @@ if ($space === SPACE_ALL) {
     makeRequestBasedOnConditions($xml, $category_condition, $location_condition, 
                                 $channels_name_array_public, $latitude_element, 
                                 $longitude_element, $radius_element, 
-                                $is_wrong_token_error, $token_public);
+                                $is_wrong_token_error, $token_public, false);
     makeRequestBasedOnConditions($xml, $category_condition, $location_condition, 
                                $channels_name_array_user, $latitude_element, 
                                 $longitude_element, $radius_element, 
-                                $is_wrong_token_error, $token_user);
+                                $is_wrong_token_error, $token_user, true);
 } elseif ($space === SPACE_PUBLIC) {
     makeRequestBasedOnConditions($xml, $category_condition, $location_condition, 
                                 $channels_name_array_public, $latitude_element, 
                                 $longitude_element, $radius_element, 
-                                $is_wrong_token_error, $token_public);
+                                $is_wrong_token_error, $token_public, false);
 } elseif ($space === SPACE_PRIVATE) {
     makeRequestBasedOnConditions($xml, $category_condition, $location_condition, 
                                 $channels_name_array_user, $latitude_element, 
                                 $longitude_element, $radius_element, 
-                                $is_wrong_token_error, $token_user);
+                                $is_wrong_token_error, $token_user, true);
 }
 
 $xml .= '</Document>';

@@ -2,6 +2,9 @@
 
 require_once 'config.inc';
 
+ini_set('session.use_cookies', 0);
+ini_set('session.use_trans_sid', 1);
+
 function process_request($method, $data, $content_type) {
     /* Initialize and configure curl request */
     $ch = curl_init();
@@ -24,6 +27,14 @@ function process_request($method, $data, $content_type) {
 }
 
 function receive_email_by_token($token) {
+    $sess_id = sha1("2b7mPwLS" . $token);
+    session_id($sess_id);
+    session_start();
+
+    if (isset($_SESSION['cached_email'])) {
+        return $_SESSION['cached_email'];
+    }
+
     $token = htmlspecialchars($token);
     $request = "<request><params><auth_token>{$token}</auth_token></params></request>";
 
@@ -40,7 +51,19 @@ function receive_email_by_token($token) {
     }
 
     $email = (string) $emails[0];
+    $_SESSION['cached_email'] = $email;
+
     return $email;
+}
+
+function get_parameter($params, $name) {
+    if (array_key_exists($name, $params[0])) {
+        $value = $params[0][$name];
+        return $value;
+    } else {
+        trigger_error("Parameter ${name} didn't specified", E_USER_ERROR);
+        die();
+    }
 }
 
 ?>

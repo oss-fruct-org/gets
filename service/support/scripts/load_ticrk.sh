@@ -236,8 +236,8 @@ do
         obj_coordinates_str=`xmllint --xpath "//*[local-name()='GeoObject' and position()=$i]/*[local-name()='Point']/*[local-name()='pos']/text()" "./$temp_dir_name/$file.xml" 2>/dev/null`
         obj_link=`xmllint --xpath "//*[local-name()='GeoObject' and position()=$i]/*[local-name()='metaDataProperty']/*[local-name()='AnyMetaData']/*[local-name()='detail_url']/text()" "./$temp_dir_name/$file.xml" 2>/dev/null`
         eval obj_coordinates_array=($obj_coordinates_str)
-        obj_latitude=${obj_coordinates_array[0]}
-        obj_longitude=${obj_coordinates_array[1]}
+        obj_latitude=${obj_coordinates_array[1]}
+        obj_longitude=${obj_coordinates_array[0]}
 
         if [ $debug == 1 ]; then
             echo "Object $i:"

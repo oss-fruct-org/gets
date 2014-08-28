@@ -36,13 +36,10 @@ if (!$dom->schemaValidate('schemes/loadTrack.xsd')) {
 $auth_token = get_request_argument($dom, 'auth_token');
 $channel_name = get_request_argument($dom, 'name');
 
-$public_token = read_public_token();
+$public_token = get_public_token();
 if (!$public_token) {
-    $public_token = receive_public_token();
-    if (!$public_token) {
-        send_error(1, 'Error: can\'t receive new token');
-        die();
-    }
+    send_error(1, 'Error: can\'t receive new token');
+    die();
 }
 
 try {
@@ -93,6 +90,7 @@ foreach ($response_array['channel']['items'] as $item) {
 
     $xml .= '<ExtendedData>';
     $xml .= '<Data name="url"><value>' . htmlspecialchars($item['link']) . '</value></Data>';
+    $xml .= '<Data name="time"><value>' . htmlspecialchars($item['pubDate']) . '</value></Data>';
 
     if ($description_json) {
         foreach ($description_json as $key => $value) {
@@ -105,7 +103,7 @@ foreach ($response_array['channel']['items'] as $item) {
 
     $xml .= '</ExtendedData>';
 
-    $xml .= '<Point><coordinates>' . $item['latitude'] . ',' . $item['longitude'] . ',0.0' . '</coordinates></Point>';
+    $xml .= '<Point><coordinates>' . $item['longitude'] . ',' . $item['latitude'] . ',0.0' . '</coordinates></Point>';
     $xml .= '</Placemark>';
 }
 

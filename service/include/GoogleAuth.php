@@ -9,7 +9,7 @@ require_once 'config.inc';
 if (defined("AUTH_REDIRECT_URL")) {
     $redirectUri = AUTH_REDIRECT_URL;
 } else {
-    $redirectUri = 'http://' . $_SERVER['HTTP_HOST'] . '/projects/gets/service/include/GoogleAuth.php';
+    $redirectUri = 'http://' . GETS_SERVER_URL .'/include/GoogleAuth.php';
 }
 //$redirectUri = 'http://' . $_SERVER['HTTP_HOST'] . '/service/include/GoogleAuth.php';
 

@@ -10,6 +10,7 @@ html, body {
     padding:0;
     min-width: 1000px;
     min-height: 650px;
+    font-family: "Roboto",sans-serif;
 }
 
 .login-element {
@@ -268,6 +269,7 @@ html, body {
     padding: 10px;
     overflow: auto;
     max-height: 513px;
+    background-color: #FCFCFC;
 }
 
 .info-image {
@@ -511,6 +513,7 @@ html, body {
     border-width: 1px;   
     background-color: #f5f5f5;
     border-collapse: collapse;
+    margin-bottom: 2px;
 }
 
 a.transition-link {

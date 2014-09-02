@@ -1,13 +1,13 @@
 <?php
 
-echo '<div id="tracks-info-page" class="tracks-container hidden">
+echo    '<div id="tracks-info-page" class="tracks-container hidden">
             <div class="toolbar">
                 <a id="tracks-info-add" class="three-button-toolbar-button-container" title="Add point">
                     <img class="toolbar-button-icon" src="images/icons/add.png" alt="Add point">
                 </a>
-                <div id="tracks-info-edit" class="three-button-toolbar-button-container" title="Edit track">
+                <a id="tracks-info-edit" class="three-button-toolbar-button-container" title="Edit track">
                     <img class="toolbar-button-icon" src="images/icons/edit.png" alt="Edit track">
-                </div>
+                </a>
                 <div id="tracks-info-remove" class="three-button-toolbar-button-container" title="Remove track">
                     <img class="toolbar-button-icon" src="images/icons/remove.png" alt="Remove track">
                 </div>

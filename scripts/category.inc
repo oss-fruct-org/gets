@@ -286,7 +286,8 @@
 
             $insert_request = "INSERT INTO channel (name, description, url, owner_id) VALUES (${channel_name_escaped}, ${description}, '', ${user_id}) RETURNING channel.id;";
             $insert_resp = pg_query($dbconn, $insert_request);
-            $channel_id = pg_fetch_row($insert_resp)[0];
+            $tmp_row = pg_fetch_row($insert_resp);
+            $channel_id = $tmp_row[0];
 
             $insert_subscribe_request = "INSERT INTO subscribe VALUES (${channel_id}, ${user_id})";
             pg_query($dbconn, $insert_subscribe_request);

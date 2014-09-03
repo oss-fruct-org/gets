@@ -10,6 +10,8 @@
 	description - any short category description (max 2048 symbols, not required)
 	url - any url for corresponded category (max 2048 symbols, not required)
 
+    Return: id of added category
+
     Example of usage: curl -d "<methodCall><methodName>addCategory</methodName><params><param><struct><member><name>name</name><value>shops</value></member><member><name>projectName</name><value>gets2</value></member><member><name>description</name><value>Shops, markets, etc.</value></member><member><name>url</name><value>http://en.wikipedia.org/wiki/Market</value></member></struct></param></params></methodCall>" http://geo2tag.cs.prv/gets/geo2tag.php
  */
 
@@ -104,7 +106,7 @@
 	    die();
 	}
 
-	$sql_request = "select category.name from category where category.name=$name;";
+	$sql_request = "select category.id from category where category.name=$name;";
 	$res = pg_query($dbconn, $sql_request);
 
 	if (!$res) {
@@ -119,7 +121,7 @@
 
 	$name = $row[0];
 
-        return "Category '$name' added";
+        return "$name";
     }
     
 /*

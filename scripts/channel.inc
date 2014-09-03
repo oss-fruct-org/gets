@@ -117,7 +117,8 @@ Example:
             die();
         }
 
-        return pg_fetch_all($res)[0];
+	$tmprow = pg_fetch_all($res);
+        return $tmprow[0];
     }
 
     

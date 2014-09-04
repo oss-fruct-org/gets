@@ -43,13 +43,9 @@ if ($category_url_element->length > 0) {
     $category_url = $category_url_element->item(0)->nodeValue;
 }
 
-// TODO: check user rights
-
-
-// add category
-
 $data = '<methodCall><methodName>addCategory</methodName><params><param><struct><member><name>projectName</name><value>'.GEO2TAG_USER.
 	'</value></member><member><name>name</name><value>'. $category_name . '</value></member>'.
+	'<member><name>token</name><value>'.$auth_token.'</value></member>'.
 	(isset($category_description) ? '<member><name>description</name><value>'.$category_description.'</value></member>' : '').
 	(isset($category_url) ? '<member><name>url</name><value>'.$category_url.'</value></member>' : '').'</struct></param></params></methodCall>';
 $response =  process_request(GETS_SCRIPTS_URL, $data, 'Content-Type: text/xml');

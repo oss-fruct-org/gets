@@ -45,13 +45,19 @@ function receive_email_by_token($token) {
         return null;
     }
 
-    $emails = $response_xml->xpath('/response/content/email');
+    $emails = $response_xml->xpath('/response/content/userInfo/email');
     if (count($emails) == 0) {
         return null;
     }
 
     $email = (string) $emails[0];
     $_SESSION['cached_email'] = $email;
+
+    $coreUsers = $response_xml->xpath('/response/content/userInfo/isCoreUser');
+    if (count($coreUsers) != 0) {
+        $coreUser = (string) $coreUsers[0];
+	$_SESSION['isCoreUser'] = $coreUser;
+    }
 
     return $email;
 }

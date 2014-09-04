@@ -6,7 +6,7 @@ define('UPLOAD_URL', 'http://' . GETS_SERVER_URL . '/files/postFile.php');
 
 define('GEO2TAG_USER', 'obstacle-test');
 define('GEO2TAG_PASSWORD', 'obstacle-test');
-define('GEO2TAG_EMAIL', 'gets.obstacle.test@gmail.com');
+define('GEO2TAG_EMAIL', 'getsobstacletest@gmail.com');
 
 define('GOOGLE_APP_NAME', 'gets-obstacle');
 define('GOOGLE_CLIENT_ID', '791672128240-dpo0ivbqq8o606vourt5feah1652215t.apps.googleusercontent.com');

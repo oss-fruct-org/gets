@@ -30,4 +30,25 @@ PointAdd.prototype.hideView = function() {
     $(this.addPoint).removeClass('show').addClass('hidden');
 };
 
+/**
+ * Toggle overlay
+ */
+PointAdd.prototype.toggleOverlay = function() {
+    $(this.addPoint).find('#edit-point-overlay').toggleClass('busy-overlay-visible');
+};
+
+/**
+ * Enter pressed.
+ */
+PointAdd.prototype.onEnterPressed = function() {
+    $(this.addPoint).find('#edit-point-save').click();
+};
+
+/**
+ * Set lat, lng input fileds value.
+ */
+PointAdd.prototype.setLatLng = function(lat, lng) {
+    $(this.addPoint).find('#edit-point-lat-input').val(lat);
+    $(this.addPoint).find('#edit-point-lon-input').val(lng);
+};
 

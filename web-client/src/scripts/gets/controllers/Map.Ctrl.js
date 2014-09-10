@@ -49,4 +49,34 @@ MapController.prototype.setMapCenter = function(latitude, longitude) {
     this._map.setCenter(latitude, longitude);
 };
 
+MapController.prototype.getMapCenter = function() {
+    return this._map.getCenter();
+};
+
+MapController.prototype.addTrack = function(track) {
+    if (!this._map.checkTrack(track)) {
+        this._map.placeTrackInMap(track);
+    }
+};
+
+MapController.prototype.placePointsOnMap = function(pointList) {
+    this._map.placePointsOnMap(pointList);
+};
+
+MapController.prototype.createTempMarker = function(latitude, longitude, callback) { 
+    this._map.createTempMarker(latitude, longitude, callback);
+};
+
+MapController.prototype.removeTempMarker = function() { 
+    this._map.removeTempMarker();
+};
+
+MapController.prototype.createSearchArea = function(lat, lng, radius) {
+    this._map.createSearchArea(lat, lng, radius);
+};
+
+MapController.prototype.hideSearchArea = function() {
+    this._map.hideSearchArea();
+};
+
 

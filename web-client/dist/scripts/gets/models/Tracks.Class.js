@@ -78,55 +78,60 @@ TracksClass.prototype.checkTrack = function (name) {
  * Downloads track list from the GeTS Server and saves it as an array in 
  * internal variable "trackList". 
  * 
- * @param {Object} paramsObj A container for parameters
- * @param {String} paramsObj.categoryName Filter tracks by category
+ * @param {Object} paramsObj A container for parameters.
+ * @param {String} paramsObj.categoryName Filter tracks by category.
+ * @param {Function} callback Callback function on download complete.
  * 
  * @throws {GetsWebClientException}
  */
-TracksClass.prototype.downloadTrackList = function (paramsObj) {
+TracksClass.prototype.downloadTrackList = function (paramsObj, callback) {
     if (!paramsObj) {
         Logger.debug('downloadTrackList paramsObj is undefined or null');
     }
 
     var params = paramsObj || {};
-
     var tracksArray = [];
-    var requestString = JSON.stringify(params);
 
     var getTrackList = $.ajax({
         url: 'actions/getTracks.php',
         type: 'POST',
-        async: false,
+        async: true,
         contentType: 'application/json',
         dataType: 'xml',
-        data: requestString
+        data: JSON.stringify(params)
     });
-
-    Logger.debug(getTrackList.responseText);
 
     getTrackList.fail(function(jqXHR, textStatus) {
         throw new GetsWebClientException('Tracks Error', 'getTrackList failed ' + textStatus);
     });
 
-    if ($(getTrackList.responseText).find('code').text() !== '0') {
-        throw new GetsWebClientException('Tracks Error', 'getTrackList: ' + $(getTrackList.responseText).find('message').text());
-    }
+    var self = this;
+    getTrackList.done(function(data, textStatus, jqXHR) {
+        if ($(jqXHR.responseText).find('code').text() !== '0') {
+            throw new GetsWebClientException('Tracks Error', 'getTrackList: ' + $(jqXHR.responseText).find('message').text());
+        }
+        
+        var xml = $.parseXML(jqXHR.responseText);
+        var trackListItems = $(xml).find('track');
+        $(trackListItems).each(function(index, value) {
+            var trackObj = {};
+            trackObj.name = $(value).find('name').length ? $(value).find('name').text() : '';
+            trackObj.hname = $(value).find('hname').length ? $(value).find('hname').text() : '';
+            trackObj.description = $(value).find('description').length ? $(value).find('description').text() : '';
+            trackObj.access = $(value).find('access').length ? $(value).find('access').text() : '';
+            trackObj.categoryId = $(value).find('category_id').length ? $(value).find('category_id').text() : '';
 
-    var trackListItems = $($.parseXML(getTrackList.responseText)).find('track');
-    $.each(trackListItems, function(index, value) {
-        var trackObj = {};
-        trackObj.name = $(value).find('name').length ? $(value).find('name').text() : '';
-        trackObj.hname = $(value).find('hname').length ? $(value).find('hname').text() : '';
-        trackObj.description = $(value).find('description').length ? $(value).find('description').text() : '';
-        trackObj.access = $(value).find('access').length ? $(value).find('access').text() : '';
-        trackObj.categoryId = $(value).find('category_id').length ? $(value).find('category_id').text() : '';
+            tracksArray.push(trackObj);
+        });
 
-        tracksArray.push(trackObj);
+        tracksArray.sort(self.sortTracksAlphabetically);
+        Logger.debug(tracksArray);
+        self.trackList = tracksArray;
+        
+        if (callback) {
+            callback();
+        }
     });
-
-    tracksArray.sort(this.sortTracksAlphabetically);
-    Logger.debug(tracksArray);
-    this.trackList = tracksArray;
 };
 
 /**
@@ -183,7 +188,7 @@ TracksClass.prototype.downloadTrackByName = function(paramsObj) {
         trackPointArray.push(pointObj);
     });
 
-    $.each(this.trackList, function(index, value) {
+    $(this.trackList).each(function(index, value) {
         if (value.name === paramsObj.name) {
             newtrack.hname = value.hname;
             newtrack.description = value.description;
@@ -209,10 +214,11 @@ TracksClass.prototype.downloadTrackByName = function(paramsObj) {
  * @param {String} paramsObj[i].name = "url" Link of a track (value stored in paramsObj[i].value)
  * @param {String} paramsObj[i].name = "lang" Language of a track (value stored in paramsObj[i].value)
  * @param {String} paramsObj[i].name = "update" If existing track need to be updated (optional) (value stored in paramsObj[i].value)
+ * @param {callback} callback Callback on add track complete.
  * 
  * @throws {GetsWebClientException}
  */
-TracksClass.prototype.addTrack = function (paramsObj) {
+TracksClass.prototype.addTrack = function (paramsObj, callback) {
     if (!paramsObj) {
         throw new GetsWebClientException('Tracks Error', 'addTrack, paramsObj undefined or null');
     }
@@ -232,7 +238,7 @@ TracksClass.prototype.addTrack = function (paramsObj) {
 
     // Create single object from an array of objects
     var newParamsObj = {};
-    $.each(paramsObj, function(index, value) {
+    $(paramsObj).each(function(index, value) {
         if (value.name === 'name') {
             newParamsObj.name = value.value;
         } else if (value.name === 'hname') {
@@ -250,26 +256,28 @@ TracksClass.prototype.addTrack = function (paramsObj) {
         }
     });
 
-    var requestString = JSON.stringify(newParamsObj);
-
     var addTrackRequest = $.ajax({
         url: 'actions/addTrack.php',
         type: 'POST',
-        async: false,
+        async: true,
         contentType: 'application/json',
         dataType: 'xml',
-        data: requestString
+        data: JSON.stringify(newParamsObj)
     });
-
-    Logger.debug(addTrackRequest.responseText);
 
     addTrackRequest.fail(function(jqXHR, textStatus) {
         throw new GetsWebClientException('Tracks Error', 'addTrack, addTrackRequest failed ' + textStatus);
     });
-
-    if ($(addTrackRequest.responseText).find('code').text() !== '0') {
-        throw new GetsWebClientException('Tracks Error', 'addTrack, ' + $(addTrackRequest.responseText).find('message').text());
-    }
+    
+    addTrackRequest.done(function(data, textStatus, jqXHR) {
+        if ($(jqXHR.responseText).find('code').text() !== '0') {
+            throw new GetsWebClientException('Tracks Error', 'addTrack, ' + $(jqXHR.responseText).find('message').text());
+        }
+        
+        if (callback) {
+            callback(track_name);
+        }
+    });
 };
 
 /**

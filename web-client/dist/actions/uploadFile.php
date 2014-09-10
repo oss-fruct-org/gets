@@ -10,5 +10,5 @@ if (!isset($_GET['post_url'])) {
     die('<response><status><code>1</code><message>Post url is not set.</message></status></response>');
 }
 
-echo process_request($_GET['post_url'], file_get_contents('php://input'), 'Content-Type: ' . $_GET['mime_type']);
+echo process_request($_GET['post_url'], file_get_contents('php://input'), 'Content-Type: ' . $_SERVER['CONTENT_TYPE']);
 ?>

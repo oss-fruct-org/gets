@@ -36,7 +36,12 @@ try {
     die();
 }
 
-$response = "<email>{$escaped_email}</email>";
+$response = '<userInfo>';
+$response .= "<email>{$escaped_email}</email>";
+if (strcmp($email,GEO2TAG_EMAIL) == 0) {
+    $response .= "<isCoreUser>true</isCoreUser>";
+}
+$response .= '</userInfo>';
 
 send_result(0, 'success', $response);
 

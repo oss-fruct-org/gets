@@ -5,7 +5,7 @@ echo   '<div id="tracks-main-page" class="action-menu-container hidden">
             <div class="action-menu-toolbar-container">
                 <div class="btn-group btn-group-justified">
                     <div class="btn-group">
-                        <a id="tracks-main-add-track" class="btn btn-default" href="#form=add_track" title="Add track" role="button">
+                        <a id="tracks-main-add-track" class="btn btn-default" href="#form=track_add" title="Add track" role="button">
                             <span class="glyphicon glyphicon-plus"></span> Add track
                         </a>
                     </div>

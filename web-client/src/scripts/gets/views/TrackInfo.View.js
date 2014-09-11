@@ -32,6 +32,9 @@ TrackInfo.prototype.placeTrackInTrackInfo = function (track, categories, isAuth)
          
     $(tracksPointList).empty();
     
+    // Add points count
+    $(this.trackInfo).find('#tracks-points-list-count-badge').text(track.points.length);
+    
     for (var i = 0; i < track.points.length; i++) {
         var tracksPointItem = $(this.document.createElement('li'));
         $(tracksPointItem).addClass('list-group-item');
@@ -49,8 +52,8 @@ TrackInfo.prototype.placeTrackInTrackInfo = function (track, categories, isAuth)
     var tracksInfoRemove = $(this.trackInfo).find('#tracks-info-remove');
     var tracksInfoCategory = $(this.trackInfo).find('#tracks-info-category');
 
-    $(tracksInfoAdd).attr('href', '#form=add_point&track_id=' + track.name);
-    $(tracksInfoEdit).attr('href', '#form=edit_track&track_id=' + track.name);
+    $(tracksInfoAdd).attr('href', '#form=point_add&track_id=' + track.name);
+    $(tracksInfoEdit).attr('href', '#form=track_edit&track_id=' + track.name);
       
     if (track.categoryId === '-1') {
         $( tracksInfoCategory ).text('Category: None');
@@ -62,7 +65,7 @@ TrackInfo.prototype.placeTrackInTrackInfo = function (track, categories, isAuth)
             }
         }
     }
-     
+       
     // disable the buttons if user doesn't have the rights for modification of the track's data or 
     // user doesn't sign in or both
     Logger.debug('IS_LOGGED_IN: ' + isAuth + ' track.access: ' + track.access);
@@ -95,7 +98,6 @@ TrackInfo.prototype.placeTrackInTrackInfo = function (track, categories, isAuth)
  * Show view
  */
 TrackInfo.prototype.showView = function() {
-    Logger.debug('showView');
     $(this.trackInfo).removeClass('hidden').addClass('show');
 };
 
@@ -106,6 +108,12 @@ TrackInfo.prototype.hideView = function() {
     $(this.trackInfo).removeClass('show').addClass('hidden');
 };
 
+/**
+ * Toggle overlay
+ */
+TrackInfo.prototype.toggleOverlay = function() {
+    $(this.trackInfo).find('#tracks-info').toggleClass('busy-overlay-visible');
+};
 
 
 

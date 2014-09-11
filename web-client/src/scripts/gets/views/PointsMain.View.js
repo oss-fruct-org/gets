@@ -41,7 +41,7 @@ PointsMain.prototype.placePointsInPointList = function (pointList) {
     }
     
     if (!pointList) {
-       throw new GetsWebClientException('PointsMain View Error', 'placePointsInPointList, trackList undefined or null');
+       throw new GetsWebClientException('PointsMain View Error', 'placePointsInPointList, pointList undefined or null');
     }
     
     var self = this;
@@ -93,6 +93,30 @@ PointsMain.prototype.showView = function() {
  */
 PointsMain.prototype.hideView = function() {
     $(this.mainPoints).removeClass('show').addClass('hidden');
+};
+
+PointsMain.prototype.getLatitude = function() {
+    return $(this.mainPoints).find('#points-main-latitude-input').val();
+};
+
+PointsMain.prototype.getLongitude = function() {
+    return $(this.mainPoints).find('#points-main-longitude-input').val();
+};
+
+PointsMain.prototype.getRadius = function() {
+    return $(this.mainPoints).find('#points-main-radius-input').val();
+};
+
+PointsMain.prototype.setLatitude = function(latitude) {
+    $(this.mainPoints).find('#points-main-latitude-input').val(latitude);
+};
+
+PointsMain.prototype.setLongitude = function(longitude) {
+    $(this.mainPoints).find('#points-main-longitude-input').val(longitude);
+};
+
+PointsMain.prototype.setRadius = function(radius) {
+    $(this.mainPoints).find('#points-main-radius-input').val(radius);
 };
 
 

@@ -1,6 +1,7 @@
 <?php
 
 echo    '<div id="tracks-info-page" class="action-menu-container hidden">
+            <div id="tracks-info-overlay" class="busy-overlay"></div>
             <div class="action-menu-toolbar-container">
                 <div class="btn-group btn-group-justified">
                     <div class="btn-group">
@@ -33,11 +34,11 @@ echo    '<div id="tracks-info-page" class="action-menu-container hidden">
                     <div id="tracks-info-points-accordion" class="panel-group">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h4 class="panel-title">
+                                <h5 class="panel-title">
                                     <a class="accordion-toggle" data-toggle="collapse" data-parent="#tracks-info-points-accordion" href="#tracks-points-block-collapse">
-                                        Point List
+                                        Point List <span id="tracks-points-list-count-badge" class="badge"></span>
                                     </a>
-                                </h4>
+                                </h5>
                             </div>
                             <div id="tracks-points-block-collapse" class="panel-collapse collapse">
                                 <div class="panel-body">

@@ -210,3 +210,12 @@ input.search-query {
     width: 25px;
     text-align: center;
 }
+
+/* Message */
+.message-box {
+    display: block;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    margin: 0 10px 10px 10px;
+}

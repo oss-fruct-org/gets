@@ -45,6 +45,10 @@ echo    '<div id="edit-point-page" class="action-menu-container hidden">
                         </div>
                     </div>
                     <div class="form-group">
+                        <label for="edit-point-active-radius-input">Active radius(km)</label>
+                        <input id="edit-point-active-radius-input" class="form-control" name="radius" type="text" value="1"/>            
+                    </div>
+                    <div class="form-group">
                         <label for="edit-point-picture-input">Picture</label>
                         <button type="button" class="btn btn-default btn-xs" data-toggle="popover" title="Data upload" data-content="ddddd" data-container="#edit-point-page" data-placement="right" data-trigger="focus">
                             <span class="glyphicon glyphicon-question-sign"></span>

@@ -329,6 +329,7 @@ TracksClass.prototype.findPoint = function(pointName) {
         if (pointName.toLowerCase() === value.name.toLowerCase()) {
             point = value;
             point.access = track.access;
+            point.track = track.name;
             return false;
         }
     });

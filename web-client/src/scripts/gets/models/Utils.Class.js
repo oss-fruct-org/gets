@@ -232,6 +232,21 @@ UtilsClass.prototype.resetFileInput = function(fileInputElement) {
     $(fileInputElement).unwrap();
 };
 
+/*
+ * Clear values of all input elements contained in the given element.
+ * 
+ * @param {Object} element given DOM element.
+ */
+UtilsClass.prototype.clearAllInputFields = function(element) {
+    // clear all text input
+    $(element).find('input[type!="button"][type!="file"]').val('');
+    // And then clear all file input
+    var self = this;
+    $(element).find('input[type="file"]').each(function() {
+        self.resetFileInput(this);
+    });
+};
+
 /**
  * Exception constructor.
  * 

@@ -33,13 +33,13 @@ MapController.prototype.initMap = function() {
         }
         if (this._mapView == null) {
             this._mapView = new MapView($(this.document).find('#map'));
-            this._mapView.fitMap($(this.window).width(), $(this.window).height());
+            //this._mapView.fitMap($(this.window).width(), $(this.window).height());
         }
         
         // Window resize handler
-        $(this.window).on('resize', function() {
-            self._mapView.fitMap($(this).width(), $(this).height());
-        });
+        //$(this.window).on('resize', function() {
+        //    self._mapView.fitMap($(this).width(), $(this).height());
+        //});
     } catch (Exception) {
         Logger.error(Exception.toString());
     }
@@ -77,6 +77,10 @@ MapController.prototype.createSearchArea = function(lat, lng, radius) {
 
 MapController.prototype.hideSearchArea = function() {
     this._map.hideSearchArea();
+};
+
+MapController.prototype.createUserMarker = function(lat, lng) {
+    this._map.createUserMarker(lat, lng);
 };
 
 

@@ -18,6 +18,7 @@ function MapClass() {
     this.tempMarker = null;
     this.routes = [];
     this.searchArea = null;
+    this.userMarker = null;
 }
 
 /**
@@ -70,8 +71,8 @@ L.NumberedDivIcon = L.Icon.extend({
     }
 });
 
-/**
- * L.EditableCircleMarker is a marker with a radius
+
+/* L.EditableCircleMarker is a marker with a radius
  * The marker can be moved and the radius can be changed
  * Source from: https://gist.github.com/glenrobertson/3630960
  */
@@ -422,4 +423,21 @@ MapClass.prototype.setSearchAreaParams = function(lat, lng, radius) {
         this.searchArea.setLatLng([lat, lng]);
         this.searchArea.setRadius(radius);
     }
+};
+
+/**
+ * Create user icon
+ */
+MapClass.prototype.createUserMarker = function(lat, lng) {
+    if (this.userMarker == null) {
+        var userIcon = L.icon({
+            iconUrl: 'images/icons/location.png',
+            shadowUrl: null,
+            iconSize: new L.Point(48, 48),
+            iconAnchor: new L.Point(13, 41),
+            popupAnchor: new L.Point(0, - 33),
+            className: 'leaflet-div-icon-num'
+        });
+        this.userMarker = L.marker([lat, lng], {icon: userIcon}).bindPopup('<b>Your current position</b>').addTo(this.map);
+    } 
 };

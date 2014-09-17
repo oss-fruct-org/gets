@@ -285,6 +285,37 @@ PointsClass.prototype.createDescription = function(text, audioURL, imageURL, uui
     return descObj;
 };
 
+PointsClass.prototype.removePoint = function (callback) {
+    var point = this.getPoint();
+    if (point.access === 'r') {
+        throw new GetsWebClientException('Points Error', 'removePoint, "point" is read only');
+    }
+    
+    var removePointRequest = $.ajax({
+        url: 'actions/removePoint.php',
+        type: 'POST',
+        async: false,
+        contentType: 'application/json',
+        dataType: 'xml',
+        data: JSON.stringify({
+            channel: point.track,
+            name: point.name
+        })
+    });
+    
+    removePointRequest.fail(function(jqXHR, textStatus) {
+        throw new GetsWebClientException('Points Error', 'removePoint, removePointRequest failed ' + textStatus);
+    });
+    
+    if ($(removePointRequest.responseText).find('code').text() !== '0') {
+        throw new GetsWebClientException('Points Error', 'removePoint, removePointRequest: ' + $(removePointRequest.responseText).find('message').text());
+    }   
+    
+    if (callback) {
+        callback();
+    }
+};
+
 /**
  * Getters
  */

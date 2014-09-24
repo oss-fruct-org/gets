@@ -222,6 +222,7 @@ TracksClass.prototype.addTrack = function (paramsObj, callback) {
     if (!paramsObj) {
         throw new GetsWebClientException('Tracks Error', 'addTrack, paramsObj undefined or null');
     }
+    var name, hname, desc, lang, category_id, update;
 
     // Create track name in GeTS format (tr_track_name)
     var track_name;
@@ -231,22 +232,20 @@ TracksClass.prototype.addTrack = function (paramsObj, callback) {
             break;
         }
     }
-    paramsObj.unshift({name: 'name', value: track_name});
+    //paramsObj.unshift({name: 'name', value: track_name});
     //if (paramsObj.update) {
     //    paramsObj.push({name: 'update', value: 'true'});
     //}
 
-    // Create single object from an array of objects
-    var newParamsObj = {};
     $(paramsObj).each(function(index, value) {
         if (value.name === 'name') {
-            newParamsObj.name = value.value;
+            
         } else if (value.name === 'hname') {
-            newParamsObj.hname = value.value;
+            
         } else if (value.name === 'description') {
-            newParamsObj.description = value.value;
+            
         } else if (value.name === 'url') {
-            newParamsObj.url = value.value;
+            
         } else if (value.name === 'category_id') {
             newParamsObj.category_id = value.value;
         } else if (value.name === 'lang') {
@@ -255,6 +254,12 @@ TracksClass.prototype.addTrack = function (paramsObj, callback) {
             newParamsObj.update = value.value;
         }
     });
+    // Create single object from an array of objects
+    var newParamsObj = {};
+    newParamsObj.name = name;
+    newParamsObj.hname = hname;
+    newParamsObj.description = desc;
+    newParamsObj.url = value.value;
 
     var addTrackRequest = $.ajax({
         url: 'actions/addTrack.php',

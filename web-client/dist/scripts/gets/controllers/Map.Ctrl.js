@@ -59,8 +59,20 @@ MapController.prototype.addTrack = function(track) {
     }
 };
 
+MapController.prototype.checkTrack = function(track) {
+    return this._map.checkTrack(track);
+};
+
+MapController.prototype.removeTrack = function(track) {
+    this._map.removeTrackFromMap(track);
+};
+
 MapController.prototype.placePointsOnMap = function(pointList) {
     this._map.placePointsOnMap(pointList);
+};
+
+MapController.prototype.removePointsFromMap = function() {
+    this._map.removePointsLayer();
 };
 
 MapController.prototype.createTempMarker = function(latitude, longitude, callback) { 
@@ -75,12 +87,20 @@ MapController.prototype.createSearchArea = function(lat, lng, radius) {
     this._map.createSearchArea(lat, lng, radius);
 };
 
+MapController.prototype.setSearchAreaParams = function(lat, lng, radius) {
+    this._map.setSearchAreaParams(lat, lng, radius);
+};
+
 MapController.prototype.hideSearchArea = function() {
     this._map.hideSearchArea();
 };
 
 MapController.prototype.createUserMarker = function(lat, lng) {
     this._map.createUserMarker(lat, lng);
+};
+
+MapController.prototype.setMapCallback = function(eventName, callback) {
+    this._map.setMapCallback(eventName, callback);
 };
 
 

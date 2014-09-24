@@ -14,7 +14,17 @@
 function PointAdd(document, addPoint) {
     this.document = document;
     this.addPoint = addPoint;
+    
+    $(this.addPoint).find('#edit-point-active-radius-input').slider({
+        formatter: function (value) {
+            return 'Current value: ' + value;
+        }
+    });
 }
+
+PointAdd.prototype.getView = function() {
+    return this.addPoint;
+};
 
 /**
  * Show view
@@ -28,6 +38,8 @@ PointAdd.prototype.showView = function() {
  */
 PointAdd.prototype.hideView = function() {
     $(this.addPoint).removeClass('show').addClass('hidden');
+    // Remove the temp marker, if it is on the map 
+    $(this.addPoint).find('#edit-point-use-map').click();
 };
 
 /**

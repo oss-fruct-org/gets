@@ -19,7 +19,7 @@ function HeaderView(document, header) {
 HeaderView.prototype.changeOption = function(text, gliph, href) {
     var headerOption = $(this.header).find('.navbar-option');
     var html = '';
-    $(headerOption).empty();// 
+    $(headerOption).empty().trigger('blur');// 
     
     if (href) {
         $(headerOption).attr('href', href);
@@ -34,5 +34,5 @@ HeaderView.prototype.changeOption = function(text, gliph, href) {
 };
 
 HeaderView.prototype.clearOption = function() {
-    $(this.header).find('.navbar-option').attr('href', '').empty();
+    $(this.header).find('.navbar-option').removeAttr('href').empty().trigger('blur');
 };

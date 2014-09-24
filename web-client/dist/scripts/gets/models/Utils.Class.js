@@ -240,6 +240,10 @@ UtilsClass.prototype.resetFileInput = function(fileInputElement) {
 UtilsClass.prototype.clearAllInputFields = function(element) {
     // clear all text input
     $(element).find('input[type!="button"][type!="file"]').val('');
+    
+    // clear textarea input
+    $(element).find('textarea').val('');
+    
     // And then clear all file input
     var self = this;
     $(element).find('input[type="file"]').each(function() {

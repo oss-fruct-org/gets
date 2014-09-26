@@ -26,7 +26,11 @@ function TrackInfo(document, trackInfo) {
  * @throws {GetsWebClientException}
  */
 TrackInfo.prototype.placeTrackInTrackInfo = function (track, categories, isAuth) {   
-    $(this.trackInfo).find('#tracks-info-name').text(track.hname).attr('title', track.hname);
+    $(this.trackInfo).find('#tracks-info-name').text(track.hname).attr('title', track.hname).readmore({
+        moreLink: '<a href="#">Expand</a>',
+        lessLink: '<a href="#">Collapse</a>'
+    });
+    
     $(this.trackInfo).find('#tracks-info-description').text(track.description);
     var tracksPointList = $(this.trackInfo).find('#tracks-points-list');
          
@@ -92,6 +96,10 @@ TrackInfo.prototype.placeTrackInTrackInfo = function (track, categories, isAuth)
                
         $(tracksInfoRemove).removeClass('disabled');
     }
+};
+
+TrackInfo.prototype.getView = function() {
+    return this.trackInfo;
 };
 
 /**

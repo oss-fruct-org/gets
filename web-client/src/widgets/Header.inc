@@ -9,12 +9,17 @@
 function get_navbar_depend_on_page($page_name) {
     return '
                <div class="navbar navbar-static-top navbar-default">
-                    <div class="navbar-header"><a class="navbar-brand" href="index.php">GeTS Project</a><a class="navbar-toggle"
-                        data-toggle="collapse" data-target=".navbar-collapse">
-                        <span class="glyphicon glyphicon-bar"></span>
-                        <span class="glyphicon glyphicon-bar"></span>
-                        <span class="glyphicon glyphicon-bar"></span>
-                      </a>
+                    <div class="navbar-header">
+                        <a class="navbar-brand navbar-option">dd</a>
+                        <a class="navbar-brand" href="index.php">
+                            <span class="glyphicon glyphicon-home"></span> GeTS Project
+                        </a>
+                        <a class="navbar-toggle"
+                            data-toggle="collapse" data-target=".navbar-collapse">
+                            <span class="glyphicon glyphicon-bar"></span>
+                            <span class="glyphicon glyphicon-bar"></span>
+                            <span class="glyphicon glyphicon-bar"></span>
+                        </a>
                     </div>
                     <div class="container">
                         <div class="navbar-collapse collapse">

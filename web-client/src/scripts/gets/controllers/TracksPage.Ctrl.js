@@ -33,6 +33,11 @@ function TracksPage(document, window) {
     this._trackAdd = null;
     this._pointInfo = null;
     this._pointAdd = null;
+    this._pointEdit = null;
+    
+    this._headerView = null;
+    
+    this.currentView = null;
 }
 
 // Forms
@@ -42,6 +47,7 @@ TracksPage.POINT_INFO = 'point_info';
 TracksPage.ADD_TRACK = 'track_add';
 TracksPage.ADD_POINT = 'point_add';
 TracksPage.EDIT_TRACK = 'track_edit';
+TracksPage.EDIT_POINT = 'point_edit';
 
 TracksPage.prototype.changeForm = function() {
     var form = this._utils.getHashVar('form');
@@ -56,6 +62,8 @@ TracksPage.prototype.changeForm = function() {
         this.showPointInfo();
     } else if (form === TracksPage.ADD_POINT) {
         this.showAddPoint();
+    } else if (form === TracksPage.EDIT_POINT) {
+        this.showEditPoint();
     } else if (typeof form === 'undefined') {
         this.window.location.hash = 'form=' + TracksPage.MAIN;
         this.showTrackMain();
@@ -102,6 +110,12 @@ TracksPage.prototype.initPage = function() {
         if (this._pointAdd == null) {
             this._pointAdd = new PointAdd(this.document, $(this.document).find('#edit-point-page'));
         }
+        if (this._pointEdit == null) {
+            this._pointEdit = new PointEdit(this.document, $(this.document).find('#edit-point-page'));
+        }
+        if (this._headerView == null) {
+            this._headerView = new HeaderView(this.document, $(this.document).find('.navbar'));
+        }
         
         // Init map
         if (this._mapCtrl == null) {
@@ -116,6 +130,7 @@ TracksPage.prototype.initPage = function() {
     }
 
     //Init first page
+    this.currentView = this._tracksMain;
     this.changeForm();
 
     // Init handlers
@@ -204,9 +219,32 @@ TracksPage.prototype.initPage = function() {
     $(this.document).on('click', '#tracks-info-remove', function(e) {
         e.preventDefault();
         if (confirm('Are you sure you want to remove this track? (This action cannot be cancelled.)')) {
-            self._tracks.removeTrack();
-            self.window.location.replace('#form=main');
-            self.updateTracksHandler();
+            try {
+                var trackName = decodeURIComponent(self._utils.getHashVar('track_id'));
+                self._mapCtrl.removeTrack(self._tracks.getTrack(trackName, false));
+                self._tracks.removeTrack();
+                self.window.location.replace('#form=main');
+                self.updateTracksHandler();
+                MessageBox.showMessage('Track was successfully removed', MessageBox.SUCCESS_MESSAGE);
+            } catch (Exception) {
+                MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
+            }
+        }
+    });
+    
+    // Remove point handler
+    $(this.document).on('click', '#point-info-remove', function(e) {
+        e.preventDefault();
+        if (confirm('Are you sure you want to remove this point? (This action cannot be cancelled.)')) {
+            try {
+                var trackName = decodeURIComponent(self._utils.getHashVar('track_id'));               
+                self._points.removePoint();
+                self._mapCtrl.removeTrack(self._tracks.getTrack(trackName, false));              
+                self.window.location.replace('#form=track_info&track_id=' + trackName);
+                MessageBox.showMessage('Point was successfully removed', MessageBox.SUCCESS_MESSAGE);
+            } catch (Exception) {
+                MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
+            }
         }
     });
 
@@ -216,7 +254,7 @@ TracksPage.prototype.initPage = function() {
         self.updateTracksHandler();
     });
 
-    // Update tracks handler
+    // Add track to the map handler
     $(this.document).on('click', '#tracks-info-map', function(e) {
         e.preventDefault();
         var trackName = decodeURIComponent(self._utils.getHashVar('track_id'));
@@ -225,16 +263,18 @@ TracksPage.prototype.initPage = function() {
         }
     });
     
-    // Enable/disable clear button for file inputs.
+    // Enable/disable clear button for file inputs. (NOT WORKING)
     $(this.document).on('change', 'input[type="file"]', function(e) {
         e.preventDefault();
     });
     
+    // Clear file input handler
     $(this.document).on('click', '#edit-point-audio-input-clear, #edit-point-picture-input-clear', function(e) {
         e.preventDefault();
          self._utils.resetFileInput($(this).parent().siblings());
     });
     
+    // Enter press handler
     $(this.document).keypress(function(e) {
         var form = self._utils.getHashVar('form');
         if (e.which == 13) {
@@ -249,7 +289,8 @@ TracksPage.prototype.initPage = function() {
     // Create/remove temp marker (Use map) handler
     $(this.document).on('click', '#edit-point-use-map', function (e){
         e.preventDefault();
-        if(!$(this).hasClass('active')) {
+        var form = self._utils.getHashVar('form');
+        if(!$(this).hasClass('active') && (form === TracksPage.ADD_POINT || form === TracksPage.EDIT_POINT)) {
             $(this).addClass('active');
             var coords = null;
             if (self._user.isCoordsSet()) {
@@ -277,7 +318,8 @@ TracksPage.prototype.initPage = function() {
     if (this.window.navigator.geolocation) {
         this.window.navigator.geolocation.getCurrentPosition(function(position) {  
             self._user.setUserGeoPosition(position);
-            self._mapCtrl.setMapCenter(position.coords.latitude, position.coords.longitude);         
+            self._mapCtrl.setMapCenter(position.coords.latitude, position.coords.longitude); 
+            self._mapCtrl.createUserMarker(position.coords.latitude, position.coords.longitude);
         }, this.handleGeoLocationError);
     } else {
        Logger.debug('geolocation is not supported by this browser');
@@ -304,15 +346,16 @@ TracksPage.prototype.handleGeoLocationError = function (error) {
 TracksPage.prototype.showTrackMain = function() {
     try {
         this._tracksMain.toggleOverlay();
+        this._headerView.clearOption();
         
         var self = this;
         this._tracks.downloadTrackList({}, function() {
             self._tracksMain.placeTracksInTrackList(self._tracks.getTrackList(false));
             self._tracksMain.placeCategoriesInTrackMain(self._categories.getCategories());
             
-            self._trackAdd.hideView();
-            self._trackInfo.hideView();
-            self._tracksMain.showView();
+            self.currentView.hideView();
+            self.currentView = self._tracksMain;
+            self.currentView.showView();
             
             self._tracksMain.toggleOverlay();
         });
@@ -324,6 +367,7 @@ TracksPage.prototype.showTrackMain = function() {
 
 TracksPage.prototype.showTrackInfo = function() {
     try {
+        this._headerView.changeOption('Track Info', 'glyphicon-chevron-left', '#form=main');
         var trackName = decodeURIComponent(this._utils.getHashVar('track_id'));
         Logger.debug('trackName: ' + trackName);
         if (trackName) {
@@ -333,11 +377,9 @@ TracksPage.prototype.showTrackInfo = function() {
                     this._user.isLoggedIn()
             );
 
-            this._trackAdd.hideView();
-            this._pointAdd.hideView();
-            this._pointInfo.hideView();
-            this._tracksMain.hideView();
-            this._trackInfo.showView();
+            this.currentView.hideView();
+            this.currentView = this._trackInfo;
+            this.currentView.showView();
         }
     } catch (Exception) {
         MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
@@ -346,11 +388,14 @@ TracksPage.prototype.showTrackInfo = function() {
 };
 
 TracksPage.prototype.showAddTrack = function() {
-    try {
+    try {    
+        this._headerView.changeOption('Add Track', 'glyphicon-chevron-left', '#form=main');
+        this._utils.clearAllInputFields(this._trackAdd.getView());
         this._trackAdd.placeCategoriesInAddTrack(this._categories.getCategories());
         
-        this._tracksMain.hideView();
-        this._trackAdd.showView();        
+        this.currentView.hideView();
+        this.currentView = this._trackAdd;
+        this.currentView.showView();
     } catch (Exception) {
         MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
         Logger.error(Exception.toString());
@@ -358,9 +403,14 @@ TracksPage.prototype.showAddTrack = function() {
 };
 
 TracksPage.prototype.showAddPoint = function() {
-    try {      
-        this._trackInfo.hideView();
-        this._pointAdd.showView();        
+    try {
+        var trackName = decodeURIComponent(this._utils.getHashVar('track_id'));
+        this._headerView.changeOption('Add Point', 'glyphicon-chevron-left', '#form=track_info&track_id=' + trackName);
+        this._utils.clearAllInputFields(this._pointAdd.getView());
+        
+        this.currentView.hideView();
+        this.currentView = this._pointAdd;
+        this.currentView.showView();
     } catch (Exception) {
         MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
         Logger.error(Exception.toString());
@@ -369,6 +419,9 @@ TracksPage.prototype.showAddPoint = function() {
 
 TracksPage.prototype.showPointInfo = function() {
     try {
+        var trackName = decodeURIComponent(this._utils.getHashVar('track_id'));
+        this._headerView.changeOption('Point Info', 'glyphicon-chevron-left', '#form=track_info&track_id=' + trackName);
+        
         var pointName = decodeURIComponent(this._utils.getHashVar('point_name'));
         if (!pointName) {
             throw new GetsWebClientException('Track Page Error', 'showPointInfo, hash parameter pointName undefined');
@@ -377,8 +430,24 @@ TracksPage.prototype.showPointInfo = function() {
         
         this._pointInfo.placePointInPointInfo(this._points.getPoint(), this._user.isLoggedIn());
         
-        this._trackInfo.hideView();
-        this._pointInfo.showView();       
+        this.currentView.hideView();
+        this.currentView = this._pointInfo;
+        this.currentView.showView();
+    } catch (Exception) {
+        MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
+        Logger.error(Exception.toString());
+    }
+};
+
+TracksPage.prototype.showEditPoint = function() {
+    try {
+        var point = this._points.getPoint();
+        this._headerView.changeOption('Edit Point', 'glyphicon-chevron-left', '#form=point_info&track_id=' + point.track + '&point_name=' + point.name);
+        this._pointEdit.placePointInPointEdit(point);
+        
+        this.currentView.hideView();
+        this.currentView = this._pointEdit;
+        this.currentView.showView();
     } catch (Exception) {
         MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
         Logger.error(Exception.toString());

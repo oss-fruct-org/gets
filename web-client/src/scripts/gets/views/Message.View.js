@@ -21,6 +21,13 @@ MessageView.prototype.ERROR_MESSAGE = 2;
 MessageView.prototype.WARNING_MESSAGE = 3;
 
 MessageView.prototype.showMessage = function(text, type) {
+    // If message already exists, remove it
+    var oldMessageBox = $(document).find('.message-box');
+    Logger.debug(oldMessageBox);
+    if ($(oldMessageBox).length) {
+        $(oldMessageBox).remove();
+    }
+    
     var messageBox = $(document.createElement('div'));
     
     $(messageBox).addClass('message-box alert alert-dismissible');

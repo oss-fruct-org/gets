@@ -25,9 +25,6 @@ function UserClass(windowObj) {
 /**
  * Authorize user using Google OAuth2.0.
  * 
- * @param {String} returnUrl Page's url to which redirect user after successfull 
- * authorization.
- * 
  * @throws {GetsWebClientException}
  */ 
 UserClass.prototype.authorizeGoogle = function() {

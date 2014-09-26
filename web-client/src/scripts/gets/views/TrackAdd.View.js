@@ -41,6 +41,10 @@ TrackAdd.prototype.placeCategoriesInAddTrack = function (categories) {
     });
 }; 
 
+TrackAdd.prototype.getView = function() {
+    return this.addTrack;
+};
+
 /**
  * Show view
  */

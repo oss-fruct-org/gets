@@ -119,4 +119,11 @@ PointsMain.prototype.setRadius = function(radius) {
     $(this.mainPoints).find('#points-main-radius-input').val(radius);
 };
 
+/**
+ * Toggle overlay
+ */
+PointsMain.prototype.toggleOverlay = function() {
+    $(this.mainPoints).find('#points-main-overlay').toggleClass('busy-overlay-visible');
+};
+
 

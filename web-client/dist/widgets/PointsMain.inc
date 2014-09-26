@@ -39,10 +39,11 @@ echo   '<div id="points-main-page" class="action-menu-container hidden">
                                             </div>
                                         </div>
                                     </div>                                  
-                                    <div class="form-group">
+                                    <!--<div class="form-group">
                                         <label for="points-main-radius-input">Radius </label>
                                         <input id="points-main-radius-input" name="radius" type="text" class="form-control" value="10"/>          
-                                    </div>
+                                    </div>-->
+                                    <input id="points-main-radius-input" name="radius" type="hidden" class="form-control" value="10"/>
                                     <div class="checkbox">
                                         <label for="points-main-show-search-area" class="control-label">
                                             <input id="points-main-show-search-area" type="checkbox"> Show search area

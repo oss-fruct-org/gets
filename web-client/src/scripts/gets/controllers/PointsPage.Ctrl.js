@@ -27,7 +27,9 @@ function PointsPage(document, window) {
     this._mapCtrl = null;
     
     // Views
-    this._pointsMain = null;  
+    this._pointsMain = null;
+    this._headerView = null;
+    this._pointInfo = null;
 }
 
 // Forms
@@ -75,6 +77,12 @@ PointsPage.prototype.initPage = function() {
             this._pointsMain = new PointsMain(this.document, $(this.document).find('#points-main-page'));
             this._pointsMain.initView(this._user.isLoggedIn());
         }
+        if (this._headerView == null) {
+            this._headerView = new HeaderView(this.document, $(this.document).find('.navbar'));
+        }
+        if (this._pointInfo == null) {
+            this._pointInfo = new PointInfo(this.document, $(this.document).find('#point-info-page'));
+        }
         
         // Init map
         if (this._mapCtrl == null) {
@@ -84,6 +92,7 @@ PointsPage.prototype.initPage = function() {
             //this._mapCtrl.setMapCenter(position.latitude, position.longitude);
         }        
     } catch (Exception) {
+        MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
         Logger.error(Exception.toString());
     }
     
@@ -91,13 +100,17 @@ PointsPage.prototype.initPage = function() {
     this.changeForm();
 
     // Init Points main
+    this._pointsMain.toggleOverlay();
     this._pointsMain.setLatitude(this._mapCtrl.getMapCenter().lat);
     this._pointsMain.setLongitude(this._mapCtrl.getMapCenter().lng);
     var formDataInit = $(this.document).find('#point-main-form').serializeArray();
     this._points.downLoadPoints(formDataInit, function() {
         Logger.debug(self._points.getPointList());
         self._pointsMain.placePointsInPointList(self._points.getPointList());
+        self._mapCtrl.removePointsFromMap();
         self._mapCtrl.placePointsOnMap(self._points.getPointList());
+        
+        self._pointsMain.toggleOverlay();
     });
     
 
@@ -136,12 +149,40 @@ PointsPage.prototype.initPage = function() {
 
     // 
     $(this.document).on('submit', '#point-main-form', function(e) {
-        e.preventDefault();
+        e.preventDefault();        
+        self._pointsMain.toggleOverlay();
+        
         var formData = $(this).serializeArray();
         Logger.debug(formData);
         self._points.downLoadPoints(formData, function() {
             self._pointsMain.placePointsInPointList(self._points.getPointList(false));
             self._mapCtrl.placePointsOnMap(self._points.getPointList());
+            
+            self._pointsMain.toggleOverlay();
+        });
+    });
+    
+    //dragend
+    this._mapCtrl.setMapCallback('dragend', function(e){
+        self._pointsMain.toggleOverlay();
+        
+        var center = self._mapCtrl.getMapCenter();
+        self._pointsMain.setLatitude(Math.floor(center.lat * 10000) / 10000);
+        self._pointsMain.setLongitude(Math.floor(center.lng * 10000) / 10000);
+        
+        self._mapCtrl.setSearchAreaParams(
+            self._pointsMain.getLatitude(), 
+            self._pointsMain.getLongitude(), 
+            self._pointsMain.getRadius() * 1000
+        );
+        
+        var formDataInit = $(self.document).find('#point-main-form').serializeArray();       
+        self._points.downLoadPoints(formDataInit, function () {           
+            self._pointsMain.placePointsInPointList(self._points.getPointList());
+            self._mapCtrl.removePointsFromMap();
+            self._mapCtrl.placePointsOnMap(self._points.getPointList());
+            
+            self._pointsMain.toggleOverlay();
         });
     });
     
@@ -149,6 +190,8 @@ PointsPage.prototype.initPage = function() {
     // get user's coordinates
     if (this.window.navigator.geolocation) {
         this.window.navigator.geolocation.getCurrentPosition(function(position) {  
+            self._pointsMain.toggleOverlay();
+            
             Logger.debug(position);
             self._user.setUserGeoPosition(position);
             self._mapCtrl.setMapCenter(position.coords.latitude, position.coords.longitude);
@@ -157,7 +200,10 @@ PointsPage.prototype.initPage = function() {
             var formDataInit = $(self.document).find('#point-main-form').serializeArray();
             self._points.downLoadPoints(formDataInit, function() {
                 self._pointsMain.placePointsInPointList(self._points.getPointList());
+                self._mapCtrl.removePointsFromMap();
                 self._mapCtrl.placePointsOnMap(self._points.getPointList());
+                
+                self._pointsMain.toggleOverlay();
             });
         }, this.handleGeoLocationError);
     } else {
@@ -184,10 +230,13 @@ PointsPage.prototype.handleGeoLocationError = function (error) {
 
 PointsPage.prototype.showPointsMain = function() {
     try {
+        this._headerView.clearOption();
+        
         this._pointsMain.placeCategoriesInPointMain(this._categories.getCategories());
 
         this._pointsMain.showView();
     } catch (Exception) {
+        MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
         Logger.error(Exception.toString());
     }
 };

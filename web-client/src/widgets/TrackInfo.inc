@@ -22,13 +22,14 @@ echo    '<div id="tracks-info-page" class="action-menu-container hidden">
                 </div>
             </div>
             <div class="action-menu-inner-content">
-                <div id="tracks-info-name" class="main-block font-big width-three-fourth ellipsis-text inline">                   
+                <div id="tracks-info-name" class="main-block font-big width-three-fourth ellipsis-text">                   
                 </div>
                 <button id="tracks-info-map" type="button" class="btn btn-default" title="Show on map">
                     <span class="glyphicon glyphicon-globe"></span> 
                 </button>
                 <div id="tracks-info-category" class="main-block"></div>
                 <div id="tracks-info-lang" class="main-block"></div>
+                <div id="tracks-info-url" class="main-block"></div>
                 <div id="tracks-info-description" class="main-block"></div>
                 <div class="main-block">
                     <div id="tracks-info-points-accordion" class="panel-group">

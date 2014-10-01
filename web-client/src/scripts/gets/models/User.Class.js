@@ -123,7 +123,6 @@ UserClass.prototype.fetchEmail = function() {
         url: 'actions/getUserInfo.php',
         type: 'GET',
         async: false,
-        dataType: 'xml',
         data: null
     });
     
@@ -131,13 +130,10 @@ UserClass.prototype.fetchEmail = function() {
         throw new GetsWebClientException('User Error', 'fetchEmail, getEmailRequest failed ' + textStatus);
     });
     
-    if ($(getEmailRequest.responseText).find('code').text() !== '0') {
-        throw new GetsWebClientException('User Error', 'fetchEmail, getEmailRequest: ' + $(getEmailRequest.responseText).find('message').text());
-    }
-    
     Logger.debug(getEmailRequest.responseText);
     
-    this.email = $(getEmailRequest.responseText).find('email').length ? $(getEmailRequest.responseText).find('email').text() : 'Unknown';
+    var emailObj = JSON.parse(getEmailRequest.responseText);      
+    this.email = emailObj.email;
 };
 /**
  * Get users geo coordinates.

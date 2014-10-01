@@ -45,14 +45,12 @@ TracksMain.prototype.placeTracksInTrackList = function (trackList) {
     }
     
     var self = this;
-    $.each(trackList, function(index, value) {
-        var trackElement = $(self.document.createElement('li'));
-        $(trackElement).addClass('list-group-item');
+    $(trackList).each(function(index, value) {      
         var trackLinkElement = $(self.document.createElement('a'));
         $(trackLinkElement).attr('href', '#form=track_info&track_id=' + value.name);
         $(trackLinkElement).text(value.hname);
-        $(trackLinkElement).appendTo(trackElement);
-        $(trackElement).appendTo(trackListElement);
+        $(trackLinkElement).addClass('list-group-item');
+        $(trackLinkElement).appendTo(trackListElement);
     });          
 };
 

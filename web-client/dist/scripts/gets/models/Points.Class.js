@@ -126,13 +126,20 @@ PointsClass.prototype.downLoadPoints = function(paramsObj, callback) {
         var pointsArray = [];
         $(pointListItems).each(function(index, value) {
             var pointObj = {};
+            pointObj.index = $(value).find("[name='idx']").length ? $(value).find("[name='idx']").text() : '';
+            pointObj.uuid = $(value).find("[name='uuid']").length ? $(value).find("[name='uuid']").text() : '';
             pointObj.name = $(value).find('name').length ? $(value).find('name').text() : '';
             pointObj.description = $(value).find('description').length ? $(value).find('description').text() : '';
+            pointObj.url = $(value).find("[name='url']").length ? $(value).find("[name='url']").text() : '';
+            pointObj.descriptionExt = $(value).find("[name='description']").length ? $(value).find("[name='description']").text() : '';
+            pointObj.audio = $(value).find("[name='audio']").length ? $(value).find("[name='audio']").text() : '';
+            pointObj.photo = $(value).find("[name='photo']").length ? $(value).find("[name='photo']").text() : '';
             pointObj.coordinates = $(value).find('coordinates').length ? $(value).find('coordinates').text() : '';
 
             pointsArray.push(pointObj);
         });
 
+        Logger.debug(pointsArray);
         self.pointList = pointsArray;
         if (callback) {
             callback();
@@ -316,10 +323,23 @@ PointsClass.prototype.removePoint = function (callback) {
     }
 };
 
+PointsClass.prototype.findPointInPointList = function(name) {
+    if (!name || !this.pointList) {
+        return;
+    }
+    
+    for (var i = 0, len = this.pointList.length; i < len; i++) {
+        if (this.pointList[i].name === name) {
+            this.point = this.pointList[i];
+            return this.point;
+        }
+    }
+};
+
 /**
  * Getters
  */
-PointsClass.prototype.getPointList = function () {
+PointsClass.prototype.getPointList = function() {
     if (this.isPointListDownloaded()) {
         return this.pointList;
     }    

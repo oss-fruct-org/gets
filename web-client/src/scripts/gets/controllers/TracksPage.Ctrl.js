@@ -31,6 +31,7 @@ function TracksPage(document, window) {
     this._tracksMain = null;
     this._trackInfo = null;
     this._trackAdd = null;
+    this._trackEdit = null;
     this._pointInfo = null;
     this._pointAdd = null;
     this._pointEdit = null;
@@ -62,6 +63,8 @@ TracksPage.prototype.changeForm = function() {
         this.showPointInfo();
     } else if (form === TracksPage.ADD_POINT) {
         this.showAddPoint();
+    } else if (form === TracksPage.EDIT_TRACK) {
+        this.showEditTrack();
     } else if (form === TracksPage.EDIT_POINT) {
         this.showEditPoint();
     } else if (typeof form === 'undefined') {
@@ -74,51 +77,53 @@ TracksPage.prototype.initPage = function() {
     var self = this;
     try {          
         // Init models
-        if (this._tracks == null) {
+        if (!this._tracks) {
             this._tracks = new TracksClass();
         }
-        if (this._points == null) {
+        if (!this._points) {
             this._points = new PointsClass();
         }
-        if (this._categories == null) {
+        if (!this._categories) {
             this._categories = new CategoriesClass();
         }
-        if (this._user == null) {
+        if (!this._user) {
             this._user = new UserClass(this.window);
             this._user.fetchAuthorizationStatus();
-            //this._user.fetchEmail();
             Logger.debug('is Auth: ' + this._user.isLoggedIn());
         }
-        if (this._utils == null) {
+        if (!this._utils) {
             this._utils = new UtilsClass(this.window);
         }
     
         // Init views
-        if (this._tracksMain == null) {
+        if (!this._tracksMain) {
             this._tracksMain = new TracksMain(this.document, $(this.document).find('#tracks-main-page'));
             this._tracksMain.initView(this._user.isLoggedIn());
         }
-        if (this._trackInfo == null) {
+        if (!this._trackInfo) {
             this._trackInfo = new TrackInfo(this.document, $(this.document).find('#tracks-info-page'));
         }
-        if (this._trackAdd == null) {
+        if (!this._trackAdd) {
             this._trackAdd = new TrackAdd(this.document, $(this.document).find('#tracks-edit-track-page'));
         }
-        if (this._pointInfo == null) {
+        if (!this._trackEdit) {
+            this._trackEdit = new TrackEdit(this.document, $(this.document).find('#tracks-edit-track-page'));
+        }
+        if (!this._pointInfo) {
             this._pointInfo = new PointInfo(this.document, $(this.document).find('#point-info-page'));
         }
-        if (this._pointAdd == null) {
+        if (!this._pointAdd) {
             this._pointAdd = new PointAdd(this.document, $(this.document).find('#edit-point-page'));
         }
-        if (this._pointEdit == null) {
+        if (!this._pointEdit) {
             this._pointEdit = new PointEdit(this.document, $(this.document).find('#edit-point-page'));
         }
-        if (this._headerView == null) {
+        if (!this._headerView) {
             this._headerView = new HeaderView(this.document, $(this.document).find('.navbar'));
         }
         
         // Init map
-        if (this._mapCtrl == null) {
+        if (!this._mapCtrl) {
             this._mapCtrl = new MapController(this.document, this.window);
             this._mapCtrl.initMap();
             //var position = this._user.getUserGeoPosition();
@@ -158,13 +163,12 @@ TracksPage.prototype.initPage = function() {
     // Add track handler
     $(this.document).on('submit', '#tracks-edit-track-form', function(e) {
         e.preventDefault();
-        self._trackAdd.toggleOverlay();
-        var formData = $(this).serializeArray();
-        self._tracks.addTrack(formData, function(track_name) {
-            self._trackAdd.toggleOverlay();
-            self.window.location.replace('#form=track_info&track_id=' + track_name);
-            MessageBox.showMessage('Track was successfully added', MessageBox.SUCCESS_MESSAGE);
-        });      
+        var form = self._utils.getHashVar('form');
+        if (form === TracksPage.ADD_TRACK) {
+            self.addTrackHandler(this);
+        } else if (form === TracksPage.EDIT_TRACK){
+            self.editTrackHandler(this);
+        }
     });
     
     // Add point handler
@@ -454,6 +458,22 @@ TracksPage.prototype.showEditPoint = function() {
     }
 };
 
+TracksPage.prototype.showEditTrack = function() {
+    try {
+        var trackName = decodeURIComponent(this._utils.getHashVar('track_id'));
+        this._headerView.changeOption('Edit Track', 'glyphicon-chevron-left', '#form=' + TracksPage.TRACK_INFO + '&track_id=' + trackName);
+        this._trackEdit.placeCategoriesInEditTrack(this._categories.getCategories());
+        this._trackEdit.placeTrackInTrackEdit(this._tracks.getTrack(trackName, false));
+        
+        this.currentView.hideView();
+        this.currentView = this._trackEdit;
+        this.currentView.showView();
+    } catch (Exception) {
+        MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
+        Logger.error(Exception.toString());
+    }
+};
+
 TracksPage.prototype.updateTracksHandler = function() {
     try {
         this._tracksMain.toggleOverlay();
@@ -467,4 +487,29 @@ TracksPage.prototype.updateTracksHandler = function() {
         MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
         Logger.error(Exception.toString());
     }
+};
+
+TracksPage.prototype.addTrackHandler = function(form) {
+    this._trackAdd.toggleOverlay();
+    var formData = $(form).serializeArray();
+    formData.push({name: 'user_name', value: this._user.getEmail()});
+    var that = this;
+    this._tracks.addTrack(formData, function (track_name) {
+        that._trackAdd.toggleOverlay();
+        that.window.location.replace('#form=track_info&track_id=' + track_name);
+        MessageBox.showMessage('Track was successfully added', MessageBox.SUCCESS_MESSAGE);
+    });
+};
+
+TracksPage.prototype.editTrackHandler = function(form) {
+    this._trackEdit.toggleOverlay();
+    var formData = $(form).serializeArray();
+    formData.push({name: 'update', value: 'true'});
+    formData.push({name: 'user_name', value: this._user.getEmail()});
+    var that = this;
+    this._tracks.addTrack(formData, function (track_name) {
+        that._trackEdit.toggleOverlay();
+        that.window.location.replace('#form=track_info&track_id=' + track_name);
+        MessageBox.showMessage('Track was successfully updated', MessageBox.SUCCESS_MESSAGE);
+    });
 };

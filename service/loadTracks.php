@@ -185,8 +185,8 @@ try {
     if ($is_radius_filter) {
         $is_incomplete = true;
         $method = FILTER_CIRCLE_METHOD_URL;
-        $request_array = Array('radius' => $radius, 'latitude' => $latitude, 'longitude' => $longitude, 'time_from' => '01 01 1999 00:00:00.000',
-                'time_to' => '01 01 2199 00:00:00.000');
+        $request_array = Array('radius' => $radius, 'latitude' => $latitude, 'longitude' => $longitude, 'time_from' => '01 01 0001 00:00:00.000',
+                'time_to' => '01 01 2999 00:00:00.000');
     }
 
     if ($space === SPACE_PRIVATE || $space === SPACE_ALL) {

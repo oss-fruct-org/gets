@@ -255,15 +255,15 @@
         $category_id = get_parameter($params, 'category_id');
         $gets_token = get_parameter($params, 'gets_token');
 
-        $email = pg_escape_literal($dbconn, receive_email_by_token($gets_token));
+        $email = pg_escape_string($dbconn, receive_email_by_token($gets_token));
         if ($email == null) {
             trigger_error('Wrong token or GeTS error', E_USER_ERROR);
             die();
         }
 
         // Receive category name
-        $category_id_escaped = pg_escape_literal($dbconn, $category_id);
-        $category_request = "SELECT category.name FROM category WHERE category.id=${category_id_escaped};";
+        $category_id_escaped = pg_escape_string($dbconn, $category_id);
+        $category_request = "SELECT category.name FROM category WHERE category.id='${category_id_escaped}';";
         $cat_resp = pg_query($dbconn, $category_request);
         $cat_row = pg_fetch_row($cat_resp);
 
@@ -275,7 +275,7 @@
         $category_name = $cat_row[0];
 
         // Receive user name
-        $user_name_request = "SELECT users.login, users.id FROM users WHERE users.email=${email};";
+        $user_name_request = "SELECT users.login, users.id FROM users WHERE users.email='${email}';";
         $user_resp = pg_query($dbconn, $user_name_request);
         $user_row = pg_fetch_row($user_resp);
 
@@ -287,16 +287,16 @@
         $user_id = $user_row[1];
 
         $channel_name = "ch_${category_name}_${user_name}";
-        $channel_name_escaped = pg_escape_literal($dbconn, $channel_name);
+        $channel_name_escaped = pg_escape_string($dbconn, $channel_name);
 
-        $select_request = "SELECT channel.id FROM channel WHERE channel.name=${channel_name_escaped};";
+        $select_request = "SELECT channel.id FROM channel WHERE channel.name='${channel_name_escaped}';";
         $select_resp = pg_query($dbconn, $select_request);
         if (pg_num_rows($select_resp) == 0) {
             $desc_array = array('description' => "Private channel for category ${category_name} user ${user_name}",
                     'category_id' => "${category_id}");
-            $description = pg_escape_literal($dbconn, json_encode($desc_array));
+            $description = pg_escape_string($dbconn, json_encode($desc_array));
 
-            $insert_request = "INSERT INTO channel (name, description, url, owner_id) VALUES (${channel_name_escaped}, ${description}, '', ${user_id}) RETURNING channel.id;";
+            $insert_request = "INSERT INTO channel (name, description, url, owner_id) VALUES ('${channel_name_escaped}', '${description}', '', ${user_id}) RETURNING channel.id;";
             $insert_resp = pg_query($dbconn, $insert_request);
             $tmp_row = pg_fetch_row($insert_resp);
             $channel_id = $tmp_row[0];

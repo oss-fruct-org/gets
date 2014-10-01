@@ -96,7 +96,7 @@ Example:
         global $dbconn;
 
         if (array_key_exists('channel', $params[0])) {
-            $channel_name = pg_escape_literal($params[0]['channel']);
+            $channel_name = pg_escape_string($params[0]['channel']);
         } else {
             trigger_error("Channel name not specified");
             die();
@@ -114,9 +114,9 @@ Example:
             trigger_error("Can't receive user e-mail", E_USER_ERROR);
             die();
         }
-        $email_r = pg_escape_literal($email);
+        $email_r = pg_escape_string($email);
         
-        $channel_where = "tag.channel_id IN (SELECT id FROM channel WHERE channel.name={$channel_name} AND channel.owner_id IN (SELECT id FROM users WHERE email={$email_r}))";
+        $channel_where = "tag.channel_id IN (SELECT id FROM channel WHERE channel.name='{$channel_name}' AND channel.owner_id IN (SELECT id FROM users WHERE email='{$email_r}'))";
 
         if (array_key_exists('name', $params[0])) {
             $name = pg_escape_string($params[0]['name']);
@@ -203,10 +203,10 @@ Example:
     function add_set_string($field, $params, &$out_arr) {
         global $dbconn;
         if (array_key_exists($field, $params[0])) {
-            $key = pg_escape_identifier($dbconn, $field);
-            $value = pg_escape_literal($dbconn, $params[0][$field]);
+            $key = $field;
+            $value = pg_escape_string($dbconn, $params[0][$field]);
 
-            $out_arr[] = "{$key}={$value}";
+            $out_arr[] = "{$key}='{$value}'";
         }
     }
 
@@ -225,37 +225,37 @@ Example:
             trigger_error("Can't receive user e-mail", E_USER_ERROR);
             die();
         }
-        $email_r = pg_escape_literal($email);
+        $email_r = pg_escape_string($email);
 
         if (array_key_exists('channel', $params[0])) {
-            $channel_name = pg_escape_literal($params[0]['channel']);
-            $channel_where = "tag.channel_id IN (SELECT id FROM channel WHERE channel.name={$channel_name} AND channel.owner_id IN (SELECT id FROM users WHERE email={$email_r}))";
+            $channel_name = pg_escape_string($params[0]['channel']);
+            $channel_where = "tag.channel_id IN (SELECT id FROM channel WHERE channel.name='{$channel_name}' AND channel.owner_id IN (SELECT id FROM users WHERE email='{$email_r}'))";
         } else {
             $channel_where = 'true';
         }
 
         if (array_key_exists('uuid', $params[0])) {
-            $uuid = pg_escape_literal($params[0]['uuid']);
-            $uuid_where = "safe_cast_to_json(tag.description)->>'uuid'={$uuid}";
+            $uuid = pg_escape_string($params[0]['uuid']);
+            $uuid_where = "safe_cast_to_json(tag.description)->>'uuid'='{$uuid}'";
         } else {
             $uuid_where = 'true';
         }
 
         if (array_key_exists('name', $params[0])) {
-            $name = pg_escape_literal($params[0]['name']);
-            $name_where = "tag.label={$name}";
+            $name = pg_escape_string($params[0]['name']);
+            $name_where = "tag.label='{$name}'";
         } else {
             $name_where = 'true';
         }
 
         if (array_key_exists('category_id', $params[0])) {
-            $category_id = pg_escape_literal($params[0]['category_id']);
-            $category_id_where = "safe_cast_to_json(tag.description)->>'category_id'={$category_id}";
+            $category_id = pg_escape_string($params[0]['category_id']);
+            $category_id_where = "safe_cast_to_json(tag.description)->>'category_id'='{$category_id}'";
         } else {
             $category_id_where = 'true';
         }
 
-        $access_where = "tag.user_id IN (SELECT id FROM users WHERE email={$email_r})";
+        $access_where = "tag.user_id IN (SELECT id FROM users WHERE email='{$email_r}')";
 
         $set_array = array();
         add_set_string('label', $params, $set_array);

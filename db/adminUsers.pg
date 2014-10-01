@@ -1,0 +1,26 @@
+-- Table: "adminUsers"
+
+-- DROP TABLE "adminUsers";
+
+CREATE TABLE "adminUsers"
+(
+  admin_id numeric(9,0) NOT NULL, -- GeTS admin id
+  owner_id numeric(9,0) NOT NULL, -- GeTS service core admin id
+  CONSTRAINT adminusers_key PRIMARY KEY (admin_id , owner_id ),
+  CONSTRAINT admin_key FOREIGN KEY (admin_id)
+      REFERENCES users (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT owner_key FOREIGN KEY (owner_id)
+      REFERENCES users (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE "adminUsers"
+  OWNER TO geo2tag;
+COMMENT ON TABLE "adminUsers"
+  IS 'contains list of admins for geTS service';
+COMMENT ON COLUMN "adminUsers".admin_id IS 'GeTS admin id';
+COMMENT ON COLUMN "adminUsers".owner_id IS 'GeTS service core admin id';
+

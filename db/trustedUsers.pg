@@ -1,0 +1,25 @@
+-- Table: "trustedUsers"
+
+-- DROP TABLE "trustedUsers";
+
+CREATE TABLE "trustedUsers"
+(
+  user_id numeric(9,0) NOT NULL,
+  owner_id numeric(9,0) NOT NULL, -- core admin's ID
+  CONSTRAINT trusted_key PRIMARY KEY (user_id , owner_id ),
+  CONSTRAINT owner_key FOREIGN KEY (owner_id)
+      REFERENCES users (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT user_key FOREIGN KEY (user_id)
+      REFERENCES users (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE "trustedUsers"
+  OWNER TO geo2tag;
+COMMENT ON TABLE "trustedUsers"
+  IS 'contains trusted users for GTS service';
+COMMENT ON COLUMN "trustedUsers".owner_id IS 'core admin''s ID';
+

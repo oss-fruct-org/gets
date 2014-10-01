@@ -30,6 +30,8 @@ function PointsPage(document, window) {
     this._pointsMain = null;
     this._headerView = null;
     this._pointInfo = null;
+    
+    this.currentView = null;
 }
 
 // Forms
@@ -43,7 +45,7 @@ PointsPage.prototype.changeForm = function() {
     if (form === PointsPage.MAIN) {
         this.showPointsMain();
     } else if (form === PointsPage.POINT_INFO) {
-        //this.showPointInfo();
+        this.showPointInfo();
     } else if (form === PointsPage.ADD_POINT) {
         //this.showAddPoint();
     } else if (typeof form === 'undefined') {
@@ -97,6 +99,7 @@ PointsPage.prototype.initPage = function() {
     }
     
     //Init first page
+    this.currentView = this._pointsMain;
     this.changeForm();
 
     // Init Points main
@@ -123,7 +126,7 @@ PointsPage.prototype.initPage = function() {
     // Sign in handler
     $(this.document).on('click', '#sign-in-btn', function(e) {
         e.preventDefault();
-        self._user.authorizeGoogle('');
+        self._user.authorizeGoogle();
     });
 
     // Sign out handler
@@ -234,7 +237,30 @@ PointsPage.prototype.showPointsMain = function() {
         
         this._pointsMain.placeCategoriesInPointMain(this._categories.getCategories());
 
-        this._pointsMain.showView();
+        this.currentView.hideView();
+        this.currentView = this._pointsMain;
+        this.currentView.showView();
+    } catch (Exception) {
+        MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
+        Logger.error(Exception.toString());
+    }
+};
+
+PointsPage.prototype.showPointInfo = function() {
+    try {
+        this._headerView.changeOption('Point Info', 'glyphicon-chevron-left', '#form=main');
+        
+        var pointName = decodeURIComponent(this._utils.getHashVar('point_name'));
+        if (!pointName) {
+            throw new GetsWebClientException('Track Page Error', 'showPointInfo, hash parameter pointName undefined');
+        }
+        this._points.findPointInPointList(pointName);
+        
+        this._pointInfo.placePointInPointInfo(this._points.getPoint(), this._user.isLoggedIn());
+        
+        this.currentView.hideView();
+        this.currentView = this._pointInfo;
+        this.currentView.showView();
     } catch (Exception) {
         MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
         Logger.error(Exception.toString());

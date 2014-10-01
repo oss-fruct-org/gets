@@ -6,6 +6,7 @@
             <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/views/PointEdit.View.js</file>
             <file>file:/home/davidson/projects/gets/web-client/src/scripts/bootstrap-slider.min.js</file>
             <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/models/Points.Class.js</file>
+            <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/views/TrackEdit.View.js</file>
             <file>file:/home/davidson/projects/gets/web-client/src/actions/addPoint.php</file>
             <file>file:/home/davidson/projects/gets/web-client/src/actions/removePoint.php</file>
             <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/views/TrackAdd.View.js</file>
@@ -18,6 +19,7 @@
             <file>file:/home/davidson/projects/gets/web-client/src/widgets/TrackEdit.inc</file>
             <file>file:/home/davidson/projects/gets/web-client/src/widgets/Header.inc</file>
             <file>file:/home/davidson/projects/gets/web-client/src/widgets/Message.inc</file>
+            <file>file:/home/davidson/projects/gets/web-client/src/actions/isLoggedIn.php</file>
             <file>file:/home/davidson/projects/gets/web-client/src/widgets/PointsMain.inc</file>
             <file>file:/home/davidson/projects/gets/web-client/src/tracks.php</file>
             <file>file:/home/davidson/projects/gets/web-client/src/widgets/PointEdit.inc</file>
@@ -39,6 +41,7 @@
             <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/views/Message.View.js</file>
             <file>file:/home/davidson/projects/gets/web-client/src/actions/uploadFile.php</file>
             <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/controllers/PointsPage.Ctrl.js</file>
+            <file>file:/home/davidson/projects/gets/web-client/src/login.php</file>
             <file>file:/home/davidson/projects/gets/web-client/src/styles/bootstrap-slider.min.css</file>
             <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/views/PointsMain.View.js</file>
             <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/controllers/TracksPage.Ctrl.js</file>

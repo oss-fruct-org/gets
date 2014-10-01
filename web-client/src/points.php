@@ -14,6 +14,8 @@ session_start();
         <script src="scripts/bootstrap/bootstrap.min.js"></script>               
         <script src="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.js"></script>
         <script src="scripts/logger.min.js"></script>
+        <script src="scripts/readmore.min.js"></script>
+        <script src="scripts/bootstrap-slider.min.js"></script>
         <script src="scripts/gets/models/Categories.Class.js"></script>
         <script src="scripts/gets/models/Points.Class.js"></script>
         <script src="scripts/gets/models/User.Class.js"></script>

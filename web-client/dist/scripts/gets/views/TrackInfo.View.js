@@ -32,23 +32,20 @@ TrackInfo.prototype.placeTrackInTrackInfo = function (track, categories, isAuth)
     });
     
     $(this.trackInfo).find('#tracks-info-description').text(track.description);
-    var tracksPointList = $(this.trackInfo).find('#tracks-points-list');
-         
+    var tracksPointList = $(this.trackInfo).find('#tracks-points-list');        
     $(tracksPointList).empty();
     
     // Add points count
     $(this.trackInfo).find('#tracks-points-list-count-badge').text(track.points.length);
     
-    for (var i = 0; i < track.points.length; i++) {
-        var tracksPointItem = $(this.document.createElement('li'));
-        $(tracksPointItem).addClass('list-group-item');
+    for (var i = 0; i < track.points.length; i++) {       
         var trackPointLinkElement = $(this.document.createElement('a'));
         $(trackPointLinkElement).attr('href', '#form=point_info&track_id=' + track.name + '&point_name=' + track.points[i].name);
         $(trackPointLinkElement).attr('title', track.points[i].name);
         $(trackPointLinkElement).addClass('ellipsis-text');
+        $(trackPointLinkElement).addClass('list-group-item');
         $(trackPointLinkElement).text(track.points[i].name);
-        $(trackPointLinkElement).appendTo(tracksPointItem);
-        $(tracksPointItem).appendTo(tracksPointList);
+        $(trackPointLinkElement).appendTo(tracksPointList);
     }
     
     var tracksInfoAdd = $(this.trackInfo).find('#tracks-info-add');

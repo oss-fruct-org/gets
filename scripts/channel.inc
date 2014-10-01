@@ -18,7 +18,7 @@ require_once 'utils.inc';
 
 	if (array_key_exists("channel", $params[0])) {
 	    $channel = $params[0]["channel"];
-	    $channel = pg_escape_literal($channel);
+	    $channel = pg_escape_string($channel);
 	} else {
 	    trigger_error("Channel did not specified", E_USER_ERROR);
 	    die();
@@ -38,10 +38,10 @@ require_once 'utils.inc';
         die();
     }
 	    
-    $email_r = pg_escape_literal($email);
+    $email_r = pg_escape_string($email);
 
 	/* create request */
-    $sql_request = "delete from channel where channel.name = {$channel} and channel.owner_id in (select id from users where email={$email_r});";
+    $sql_request = "delete from channel where channel.name = '{$channel}' and channel.owner_id in (select id from users where email='{$email_r}');";
     error_log($sql_request);
 
 	$res = pg_query($dbconn, $sql_request);
@@ -87,7 +87,7 @@ Example:
         global $dbconn;
 
         if (array_key_exists('channel', $params[0])) {
-            $channel_name = pg_escape_literal($params[0]['channel']);
+            $channel_name = pg_escape_string($params[0]['channel']);
         } else {
             trigger_error("Channel name not specified");
             die();
@@ -105,11 +105,11 @@ Example:
             trigger_error("Can't receive user e-mail", E_USER_ERROR);
             die();
         }
-        $email = pg_escape_literal($email);
+        $email = pg_escape_string($email);
 
         $query =
-            "SELECT description,url FROM channel WHERE channel.name={$channel_name} AND channel.id IN 
-                (SELECT subscribe.channel_id FROM users INNER JOIN subscribe ON users.id=subscribe.user_id WHERE users.email={$email});";
+            "SELECT description,url FROM channel WHERE channel.name='{$channel_name}' AND channel.id IN 
+                (SELECT subscribe.channel_id FROM users INNER JOIN subscribe ON users.id=subscribe.user_id WHERE users.email='{$email}');";
         $res = pg_query($dbconn, $query);
 
         if (pg_num_rows($res) === 0) {

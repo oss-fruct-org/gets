@@ -49,23 +49,22 @@ CategoriesClass.prototype.downloadCategories = function () {
         throw new GetsWebClientException('Categories Error', 'getCategoriesAsArray, getCategoriesRequest failed ' + textStatus);
     });
       
-    if ($( getCategoriesRequest.responseText ).find('code').text() !== '0') {
-        throw new GetsWebClientException('Categories Error', 'getCategoriesAsArray, ' + $( getCategoriesRequest.responseText ).find('message').text());
+    if ($(getCategoriesRequest.responseText).find('code').text() !== '0') {
+        throw new GetsWebClientException('Categories Error', 'getCategoriesAsArray, ' + $(getCategoriesRequest.responseText).find('message').text());
     }
 
-    var categoryElementList = $( getCategoriesRequest.responseText ).find('category');
+    var categoryElementList = $(getCategoriesRequest.responseText).find('category');
     var categoriesArray = [];
-    $.each(categoryElementList, function(index, value) {     
+    $(categoryElementList).each(function (index, value) {
         var categoryObj = {};
-        categoryObj.id = $( value ).find('id').length ? $( value ).find('id').text() : '';
-        categoryObj.name = $( value ).find('name').length ? $( value ).find('name').text() : '';
-        categoryObj.description = $( value ).find('description').length ? $( value ).find('description').text() : '';
-        categoryObj.url = $( value ).find('url').length ? $( value ).find('url').text() : '';
+        categoryObj.id = $(value).find('id').length ? $(value).find('id').text() : '';
+        categoryObj.name = $(value).find('name').length ? $(value).find('name').text() : '';
+        categoryObj.description = $(value).find('description').length ? $(value).find('description').text() : '';
+        categoryObj.url = $(value).find('url').length ? $(value).find('url').text() : '';
 
         categoriesArray.push(categoryObj);
     });
 
-    Logger.debug(categoriesArray);
     this.categories = categoriesArray;
 };
 

@@ -40,10 +40,18 @@ PointInfo.prototype.placePointInPointInfo = function(point, isAuth) {
     $(photoElement).attr('src', '');
 
     // Then fill elemnts with new values 
-    $(nameElement).text(point.name).attr('title', point.name);
+    $(nameElement).text(point.name).attr('title', point.name).readmore({
+        maxHeight: 50,
+        embedCSS: false,
+        moreLink: '<a href="#">Expand</a>',
+        lessLink: '<a href="#">Collapse</a>'
+    });
+    
     $(coordsElement).text(point.coordinates);
     if (point.descriptionExt !== '') {
         $(descElement).text(point.descriptionExt);
+    } else {
+        $(descElement).html(point.description);
     }
 
     

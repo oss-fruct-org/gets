@@ -179,7 +179,7 @@ TracksClass.prototype.downloadTrackByName = function(paramsObj) {
         pointObj.uuid = $(value).find("[name='uuid']").length ? $(value).find("[name='uuid']").text() : '';
         pointObj.name = $(value).find('name').length ? $(value).find('name').text() : '';
         pointObj.description = $(value).find('description').length ? $(value).find('description').text() : '';
-        pointObj.url = $(value).find("[name='url']").length ? $(value).find("[name='url']").text() : 'undefined';
+        pointObj.url = $(value).find("[name='url']").length ? $(value).find("[name='url']").text() : '';
         pointObj.descriptionExt = $(value).find("[name='description']").length ? $(value).find("[name='description']").text() : '';
         pointObj.audio = $(value).find("[name='audio']").length ? $(value).find("[name='audio']").text() : '';
         pointObj.photo = $(value).find("[name='photo']").length ? $(value).find("[name='photo']").text() : '';
@@ -222,44 +222,37 @@ TracksClass.prototype.addTrack = function (paramsObj, callback) {
     if (!paramsObj) {
         throw new GetsWebClientException('Tracks Error', 'addTrack, paramsObj undefined or null');
     }
-    var name, hname, desc, lang, category_id, update;
-
-    // Create track name in GeTS format (tr_track_name)
-    var track_name;
-    for (var i = 0, len = paramsObj.length; i < len; i++) {
-        if (paramsObj[i].name === 'hname') {
-            track_name = 'tr_' + paramsObj[i].value.toLowerCase().replace(/\s/g, '_');
-            break;
-        }
-    }
-    //paramsObj.unshift({name: 'name', value: track_name});
-    //if (paramsObj.update) {
-    //    paramsObj.push({name: 'update', value: 'true'});
-    //}
+    var name, hname, desc, url, lang, categoryId, update, userName;
 
     $(paramsObj).each(function(index, value) {
-        if (value.name === 'name') {
-            
-        } else if (value.name === 'hname') {
-            
+        if (value.name === 'hname') {
+            hname = value.value;
         } else if (value.name === 'description') {
-            
+            desc = value.value;
         } else if (value.name === 'url') {
-            
+            url = value.value;
         } else if (value.name === 'category_id') {
-            newParamsObj.category_id = value.value;
+            categoryId = value.value;
         } else if (value.name === 'lang') {
-            newParamsObj.lang = value.value;
+            lang = value.value;
         } else if (value.name === 'update') {
-            newParamsObj.update = value.value;
+            update = value.value;
+        } else if (value.name === 'user_name') {
+            userName = value.value;
         }
     });
+    
+    name = 'tr+' + userName + '+' + hname.toLowerCase().replace(/\+/g, '%2B') + '+' + lang;
+    
     // Create single object from an array of objects
     var newParamsObj = {};
     newParamsObj.name = name;
     newParamsObj.hname = hname;
     newParamsObj.description = desc;
-    newParamsObj.url = value.value;
+    newParamsObj.url = url;
+    newParamsObj.category_id = categoryId;
+    newParamsObj.lang = lang;
+    newParamsObj.update = update;
 
     var addTrackRequest = $.ajax({
         url: 'actions/addTrack.php',
@@ -280,7 +273,7 @@ TracksClass.prototype.addTrack = function (paramsObj, callback) {
         }
         
         if (callback) {
-            callback(track_name);
+            callback(name);
         }
     });
 };

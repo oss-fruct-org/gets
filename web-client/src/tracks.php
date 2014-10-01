@@ -29,6 +29,7 @@ session_start();
         <script src="scripts/gets/views/Map.View.js"></script>
         <script src="scripts/gets/views/TrackInfo.View.js"></script>
         <script src="scripts/gets/views/TrackAdd.View.js"></script>
+        <script src="scripts/gets/views/TrackEdit.View.js"></script>
         <script src="scripts/gets/views/PointInfo.View.js"></script>
         <script src="scripts/gets/views/PointAdd.View.js"></script>
         <script src="scripts/gets/views/PointEdit.View.js"></script>

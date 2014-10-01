@@ -57,8 +57,8 @@ echo   '<div id="tracks-main-page" class="action-menu-container hidden">
                 </div>          
             </div>
             <div class="action-menu-inner-content"> 
-                <ul id="tracks-list" class="list-group">
-                </ul>            
+                <div id="tracks-list" class="list-group">
+                </div>            
             </div>
         </div>';
 ?>

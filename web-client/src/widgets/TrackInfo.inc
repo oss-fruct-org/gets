@@ -43,7 +43,7 @@ echo    '<div id="tracks-info-page" class="action-menu-container hidden">
                             </div>
                             <div id="tracks-points-block-collapse" class="panel-collapse collapse">
                                 <div class="panel-body">
-                                    <ul id="tracks-points-list" class="list-group"></ul>
+                                    <div id="tracks-points-list" class="list-group"></div>
                                 </div>
                             </div>
                         </div>

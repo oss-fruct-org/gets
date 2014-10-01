@@ -19,17 +19,15 @@ function UserClass(windowObj) {
     }
     this.windowObj = windowObj;
     this.coords = null;
+    this.coordsSet = false;
 };
 
 /**
  * Authorize user using Google OAuth2.0.
  * 
- * @param {String} returnUrl Page's url to which redirect user after successfull 
- * authorization.
- * 
  * @throws {GetsWebClientException}
  */ 
-UserClass.prototype.authorizeGoogle = function(returnUrl) {
+UserClass.prototype.authorizeGoogle = function() {
     var getRedirectLinkRequest = $.ajax({
         url: 'actions/login.php',
         type: 'POST',
@@ -59,8 +57,8 @@ UserClass.prototype.authorizeGoogle = function(returnUrl) {
             var getAuthTokenRequest = $.ajax({
                 url: 'actions/login.php',
                 type: 'POST',
-                async: false,
-                contentType: 'text/xml',
+                async: true,
+                contentType: 'application/json',
                 dataType: 'xml',
                 data: JSON.stringify({id: id})
             });
@@ -69,15 +67,27 @@ UserClass.prototype.authorizeGoogle = function(returnUrl) {
                 throw new GetsWebClientException('User Error', 'authorizeGoogle, getAuthTokenRequest failed ' + textStatus);
             });
 
-            if ($(getAuthTokenRequest.responseText).find('code').text() !== '0') {
-                throw new GetsWebClientException('User Error', 'authorizeGoogle, getAuthTokenRequest: ' + $(getAuthTokenRequest.responseText).find('message').text());
-            }
-                       
-            var auth_token = $(getAuthTokenRequest.responseText).find('auth_token').text(); 
-            self.windowObj.location.reload(true);
+            getAuthTokenRequest.done(function (data, textStatus, jqXHR) {
+                if ($(jqXHR.responseText).find('code').text() !== '0') {
+                    throw new GetsWebClientException('User Error', 'authorizeGoogle, getAuthTokenRequest: ' + $(jqXHR.responseText).find('message').text());
+                }
+                Logger.debug($(jqXHR.responseText).find('auth_token').text());
+                self.windowObj.location.replace('#form=main');
+                self.windowObj.location.reload(true);
+            });        
         }
     }, 1000);
-    
+};
+
+UserClass.prototype.logout = function() {
+    $.ajax({
+        url: 'actions/logout.php',
+        type: 'GET',
+        async: false,
+        contentType: 'text/xml',
+        dataType: 'xml',
+        data: ''
+    });  
 };
 
 /**
@@ -134,27 +144,11 @@ UserClass.prototype.fetchEmail = function() {
  * 
  * @returns {Object} User's location in format {latitude: "someLatitude", longitude: "someLongitude"}
  */
-UserClass.prototype.getUserGeoPosition = function() {
-    if (!this.coords) {
-        this.locateUser();
-    }
-    Logger.debug(this.coords);
-    return this.coords;
-};
-
-UserClass.prototype.locateUser = function() {
-    if (this.windowObj.navigator.geolocation) {
-        Logger.debug('locateUser');
-        var coordinates = {};
-        this.windowObj.navigator.geolocation.getCurrentPosition(function (position) { 
-            coordinates.latitude = position.coords.latitude;
-            coordinates.longitude = position.coords.longitude;
-            Logger.debug(coordinates);
-        }, this.handleGeoLocationError);
-        this.coords = coordinates;
-    } else {
-       throw new GetsWebClientException('User Error', 'getGeoPosition, geolocation is not supported by this browser');
-    }
+UserClass.prototype.setUserGeoPosition = function(position) {
+    this.coords = {};
+    this.coords.lat = position.coords.latitude;
+    this.coords.lng = position.coords.longitude;
+    this.coordsSet = true;
 };
 
 UserClass.prototype.handleGeoLocationError = function (error) {
@@ -175,4 +169,32 @@ UserClass.prototype.handleGeoLocationError = function (error) {
  */
 UserClass.prototype.isLoggedIn = function() {
     return this.isAuthorized;
+};
+
+/**
+ * Get users coords.
+ * 
+ * @returns {Object} coordiantes {latitude: "someLatitude", longitude: "someLongitude"}.
+ */
+UserClass.prototype.getUsersGeoPosition = function() {
+    return this.coords;
+};
+
+/**
+ * Check is user's coordinates set.
+ * 
+ * @returns {Boolean} coordiantes status.
+ */
+UserClass.prototype.isCoordsSet = function() {
+    return this.coordsSet;
+};
+
+/**
+ * Get users email.
+ */
+UserClass.prototype.getEmail = function() {
+    if (!this.email) {
+        this.fetchEmail();
+    }
+    return this.email;
 };

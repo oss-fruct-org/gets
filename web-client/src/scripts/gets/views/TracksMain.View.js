@@ -101,3 +101,10 @@ TracksMain.prototype.showView = function() {
 TracksMain.prototype.hideView = function() {
     $(this.mainTracks).removeClass('show').addClass('hidden');
 };
+
+/**
+ * Toggle overlay
+ */
+TracksMain.prototype.toggleOverlay = function() {
+    $(this.mainTracks).find('#tracks-main-overlay').toggleClass('busy-overlay-visible');
+};

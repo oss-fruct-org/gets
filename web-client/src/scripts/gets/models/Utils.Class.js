@@ -85,10 +85,10 @@ UtilsClass.prototype.uploadFile = function(paramsObj) {
         throw new GetsWebClientException('Utils Error', 'uploadFile, ' + $(getPostURLRequest.responseText).find('message').text());
     }
 
-    var postURL = $(getPostURLRequest.responseText).find('post_url').text();
-
+    var postURL = encodeURIComponent($(getPostURLRequest.responseText).find('post_url').text());
+    
     var uploadFileRequest = $.ajax({
-        url: 'actions/uploadFile.php?post_url=' + postURL + '&mime_type=' + file.type,
+        url: 'actions/uploadFile.php?post_url=' + postURL,
         type: 'POST',
         async: false,
         cache: false,
@@ -107,8 +107,8 @@ UtilsClass.prototype.uploadFile = function(paramsObj) {
 
     var downloadUrl = $(uploadFileRequest.responseText).find('downloadUrl').text();
     Logger.debug('downloadUrl: ' + downloadUrl);
-
-    return downloadUrl;
+    
+    return this.htmlEscape(downloadUrl);
 };
 
 /**
@@ -182,6 +182,27 @@ UtilsClass.prototype.checkCoordsInput = function(latitude, longitude, altitude) 
     return true;
 };
 
+UtilsClass.prototype.guid = function() {
+    function s4() {
+        return Math.floor((1 + Math.random()) * 0x10000)
+                .toString(16)
+                .substring(1);
+    }
+    return function() {
+        return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+                s4() + '-' + s4() + s4() + s4();
+    };
+};
+
+
+UtilsClass.prototype.htmlEscape = function(str) {
+    return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+};
 
 /**
  * Create date + time combination. Main usage is creating time for 
@@ -199,6 +220,35 @@ UtilsClass.prototype.getDateTime = function () {
             ('0' + (currentDate.getMinutes())).slice(-2) + ':' + 
             ('0' + (currentDate.getSeconds())).slice(-2) + '.' + 
             currentDate.getMilliseconds().toString().slice(0, 3);
+};
+
+/**
+ * Clear value of the given file input element.
+ * 
+ * @param {Object} fileInputElement given file input DOM element.
+ */
+UtilsClass.prototype.resetFileInput = function(fileInputElement) {
+    $(fileInputElement).wrap('<form>').closest('form').get(0).reset();
+    $(fileInputElement).unwrap();
+};
+
+/*
+ * Clear values of all input elements contained in the given element.
+ * 
+ * @param {Object} element given DOM element.
+ */
+UtilsClass.prototype.clearAllInputFields = function(element) {
+    // clear all text input
+    $(element).find('input[type!="button"][type!="file"]').val('');
+    
+    // clear textarea input
+    $(element).find('textarea').val('');
+    
+    // And then clear all file input
+    var self = this;
+    $(element).find('input[type="file"]').each(function() {
+        self.resetFileInput(this);
+    });
 };
 
 /**

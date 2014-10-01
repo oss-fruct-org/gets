@@ -14,7 +14,17 @@
 function PointAdd(document, addPoint) {
     this.document = document;
     this.addPoint = addPoint;
+    
+    $(this.addPoint).find('#edit-point-active-radius-input').slider({
+        formatter: function (value) {
+            return 'Current value: ' + value;
+        }
+    });
 }
+
+PointAdd.prototype.getView = function() {
+    return this.addPoint;
+};
 
 /**
  * Show view
@@ -28,6 +38,29 @@ PointAdd.prototype.showView = function() {
  */
 PointAdd.prototype.hideView = function() {
     $(this.addPoint).removeClass('show').addClass('hidden');
+    // Remove the temp marker, if it is on the map 
+    $(this.addPoint).find('#edit-point-use-map').click();
 };
 
+/**
+ * Toggle overlay
+ */
+PointAdd.prototype.toggleOverlay = function() {
+    $(this.addPoint).find('#edit-point-overlay').toggleClass('busy-overlay-visible');
+};
+
+/**
+ * Enter pressed.
+ */
+PointAdd.prototype.onEnterPressed = function() {
+    $(this.addPoint).find('#edit-point-save').click();
+};
+
+/**
+ * Set lat, lng input fileds value.
+ */
+PointAdd.prototype.setLatLng = function(lat, lng) {
+    $(this.addPoint).find('#edit-point-lat-input').val(lat);
+    $(this.addPoint).find('#edit-point-lon-input').val(lng);
+};
 

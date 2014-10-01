@@ -17,6 +17,9 @@ function MapClass() {
     this.layersControl = null;
     this.tempMarker = null;
     this.routes = [];
+    this.searchArea = null;
+    this.userMarker = null;
+    this.pointsLayer = null;
 }
 
 /**
@@ -50,10 +53,6 @@ L.NumberedDivIcon = L.Icon.extend({
         iconSize: new L.Point(25, 41),
         iconAnchor: new L.Point(13, 41),
         popupAnchor: new L.Point(0, -33),
-        /*
-         iconAnchor: (Point)
-         popupAnchor: (Point)
-         */
         className: 'leaflet-div-icon-num'
     },
     createIcon: function () {
@@ -70,6 +69,93 @@ L.NumberedDivIcon = L.Icon.extend({
 //you could change this to add a shadow like in the normal marker if you really wanted
     createShadow: function () {
         return null;
+    }
+});
+
+
+/* L.EditableCircleMarker is a marker with a radius
+ * The marker can be moved and the radius can be changed
+ * Source from: https://gist.github.com/glenrobertson/3630960
+ */
+ 
+L.EditableCircleMarker = L.Class.extend({
+    includes: L.Mixin.Events,
+    options: {
+        weight: 1,
+        clickable: false
+    },
+    initialize: function(latlng, radius, options) {
+        L.Util.setOptions(this, options);
+
+        this._latlng = L.latLng(latlng);
+        this._radius = radius;
+
+        this._marker = new L.Marker(latlng, {
+            icon: new L.Icon({
+                iconSize: new L.Point(25, 41),
+                iconAnchor: new L.Point(13, 41),
+                popupAnchor: new L.Point(0, -33),
+                iconUrl: 'images/icons/marker_hole.png',
+                className: 'leaflet-div-icon-num'
+            }),
+            draggable: true
+        });
+
+        this._circle = new L.Circle(latlng, radius, this.options);
+
+        // move circle when marker is dragged
+        var me = this;
+        this._marker.on('dragstart', function() {
+            me.fire('dragstart');
+        });
+        this._marker.on('drag', function(e) {
+            me._latlng = e.target.getLatLng();
+            me._marker.setLatLng(me._latlng);
+            me._circle.setLatLng(me._latlng);
+            me.fire('drag');
+        });
+        this._marker.on('dragend', function() {
+            me.fire('dragend');
+        });
+    },
+    onAdd: function(map) {
+        this._map = map;
+        this._marker.addTo(map);
+        this._circle.addTo(map);
+        this.fire('loaded');
+    },
+    onRemove: function(map) {
+        map.removeLayer(this._marker);
+        map.removeLayer(this._circle);
+        this.fire('unloaded');
+    },
+    getBounds: function() {
+        return this._circle.getBounds();
+    },
+    getLatLng: function() {
+        return this._latlng;
+    },
+    setLatLng: function(latlng) {
+        this._marker.fire('movestart');
+        this._latlng = L.latLng(latlng);
+        this._marker.setLatLng(this._latlng);
+        this._circle.setLatLng(this._latlng);
+        this._marker.fire('moveend');
+    },
+    getRadius: function() {
+        return this._radius;
+    },
+    setRadius: function(meters) {
+        this._marker.fire('movestart');
+        this._radius = meters;
+        this._circle.setRadius(meters);
+        this._marker.fire('moveend');
+    },
+    getCircleOptions: function() {
+        return this._circle.options;
+    },
+    setCircleStyle: function(style) {
+        this._circle.setStyle(style);
     }
 });
 
@@ -131,12 +217,12 @@ MapClass.prototype.placeTrackInMap = function(track) {
     }
     
     var group = L.layerGroup();  
-    var coordinatesArray = getCoordinatesArray();
+    var coordinatesArray = this.getCoordinatesArray(track);
         
     // create a red polyline from an arrays of LatLng points
     var polyline = L.polyline(
             coordinatesArray, {
-                color: getRandomColor(),
+                color: this.getRandomColor(),
                 weight: 7,
                 opacity: 0.9,
                 lineJoin: 'round',
@@ -151,6 +237,7 @@ MapClass.prototype.placeTrackInMap = function(track) {
                 icon:	new L.NumberedDivIcon({number: i + 1})
             }).bindPopup(
                 '<b>' + track.points[i].name + '</b><br>' + 
+                '<img class="info-image" alt="No image" src="' + track.points[i].photo + '">' + 
                 track.points[i].description + '<br>' + 
                 track.points[i].coordinates + '<br>' +
                 '<a href="' + track.points[i].url + '">' + track.points[i].url + '</a>' + 
@@ -174,6 +261,40 @@ MapClass.prototype.placeTrackInMap = function(track) {
     
     // zoom the map to the polyline
     this.map.fitBounds(polyline.getBounds());
+};
+
+MapClass.prototype.removeTrackFromMap = function (track) {
+    var index = this.getRouteIndex({id: track.name});
+    if (index < 0) {
+        return;
+    }
+    if (this.map.hasLayer(this.routes[index].layerGroup)) {
+        this.map.removeLayer(this.routes[index].layerGroup);
+    }
+    this.layersControl.removeLayer(this.routes[index].layerGroup);
+    
+    this.routes.splice(index, 1);
+}
+
+MapClass.prototype.placePointsOnMap = function(pointList) {
+    if (!pointList) {
+        throw new GetsWebClientException('Map Error', 'placePointsOnMap, pointList undefined or null.');
+    }
+    this.pointsLayer = L.layerGroup();
+    
+    for (var i = 0; i < pointList.length; i++) {
+        var coords = pointList[i].coordinates.split(',');
+        L.marker([coords[1], coords[0]], {title: pointList[i].name})
+            .bindPopup('<b>' + pointList[i].name + '</b><br>' + pointList[i].description).addTo(this.pointsLayer);
+    }
+    this.pointsLayer.addTo(this.map);
+};
+
+MapClass.prototype.removePointsLayer = function() {
+    if (this.pointsLayer) {
+        this.map.removeLayer(this.pointsLayer);
+        this.pointsLayer = null;
+    }
 };
 
 /**
@@ -220,6 +341,21 @@ MapClass.prototype.getCoordinatesArray = function (track) {
     return coordinatesArray;
 };
 
+
+MapClass.prototype.checkTrack = function(track) {
+    var index = this.getRouteIndex({id: track.name});
+    if (index < 0) {
+        return false;
+    } else {
+        var route = this.routes[index];
+        if (!this.map.hasLayer(route.layerGroup)) {
+            this.map.addLayer(route.layerGroup);
+        }
+        this.map.fitBounds(route.layerGroup.getLayer(route.polyLineLayerId).getBounds());
+        return true;
+    }
+};
+
 /**
  * Set center of a map.
  * 
@@ -230,3 +366,122 @@ MapClass.prototype.setCenter = function(latitude, longitude) {
     this.map.setView([latitude, longitude], 11);
 };
 
+/**
+ * Get center of a map.
+ * 
+ * @returns {Object} Object in LatLng Leaflet format {lat: someLat, lng: someLng}
+ */
+MapClass.prototype.getCenter = function() {
+    return this.map.getCenter();
+};
+
+/**
+ * Create draggable temporary marker which will send coordinates on drag. Marker 
+ * automatically will be placed on the map.
+ * 
+ * @param {Double} latitude
+ * @param {Double} longitude
+ * @param {Function} callback Callback function will be called on marker's drag event.
+ */
+MapClass.prototype.createTempMarker = function(latitude, longitude, callback) {
+    this.map.setView([latitude, longitude], this.map.getZoom());
+    if (!this.tempMarker) {       
+        this.tempMarker = L.marker([latitude, longitude], {
+            draggable: true,
+            riseOnHover: true
+        }).addTo(this.map);
+        if (callback) {
+            this.tempMarker.on('drag', function(e) {
+                callback(e.target.getLatLng());
+            });
+        }
+    } else {
+        this.tempMarker.setLatLng(L.latLng(latitude, longitude));
+        if (callback) {
+            this.tempMarker.off();
+            this.tempMarker.on('drag', function(e) {
+                callback(e.target.getLatLng());
+            });
+        }    
+    }
+};
+
+/**
+ * Remove temporary marker from the map.
+ */
+MapClass.prototype.removeTempMarker = function() {
+    if (this.tempMarker) {
+        this.map.removeLayer(this.tempMarker);
+        this.tempMarker = null;
+    }
+};
+
+/**
+ * Create search area.
+ */
+MapClass.prototype.createSearchArea = function(lat, lng, radius) {
+    if (!this.searchArea) {
+        this.searchArea = new L.EditableCircleMarker([lat, lng], radius, {
+            color: '#0000ff',
+            weight: 2,
+            opacity: 0.2
+        });
+        this.searchArea.onAdd(this.map);
+    } else {
+        this.searchArea.setLatLng([lat, lng]);
+        this.searchArea.setRadius(radius);
+        this.searchArea.onAdd(this.map);
+    }
+};
+
+/**
+ * Hide search area.
+ */
+MapClass.prototype.hideSearchArea = function() {
+    if (this.searchArea) {
+        this.searchArea.onRemove(this.map);
+    }
+};
+
+/**
+ * Set search area value.
+ */
+MapClass.prototype.setSearchAreaParams = function(lat, lng, radius) {
+    if (this.searchArea) {
+        this.searchArea.setLatLng([lat, lng]);
+        this.searchArea.setRadius(radius);
+    }
+};
+
+/**
+ * Create user icon
+ */
+MapClass.prototype.createUserMarker = function(lat, lng) {
+    if (this.userMarker == null) {
+        var userIcon = L.icon({
+            iconUrl: 'images/icons/location.png',
+            shadowUrl: null,
+            iconSize: new L.Point(48, 48),
+            iconAnchor: new L.Point(13, 41),
+            popupAnchor: new L.Point(0, - 33),
+            className: 'leaflet-div-icon-num'
+        });
+        this.userMarker = L.marker([lat, lng], {icon: userIcon}).bindPopup('<b>Your current position</b>').addTo(this.map);
+    } 
+};
+
+/**
+ * Set callback on given map's event
+ * 
+ * @param {String} eventName Given event's name
+ * @param {Function} callback Callback function
+ */
+MapClass.prototype.setMapCallback = function(eventName, callback) {
+    if (!eventName || !callback) {
+        return;
+    }
+    
+    this.map.on(eventName, function (e) {
+        callback(e);
+    });
+};

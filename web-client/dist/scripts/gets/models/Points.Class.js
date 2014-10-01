@@ -53,7 +53,7 @@ PointsClass.prototype.checkPointList = function () {
  * 
  * @throws {GetsWebClientException}    
  */
-PointsClass.prototype.downLoadPoints = function(paramsObj) { 
+PointsClass.prototype.downLoadPoints = function(paramsObj, callback) { 
     var lat = 0.0, lng = 0.0, radius = 1, categoryId = -1, space = 'public';
     
     $(paramsObj).each(function (idx, value) {
@@ -99,12 +99,12 @@ PointsClass.prototype.downLoadPoints = function(paramsObj) {
         requestObj.category_id = categoryId;
     }
     
-    requestObj.space = space;
+    //requestObj.space = space;
     
     var getPointsRequest = $.ajax({
         url: 'actions/getPoints.php',
         type: 'POST',
-        async: false, 
+        async: true, 
         contentType: 'application/json', 
         dataType: 'xml', 
         data: JSON.stringify(requestObj)
@@ -115,24 +115,29 @@ PointsClass.prototype.downLoadPoints = function(paramsObj) {
     getPointsRequest.fail(function(jqXHR, textStatus) {
         throw new GetsWebClientException('Points Error', 'getPointsRequest failed ' + textStatus);
     });
-
-    if ($(getPointsRequest.responseText).find('code').text() !== '0') {
-        throw new GetsWebClientException('Points Error', 'getPointsRequest: ' + $(getPointsRequest.responseText).find('message').text());
-    }
-
-    var pointListItems = $($.parseXML(getPointsRequest.responseText)).find('Placemark');
-    var pointsArray = [];
-    $.each(pointListItems, function(index, value) {
-        var pointObj = {};
-        pointObj.name = $(value).find('name').length ? $(value).find('name').text() : '';
-        pointObj.description = $(value).find('description').length ? $(value).find('description').text() : '';
-        pointObj.coordinates = $(value).find('coordinates').length ? $(value).find('coordinates').text() : '';
-
-        pointsArray.push(pointObj);
-    });
     
-    Logger.debug(pointsArray);
-    this.pointList = pointsArray;   
+    var self = this;
+    getPointsRequest.done(function(data, textStatus, jqXHR) {
+        if ($(jqXHR.responseText).find('code').text() !== '0') {
+            throw new GetsWebClientException('Points Error', 'getPointsRequest: ' + $(jqXHR.responseText).find('message').text());
+        }
+
+        var pointListItems = $($.parseXML(jqXHR.responseText)).find('Placemark');
+        var pointsArray = [];
+        $(pointListItems).each(function(index, value) {
+            var pointObj = {};
+            pointObj.name = $(value).find('name').length ? $(value).find('name').text() : '';
+            pointObj.description = $(value).find('description').length ? $(value).find('description').text() : '';
+            pointObj.coordinates = $(value).find('coordinates').length ? $(value).find('coordinates').text() : '';
+
+            pointsArray.push(pointObj);
+        });
+
+        self.pointList = pointsArray;
+        if (callback) {
+            callback();
+        }
+    });
 };
 
 /**
@@ -154,7 +159,7 @@ PointsClass.prototype.downLoadPoints = function(paramsObj) {
  * 
  * @throws {GetsWebClientException}
  */
-PointsClass.prototype.addPoint = function (paramsObj) {
+PointsClass.prototype.addPoint = function (paramsObj, callback) {
     if (!paramsObj) {
         throw new GetsWebClientException('Points Error', 'addPoint, paramsObj is undefined or null');
     }
@@ -233,6 +238,10 @@ PointsClass.prototype.addPoint = function (paramsObj) {
     if ($( addPointRequest.responseText ).find('code').text() !== '0') {
         throw new GetsWebClientException('Points Error', 'addPoint, ' + $( addPointRequest.responseText ).find('message').text());
     }
+    
+    if (callback) {
+        callback(title);
+    }
 };
 
 /**
@@ -276,11 +285,41 @@ PointsClass.prototype.createDescription = function(text, audioURL, imageURL, uui
     return descObj;
 };
 
+PointsClass.prototype.removePoint = function (callback) {
+    var point = this.getPoint();
+    if (point.access === 'r') {
+        throw new GetsWebClientException('Points Error', 'removePoint, "point" is read only');
+    }
+    
+    var removePointRequest = $.ajax({
+        url: 'actions/removePoint.php',
+        type: 'POST',
+        async: false,
+        contentType: 'application/json',
+        dataType: 'xml',
+        data: JSON.stringify({
+            channel: point.track,
+            name: point.name
+        })
+    });
+    
+    removePointRequest.fail(function(jqXHR, textStatus) {
+        throw new GetsWebClientException('Points Error', 'removePoint, removePointRequest failed ' + textStatus);
+    });
+    
+    if ($(removePointRequest.responseText).find('code').text() !== '0') {
+        throw new GetsWebClientException('Points Error', 'removePoint, removePointRequest: ' + $(removePointRequest.responseText).find('message').text());
+    }   
+    
+    if (callback) {
+        callback();
+    }
+};
+
 /**
  * Getters
  */
-PointsClass.prototype.getPointList = function (needPointListUpdate) {
-    this.needPointListUpdate = needPointListUpdate;
+PointsClass.prototype.getPointList = function () {
     if (this.isPointListDownloaded()) {
         return this.pointList;
     }    

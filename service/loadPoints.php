@@ -253,8 +253,8 @@ function makeRequestBasedOnConditions(&$xml, $category_condition, $location_cond
         $data_array['latitude'] = floatval($latitude_element->item(0)->nodeValue);
         $data_array['longitude'] = floatval($longitude_element->item(0)->nodeValue);
         $data_array['radius'] = floatval($radius_element->item(0)->nodeValue);
-        $data_array['time_from'] = '01 01 1999 00:00:00.000';
-        $data_array['time_to'] = '01 01 2099 00:00:00.000';
+        $data_array['time_from'] = '01 01 0001 00:00:00.000';
+        $data_array['time_to'] = '01 01 2999 00:00:00.000';
         $request_type = LOAD_POINTS_METHOD_URL;
         foreach ($channels_name_array as $channel_name) {
             $data_array['channel'] = $channel_name;
@@ -271,8 +271,8 @@ function makeRequestBasedOnConditions(&$xml, $category_condition, $location_cond
         $data_array['latitude'] = floatval($latitude_element->item(0)->nodeValue);
         $data_array['longitude'] = floatval($longitude_element->item(0)->nodeValue);
         $data_array['radius'] = floatval($radius_element->item(0)->nodeValue);
-        $data_array['time_from'] = '01 01 1999 00:00:00.000';
-        $data_array['time_to'] = '01 01 2099 00:00:00.000';
+        $data_array['time_from'] = '01 01 0001 00:00:00.000';
+        $data_array['time_to'] = '01 01 2999 00:00:00.000';
         $request_type = LOAD_POINTS_METHOD_URL;
         getData($data_array, $request_type, $xml, $location_condition, $is_wrong_token_error, $is_private);
     }

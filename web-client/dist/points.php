@@ -23,11 +23,14 @@ session_start();
         <script src="scripts/gets/views/Map.View.js"></script>
         <script src="scripts/gets/views/PointInfo.View.js"></script>
         <script src="scripts/gets/views/PointAdd.View.js"></script>
+        <script src="scripts/gets/views/Header.View.js"></script>
+        <script src="scripts/gets/views/Message.View.js"></script>
         <script src="scripts/gets/controllers/PointsPage.Ctrl.js"></script>
         <script src="scripts/gets/controllers/Map.Ctrl.js"></script>    
         <script>
             $(document).ready(function() {
                 Logger.useDefaults();
+                MessageBox = new MessageView($(document).find('.main-container'));
                 var _pointsPageCtrl = new PointsPage(document, window);
                 _pointsPageCtrl.initPage();               
             });    
@@ -46,6 +49,7 @@ session_start();
                 <div class="action-menu">
                     <?php
                     require_once('./widgets/PointsMain.inc');
+                    require_once('./widgets/PointInfo.inc');
                     if (isset($_SESSION['g2t_token'])) {
                         require_once('./widgets/PointEdit.inc');
                     }

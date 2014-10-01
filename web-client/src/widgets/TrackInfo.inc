@@ -1,6 +1,7 @@
 <?php
 
 echo    '<div id="tracks-info-page" class="action-menu-container hidden">
+            <div id="tracks-info-overlay" class="busy-overlay"></div>
             <div class="action-menu-toolbar-container">
                 <div class="btn-group btn-group-justified">
                     <div class="btn-group">
@@ -21,23 +22,24 @@ echo    '<div id="tracks-info-page" class="action-menu-container hidden">
                 </div>
             </div>
             <div class="action-menu-inner-content">
-                <div id="tracks-info-name" class="main-block font-big width-three-fourth ellipsis-text inline">                   
+                <div id="tracks-info-name" class="main-block font-big width-three-fourth ellipsis-text">                   
                 </div>
                 <button id="tracks-info-map" type="button" class="btn btn-default" title="Show on map">
                     <span class="glyphicon glyphicon-globe"></span> 
                 </button>
                 <div id="tracks-info-category" class="main-block"></div>
                 <div id="tracks-info-lang" class="main-block"></div>
+                <div id="tracks-info-url" class="main-block"></div>
                 <div id="tracks-info-description" class="main-block"></div>
                 <div class="main-block">
                     <div id="tracks-info-points-accordion" class="panel-group">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h4 class="panel-title">
+                                <h5 class="panel-title">
                                     <a class="accordion-toggle" data-toggle="collapse" data-parent="#tracks-info-points-accordion" href="#tracks-points-block-collapse">
-                                        Point List
+                                        Point List <span id="tracks-points-list-count-badge" class="badge"></span>
                                     </a>
-                                </h4>
+                                </h5>
                             </div>
                             <div id="tracks-points-block-collapse" class="panel-collapse collapse">
                                 <div class="panel-body">

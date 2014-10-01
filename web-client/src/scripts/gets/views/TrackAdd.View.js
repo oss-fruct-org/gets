@@ -26,12 +26,6 @@ function TrackAdd(document, addTrack) {
 TrackAdd.prototype.placeCategoriesInAddTrack = function (categories) {
     var addTracksCategories = $(this.addTrack).find('#tracks-edit-track-category-input');
 
-    // Add 'all' category with value ''
-    $(this.document.createElement('option'))
-            .attr('value', '')
-            .text('All')
-            .appendTo(addTracksCategories);
-
     // Add 'none' category with value -1
     $(this.document.createElement('option'))
             .attr('value', -1)
@@ -47,6 +41,10 @@ TrackAdd.prototype.placeCategoriesInAddTrack = function (categories) {
     });
 }; 
 
+TrackAdd.prototype.getView = function() {
+    return this.addTrack;
+};
+
 /**
  * Show view
  */
@@ -60,4 +58,18 @@ TrackAdd.prototype.showView = function() {
  */
 TrackAdd.prototype.hideView = function() {
     $(this.addTrack).removeClass('show').addClass('hidden');
+};
+
+/**
+ * Toggle overlay
+ */
+TrackAdd.prototype.toggleOverlay = function() {
+    $(this.addTrack).find('#tracks-edit-track-overlay').toggleClass('busy-overlay-visible');
+};
+
+/**
+ * Enter pressed.
+ */
+TrackAdd.prototype.onEnterPressed = function() {
+    $(this.addTrack).find('#tracks-edit-track-save').click();
 };

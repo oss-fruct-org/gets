@@ -33,13 +33,13 @@ MapController.prototype.initMap = function() {
         }
         if (this._mapView == null) {
             this._mapView = new MapView($(this.document).find('#map'));
-            this._mapView.fitMap($(this.window).width(), $(this.window).height());
+            //this._mapView.fitMap($(this.window).width(), $(this.window).height());
         }
         
         // Window resize handler
-        $(this.window).on('resize', function() {
-            self._mapView.fitMap($(this).width(), $(this).height());
-        });
+        //$(this.window).on('resize', function() {
+        //    self._mapView.fitMap($(this).width(), $(this).height());
+        //});
     } catch (Exception) {
         Logger.error(Exception.toString());
     }
@@ -47,6 +47,60 @@ MapController.prototype.initMap = function() {
 
 MapController.prototype.setMapCenter = function(latitude, longitude) {
     this._map.setCenter(latitude, longitude);
+};
+
+MapController.prototype.getMapCenter = function() {
+    return this._map.getCenter();
+};
+
+MapController.prototype.addTrack = function(track) {
+    if (!this._map.checkTrack(track)) {
+        this._map.placeTrackInMap(track);
+    }
+};
+
+MapController.prototype.checkTrack = function(track) {
+    return this._map.checkTrack(track);
+};
+
+MapController.prototype.removeTrack = function(track) {
+    this._map.removeTrackFromMap(track);
+};
+
+MapController.prototype.placePointsOnMap = function(pointList) {
+    this._map.placePointsOnMap(pointList);
+};
+
+MapController.prototype.removePointsFromMap = function() {
+    this._map.removePointsLayer();
+};
+
+MapController.prototype.createTempMarker = function(latitude, longitude, callback) { 
+    this._map.createTempMarker(latitude, longitude, callback);
+};
+
+MapController.prototype.removeTempMarker = function() { 
+    this._map.removeTempMarker();
+};
+
+MapController.prototype.createSearchArea = function(lat, lng, radius) {
+    this._map.createSearchArea(lat, lng, radius);
+};
+
+MapController.prototype.setSearchAreaParams = function(lat, lng, radius) {
+    this._map.setSearchAreaParams(lat, lng, radius);
+};
+
+MapController.prototype.hideSearchArea = function() {
+    this._map.hideSearchArea();
+};
+
+MapController.prototype.createUserMarker = function(lat, lng) {
+    this._map.createUserMarker(lat, lng);
+};
+
+MapController.prototype.setMapCallback = function(eventName, callback) {
+    this._map.setMapCallback(eventName, callback);
 };
 
 

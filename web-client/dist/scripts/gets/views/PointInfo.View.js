@@ -46,6 +46,7 @@ PointInfo.prototype.placePointInPointInfo = function(point, isAuth) {
         $(descElement).text(point.descriptionExt);
     }
 
+    
     if (point.url !== '') {
         $(urlElement).attr('href', point.url).text(point.url);
     }
@@ -64,6 +65,8 @@ PointInfo.prototype.placePointInPointInfo = function(point, isAuth) {
 
     var pointsInfoEdit = $('#point-info-edit');
     var pointsInfoRemove = $('#point-info-remove');
+    
+    $(pointsInfoEdit).attr('href', '#form=point_edit&track_id=' + point.track + '&point_name=' + point.name);
 
     if (!isAuth || point.access === 'r') {
         $(pointsInfoEdit).on('click', function(e) {
@@ -73,7 +76,7 @@ PointInfo.prototype.placePointInPointInfo = function(point, isAuth) {
 
         $(pointsInfoRemove).addClass('disabled');
     } else {
-        $(pointsInfoEdit).off('click');
+        $(pointsInfoEdit).off('click');        
         $(pointsInfoEdit).removeClass('disabled');
 
         $(pointsInfoRemove).removeClass('disabled');

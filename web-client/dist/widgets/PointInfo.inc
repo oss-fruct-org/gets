@@ -25,7 +25,7 @@ echo    '<div id="point-info-page" class="action-menu-container hidden">
                     <img class="info-image" alt="No image">
                 </div>
                 <div id="point-info-description" class="main-block"></div>
-                <div id="tracks-point-info-url" class="main-block">
+                <div id="point-info-url" class="main-block">
                     <a target="_blank"></a>                 
                 </div>
                 <div id="point-info-audio" class="main-block">

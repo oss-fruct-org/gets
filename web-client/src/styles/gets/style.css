@@ -18,20 +18,23 @@ html, body {
     vertical-align: top;
     min-width: 600px;
     min-height: 600px;
-    width: 100%;
-    height: 100%;
+    width: calc(100% - 400px);
+    height: calc(100% - 50px);
     top: -20px;
-    right: 0;
+    left: 401px;
 }
 
 .main-container {
     min-height: 100%;
+    height: 100%;
     position: relative;
 }
 
 .main-content {
     display: block;
     position: relative;
+    height: 100%;
+    width: 100%;
 }
 
 .action-menu {
@@ -44,9 +47,19 @@ html, body {
     left: 1px;
 }
 
-.action-menu, .navbar-brand {
+.action-menu{
     width: 400px;
 } 
+
+.navbar-option {
+    width: 200px !important;
+    text-align: left !important;
+}
+
+.navbar-brand {
+    width: 200px;
+    text-align: right;
+}
 
 .action-menu-container {
     display: block;
@@ -60,7 +73,7 @@ html, body {
 .action-menu-inner-content {
     padding: 10px;
     overflow: auto;
-    max-height: 513px;
+    max-height: 500px;
 }
 
 .action-menu-toolbar-container {
@@ -94,6 +107,7 @@ html, body {
     margin-left: auto;
     margin-right: auto;
     max-height: 200px;
+    max-width: 220px;
 }
 
 /* Search input */
@@ -178,6 +192,10 @@ input.search-query {
     font-size: 20pt;
 }
 
+.block {
+    display: block;
+}
+
 .inline {
     display: inline-block;
 }
@@ -209,4 +227,13 @@ input.search-query {
     font-size: 12px;
     width: 25px;
     text-align: center;
+}
+
+/* Message */
+.message-box {
+    display: block;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    margin: 0 10px 10px 10px;
 }

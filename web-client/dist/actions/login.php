@@ -1,12 +1,11 @@
 <?php
+
 require_once('utils/process_request.inc');
 require_once('utils/constants.inc');
 require_once('utils/methods_url.inc');
 require_once('utils/array2xml.inc');
 
-header ('Content-Type:text/xml');
-
-session_start();
+header('Content-Type:text/xml');
 
 if (filter_input(INPUT_SERVER, 'REQUEST_METHOD') == 'POST') {
     $post_data_json = file_get_contents('php://input');
@@ -23,6 +22,7 @@ if (filter_input(INPUT_SERVER, 'REQUEST_METHOD') == 'POST') {
                 die('Error: resource isn\'t XML document.');
             }
             if ($dom_token->getElementsByTagName('code')->item(0)->nodeValue === '0') {
+                session_start();
                 $_SESSION['g2t_token'] = $dom_token->getElementsByTagName('auth_token')->item(0)->nodeValue;
                 $response_email = process_request(GET_USER_INFO, '<request><params><auth_token>' . $_SESSION['g2t_token'] . '</auth_token></params></request>', 'Content-Type: text/xml');
                 $dom_email = new DOMDocument();

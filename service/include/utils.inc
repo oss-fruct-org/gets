@@ -251,7 +251,19 @@ function get_categories($token = null) {
         name of channel
   */
 function ensure_category_channel($auth_token, $category_id) {
+    $xmlrpc_request = xmlrpc_encode_request('getCategoryChannel',
+        array('gets_token' => $auth_token,
+              'category_id' => $category_id));
 
+    $xmlrpc_response =  process_request(GETS_SCRIPTS_URL, $xmlrpc_request, 'Content-Type: text/xml');
+    $xmlrpc = xmlrpc_decode($xmlrpc_response);
+
+    if (is_array($xmlrpc) && xmlrpc_is_fault($xmlrpc)) {
+        return null;
+    }
+
+    $channel_name = $xmlrpc;
+    return $channel_name;
 }
 
 /**

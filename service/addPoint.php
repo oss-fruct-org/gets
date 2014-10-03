@@ -53,18 +53,11 @@ $channel_name = null;
 if (!$category_id_defined) {
     $channel_name = $channel_name_element->item(0)->nodeValue;
 } else {
-    $xmlrpc_request = xmlrpc_encode_request('getCategoryChannel',
-            array('gets_token' => $auth_token,
-                'category_id' => $category_id_element->item(0)->nodeValue));
-    $xmlrpc_response =  process_request(GETS_SCRIPTS_URL, $xmlrpc_request, 'Content-Type: text/xml');
-    $xmlrpc = xmlrpc_decode($xmlrpc_response);
-
-    if (is_array($xmlrpc) && xmlrpc_is_fault($xmlrpc)) {
-        send_error(1, 'Error: internal error: can\'t retrieve private channel name');
+    $channel_name = ensure_category_channel($auth_token, $category_id_element->item(0)->nodeValue);
+    if (!$channel_name) {
+        send_error(1, "Request of category's channel failed");
         die();
     }
-
-    $channel_name = $xmlrpc;
 }
 
 $data_array = array();

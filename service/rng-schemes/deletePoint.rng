@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+  <start>
+    <ref name="Request"/>
+  </start>
+  <define name="Request">
+    <element name="request">
+      <ref name="Params"/>
+    </element>
+  </define>
+  <define name="Params">
+    <element name="params">
+      <element name="auth_token">
+        <text/>
+      </element>
+      <choice>
+        <element name="track_name">
+          <text/>
+        </element>
+        <element name="category_id">
+          <data type="integer"/>
+        </element>
+      </choice>
+      <oneOrMore>
+        <ref name="OptionalCriteria"/>
+      </oneOrMore>
+    </element>
+  </define>
+  <define name="OptionalCriteria">
+    <choice>
+      <element name="uuid">
+        <text/>
+      </element>
+      <element name="name">
+        <text/>
+      </element>
+      <element name="latitude">
+        <data type="double"/>
+      </element>
+      <element name="longitude">
+        <data type="double"/>
+      </element>
+      <element name="time">
+        <text/>
+      </element>
+      <element name="description">
+        <text/>
+      </element>
+    </choice>
+  </define>
+</grammar>

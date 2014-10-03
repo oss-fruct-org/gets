@@ -62,7 +62,12 @@ require_once 'utils.inc';
 
     Params:
     name - filter by name (optional)
-    category_id - filter by category id (optional)
+    latitude
+    longitude
+    uuid
+    time
+    description
+
 
 Example:
 <methodCall>
@@ -70,10 +75,6 @@ Example:
   <params>
     <param>
       <struct>
-        <member>
-          <name>channel</name>
-          <value>channel-name</value>
-        </member>
         <member>
           <name>name</name>
           <value>tag-name</value>
@@ -118,21 +119,38 @@ Example:
         
         $channel_where = "tag.channel_id IN (SELECT id FROM channel WHERE channel.name='{$channel_name}' AND channel.owner_id IN (SELECT id FROM users WHERE email='{$email_r}'))";
 
+        $simple_keys = array('name', 'latitude', 'longitude', 'time');
+        $where_arr = array();
+
         if (array_key_exists('name', $params[0])) {
-            $name = pg_escape_string($params[0]['name']);
-            $name_where = "tag.label='{$name}'";
-        } else {
-            $name_where = 'true';
+            $value = pg_escape_string($params[0]['name']);
+            $where_arr[] = "tag.label='{$value}'";
+        }
+        if (array_key_exists('time', $params[0])) {
+            $value = pg_escape_string($params[0]['time']);
+            $where_arr[] = "tag.time='{$value}'";
+        }
+        if (array_key_exists('latitude', $params[0])) {
+            $value = (double) $params[0]['latitude'];
+            $where_arr[] = "tag.latitude={$value}";
+        }
+        if (array_key_exists('longitude', $params[0])) {
+            $value = (double) $params[0]['longitude'];
+            $where_arr[] = "tag.latitude={$value}";
+        }
+        if (array_key_exists('description', $params[0])) {
+            $value = pg_escape_string($params[0]['description']);
+            $where_arr[] = "safe_cast_to_json(tag.description)->>'description'='{$value}'";
+        }
+        if (array_key_exists('uuid', $params[0])) {
+            $value = pg_escape_string($params[0]['value']);
+            $where_arr[] = "safe_cast_to_json(tag.description)->>'value'='{$value}'";
         }
 
-        if (array_key_exists('category_id', $params[0])) {
-            $category_id = pg_escape_string($params[0]['category_id']);
-            $category_id_where = "safe_cast_to_json(tag.description)->>'category_id'='{$category_id}'";
-        } else {
-            $category_id_where = 'true';
-        }
+        $where_arr[] = "true";
+        $optional_where = implode('AND', $where_arr);
 
-        $base_query = "DELETE FROM tag WHERE ({$channel_where}) AND ({$name_where}) AND ({$category_id_where})";
+        $base_query = "DELETE FROM tag WHERE ({$channel_where}) AND ({$optional_where})";
         $res = pg_query($dbconn, $base_query);
 
         if (!$res) {

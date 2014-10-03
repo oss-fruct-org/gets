@@ -14,12 +14,6 @@
 function PointEdit(document, editPoint) {
     this.document = document;
     this.editPoint = editPoint;
-    
-    $(this.editPoint).find('#edit-point-active-radius-input').slider({
-        formatter: function (value) {
-            return 'Current value: ' + value;
-        }
-    });
 }
 
 PointEdit.prototype.getView = function() {

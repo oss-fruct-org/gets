@@ -143,12 +143,12 @@ Example:
             $where_arr[] = "safe_cast_to_json(tag.description)->>'description'='{$value}'";
         }
         if (array_key_exists('uuid', $params[0])) {
-            $value = pg_escape_string($params[0]['value']);
-            $where_arr[] = "safe_cast_to_json(tag.description)->>'value'='{$value}'";
+            $value = pg_escape_string($params[0]['uuid']);
+            $where_arr[] = "safe_cast_to_json(tag.description)->>'uuid'='{$value}'";
         }
 
         $where_arr[] = "true";
-        $optional_where = implode('AND', $where_arr);
+        $optional_where = implode(' AND ', $where_arr);
 
         $base_query = "DELETE FROM tag WHERE ({$channel_where}) AND ({$optional_where})";
         $res = pg_query($dbconn, $base_query);
@@ -290,7 +290,6 @@ Example:
         $set_string = implode($set_array, ',');
 
         $base_query = "UPDATE tag SET {$set_string} WHERE ({$access_where}) AND ({$uuid_where}) AND ({$channel_where}) AND ({$name_where}) AND ({$category_id_where});";
-        error_log($base_query);
         $res = pg_query($dbconn, $base_query);
 
         if (!$res) {

@@ -26,7 +26,12 @@ set_error_handler('return_xmlrpc_error');
 $xmlrpc_server = xmlrpc_server_create();
 
 global $dbconn;
-$dbconn = pg_connect("host=geo2tag.cs.prv dbname=geo2tag user=geo2tag password=geo2tag");
+if (defined("GEO2TAG_DB")) {
+    $db = GEO2TAG_DB;
+    $dbconn = pg_connect("host=${db} dbname=geo2tag user=geo2tag password=geo2tag");
+} else {
+    $dbconn = pg_connect("host=geo2tag.cs.prv dbname=geo2tag user=geo2tag password=geo2tag");
+}
 
 /* register methods */
 xmlrpc_server_register_method($xmlrpc_server, "addUser", "adduser_func");

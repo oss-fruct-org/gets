@@ -45,7 +45,7 @@ echo    '<div id="edit-point-page" class="action-menu-container hidden">
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="edit-point-active-radius-input" class="block">Active radius (km)</label>
+                        <label for="edit-point-active-radius-input" class="block">Active radius (meters)</label>
                         <input id="edit-point-active-radius-input" name="radius" type="text" class="form-control" value="0.0" required">
                     </div>
                     <div class="form-group">

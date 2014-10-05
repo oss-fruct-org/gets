@@ -172,7 +172,8 @@ TracksClass.prototype.downloadTrackByName = function(paramsObj) {
 
     var trackPlacemarkList = $(getTrackRequest.responseText).find('Placemark');
     var trackPointArray = new Array();
-    $.each(trackPlacemarkList, function(index, value) {
+    Logger.debug(trackPlacemarkList);
+    $(trackPlacemarkList).each(function(index, value) {
         Logger.debug(value);
         var pointObj = {};
         pointObj.index = $(value).find("[name='idx']").length ? $(value).find("[name='idx']").text() : '';

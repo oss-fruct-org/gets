@@ -17,7 +17,6 @@ class TestCreatePoint(unittest.TestCase):
         lat = 61.0
         lon = 34.0
         alt = 0.0
-    
 
         if 'auth_token' in args: auth_token = args['auth_token']
         if 'description' in args: description = args['description']
@@ -142,6 +141,27 @@ class TestCreatePoint(unittest.TestCase):
         ext = self.get_extended_data(name)
         self.assertFalse('description' in ext, "Ext data was " + str(ext))
         self.assertTrue('uuid' in ext)
+
+    def test_optional_fields(self):
+        auth_token = getsconfig.TOKEN;
+        name = gt.make_name()
+        time = "01 01 2000 00:00:00.000"
+        lat = 61.0
+        lon = 34.0
+        alt = 0.0
+
+        req = gt.make_request(
+                ('auth_token', auth_token),
+                ('category_id', '1'),
+                ('title', name),
+                ('latitude', str(lat)),
+                ('longitude', str(lon)),
+                ('altitude', str(alt)),
+                ('time', time))
+        resp = gt.do_request("addPoint.php", req)
+
+        self.assertEqual(0, gt.get_code(resp), "Response was " + resp)
+        self.assertTrue(self.check_point_exists(name))
 
 if __name__ == "__main__":
     unittest.main()

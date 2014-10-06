@@ -105,7 +105,7 @@ $data_array['description'] = $description;
 if ($link_element->length > 0) {
     $data_array['link'] = $link_element->item(0)->nodeValue;
 } else {
-    $data_array['link'] = "";
+    $data_array['link'] = "http://example.com";
 }
 
 $data_array['latitude'] = /*(float)*/ $latitude_element->item(0)->nodeValue;

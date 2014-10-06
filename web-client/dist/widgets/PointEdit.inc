@@ -40,13 +40,13 @@ echo    '<div id="edit-point-page" class="action-menu-container hidden">
                                     <label for="edit-point-lon-input" class="control-label">Longitude</label>                                               
                                     <input id="edit-point-lon-input" name="longitude" type="text" class="form-control" value="0.0" required">
                                 </div>
-                                <input id="edit-point-alt-input" name="altitude" type="hidden" value="0" required">
+                                <input id="edit-point-alt-input" name="altitude" type="hidden" value="0.0" required">
                             </div>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="edit-point-active-radius-input" class="block">Active radius (km)</label>
-                        <input id="edit-point-active-radius-input" name="active_radius" data-slider-id="slider" type="text" data-slider-min="0" data-slider-max="5" data-slider-step="0.5" data-slider-value="1"/>
+                        <label for="edit-point-active-radius-input" class="block">Active radius (meters)</label>
+                        <input id="edit-point-active-radius-input" name="radius" type="text" class="form-control" value="0.0" required">
                     </div>
                     <div class="form-group">
                         <label for="edit-point-picture-input">Picture</label>

@@ -67,7 +67,7 @@ if ($description_element->length > 0) {
 $extended_data_element = $dom->getElementsByTagName('extended_data');
 
 if ($extended_data_element->length > 0) {
-    foreach ($extended_date_element->item(0)->childNodes as $node) {
+    foreach ($extended_data_element->item(0)->childNodes as $node) {
         $key = $node->nodeName;
         $value = $node->nodeValue;
         $extended_data_array[$key] = $value;

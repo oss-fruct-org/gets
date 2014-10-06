@@ -163,5 +163,14 @@ class TestCreatePoint(unittest.TestCase):
         self.assertEqual(0, gt.get_code(resp), "Response was " + resp)
         self.assertTrue(self.check_point_exists(name))
 
+    def test_extended_data(self):
+        auth_token = getsconfig.TOKEN;
+        name = gt.make_name()
+
+        req = "<request><params><auth_token>{}</auth_token><category_id>1</category_id><title>{}</title><description>desc1</description><latitude>61.0</latitude><longitude>34.0</longitude><altitude>0.0</altitude><time>01 01 2000 00:00:00.000</time><extended_data><uuid>qwe</uuid><description>desc2</description><test>asd</test></extended_data></params></request>".format(auth_token, name)
+        resp = gt.do_request("addPoint.php", req)
+
+        self.assertEqual(0, gt.get_code(resp), "Request was " + req)
+
 if __name__ == "__main__":
     unittest.main()

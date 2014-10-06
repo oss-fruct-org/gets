@@ -289,4 +289,19 @@ function uuidv4()
     return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
 }
 
+/*
+ * Hack for UNICODE strings in json_encode() for PHP 5.3 and below.
+ * 
+ * Source: http://php.net/manual/ru/function.json-encode.php#105789
+ */
+function unicode_json_encode($arr) {
+    //convmap since 0x80 char codes so it takes all multibyte codes (above ASCII 127). 
+    //So such characters are being "hidden" from normal json_encoding
+    array_walk_recursive($arr, function (&$item, $key) {
+        if (is_string($item))
+            $item = mb_encode_numericentity($item, array(0x80, 0xffff, 0, 0xffff), 'UTF-8');
+    });
+    return mb_decode_numericentity(json_encode($arr), array(0x80, 0xffff, 0, 0xffff), 'UTF-8');
+}
+
 ?>

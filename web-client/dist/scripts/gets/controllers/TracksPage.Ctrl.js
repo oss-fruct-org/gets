@@ -490,26 +490,38 @@ TracksPage.prototype.updateTracksHandler = function() {
 };
 
 TracksPage.prototype.addTrackHandler = function(form) {
-    this._trackAdd.toggleOverlay();
-    var formData = $(form).serializeArray();
-    formData.push({name: 'user_name', value: this._user.getEmail()});
-    var that = this;
-    this._tracks.addTrack(formData, function (track_name) {
-        that._trackAdd.toggleOverlay();
-        that.window.location.replace('#form=track_info&track_id=' + track_name);
-        MessageBox.showMessage('Track was successfully added', MessageBox.SUCCESS_MESSAGE);
-    });
+    try {
+        this._trackAdd.toggleOverlay();
+        var formData = $(form).serializeArray();
+        formData.push({name: 'user_name', value: this._user.getEmail()});
+        var that = this;
+        this._tracks.addTrack(formData, function (track_name) {
+            that._trackAdd.toggleOverlay();
+            that.window.location.replace('#form=track_info&track_id=' + track_name);
+            MessageBox.showMessage('Track was successfully added', MessageBox.SUCCESS_MESSAGE);
+        });
+    } catch (Exception) {
+        this._trackAdd.toggleOverlay();
+        MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
+        Logger.error(Exception.toString());
+    }
 };
 
 TracksPage.prototype.editTrackHandler = function(form) {
-    this._trackEdit.toggleOverlay();
-    var formData = $(form).serializeArray();
-    formData.push({name: 'update', value: 'true'});
-    formData.push({name: 'user_name', value: this._user.getEmail()});
-    var that = this;
-    this._tracks.addTrack(formData, function (track_name) {
-        that._trackEdit.toggleOverlay();
-        that.window.location.replace('#form=track_info&track_id=' + track_name);
-        MessageBox.showMessage('Track was successfully updated', MessageBox.SUCCESS_MESSAGE);
-    });
+    try {
+        this._trackEdit.toggleOverlay();
+        var formData = $(form).serializeArray();
+        formData.push({name: 'update', value: 'true'});
+        formData.push({name: 'user_name', value: this._user.getEmail()});
+        var that = this;
+        this._tracks.addTrack(formData, function (track_name) {
+            that._trackEdit.toggleOverlay();
+            that.window.location.replace('#form=track_info&track_id=' + track_name);
+            MessageBox.showMessage('Track was successfully updated', MessageBox.SUCCESS_MESSAGE);
+        });
+    } catch (Exception) {
+        this._trackAdd.toggleOverlay();
+        MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
+        Logger.error(Exception.toString());
+    }
 };

@@ -14,7 +14,7 @@ if (!isset($_SESSION['g2t_token'])) {
 if (filter_input(INPUT_SERVER, 'REQUEST_METHOD') == 'POST') {
     $post_data_json = file_get_contents('php://input');
     $post_data_array = json_decode($post_data_json, true);
-    $post_data_array['description'] = json_encode($post_data_array['description'], JSON_UNESCAPED_UNICODE);
+    $post_data_array['description'] = json_encode($post_data_array['description']);
     $auth_token_array = array();
     $auth_token_array['auth_token'] = $_SESSION['g2t_token'];
     $combined_array = array_merge($auth_token_array, $post_data_array);        

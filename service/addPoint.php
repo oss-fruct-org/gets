@@ -49,6 +49,43 @@ $time_element = $dom->getElementsByTagName('time');
 
 $auth_token = $auth_token_element->item(0)->nodeValue;
 
+if ($description_element->length > 0) {
+    $description = $description_element->item(0)->nodeValue;
+
+    # If caller pass extended data in description, process it correctly
+    $extended_data_array = json_decode($description, true);
+    if (!$extended_data_array) {
+        $extended_data_array = array();
+    } else {
+        $description = null;
+    }
+} else {
+    $description = null;
+    $extended_data_array = array();
+}
+
+$extended_data_element = $dom->getElementsByTagName('extended_data');
+
+if ($extended_data_element->length > 0) {
+    foreach ($extended_date_element->item(0)->childNodes as $node) {
+        $key = $node->nodeName;
+        $value = $node->nodeValue;
+        $extended_data_array[$key] = $value;
+    }
+}
+
+# Description in extended data overrides main description
+if (!array_key_exists("description", $extended_data_array) && $description) {
+    $extended_data_array["description"] = $description;
+}
+
+if (!array_key_exists("uuid", $extended_data_array)) {
+    $extended_data_array["uuid"] = uuidv4();
+}
+
+# Description always contains json encoded data
+$description = json_encode($extended_data_array);
+
 $channel_name = null;
 if (!$category_id_defined) {
     $channel_name = $channel_name_element->item(0)->nodeValue;
@@ -63,8 +100,14 @@ if (!$category_id_defined) {
 $data_array = array();
 $data_array['channel'] = $channel_name;
 $data_array['title'] = $title_element->item(0)->nodeValue;
-$data_array['description'] = $description_element->item(0)->nodeValue;
-$data_array['link'] = $link_element->item(0)->nodeValue;
+$data_array['description'] = $description;
+
+if ($link_element->length > 0) {
+    $data_array['link'] = $link_element->item(0)->nodeValue;
+} else {
+    $data_array['link'] = "";
+}
+
 $data_array['latitude'] = /*(float)*/ $latitude_element->item(0)->nodeValue;
 $data_array['longitude'] = /*(float)*/ $longitude_element->item(0)->nodeValue;
 $data_array['altitude'] = /*(float)*/ $altitude_element->item(0)->nodeValue;

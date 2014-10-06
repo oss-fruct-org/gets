@@ -14,12 +14,20 @@
               </xs:choice>
 
               <xs:element type="xs:string" name="title"/>
-              <xs:element type="xs:string" name="description"/>
-              <xs:element type="xs:string" name="link"/>
+              <xs:element type="xs:string" name="description" minOccurs="0"/>
+              <xs:element type="xs:string" name="link" minOccurs="0"/>
               <xs:element type="xs:double" name="latitude"/>
               <xs:element type="xs:double" name="longitude"/>
               <xs:element type="xs:double" name="altitude"/>
               <xs:element type="xs:string" name="time"/>
+
+              <xs:element name="extended_data" minOccurs="0">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:any minOccurs="1" />
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
             </xs:sequence>
           </xs:complexType>
         </xs:element>

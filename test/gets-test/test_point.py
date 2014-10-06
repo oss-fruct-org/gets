@@ -41,6 +41,22 @@ class TestCreatePoint(unittest.TestCase):
         return resp
 
     def check_point_exists(self, name):
+        return self.find_point(name) is not None
+
+    def get_extended_data(self, name):
+        ns = {"kml":"http://www.opengis.net/kml/2.2"}
+        point = self.find_point(name)
+
+        ret = {}
+        arr = point.findall('./kml:ExtendedData/kml:Data', ns)
+        for data in arr:
+            key = data.attrib['name']
+            value = data.find('./kml:value', ns).text
+            ret[key] = value
+
+        return ret
+
+    def find_point(self, name):
         ns = {"kml":"http://www.opengis.net/kml/2.2"}
         req = gt.make_request(('auth_token', getsconfig.TOKEN), ('latitude', "61"), ('longitude', "34"), ("radius", "10"), ("space", "private"))
         resp = gt.do_request("loadPoints.php", req)
@@ -52,9 +68,10 @@ class TestCreatePoint(unittest.TestCase):
             point_name = point.find('kml:name', ns).text
 
             if (point_name == name):
-                return True
+                return point
 
-        return False
+        return None
+
 
     def test_wrong_token(self):
         resp = self.create_point(auth_token=getsconfig.TOKEN + "q")
@@ -116,6 +133,15 @@ class TestCreatePoint(unittest.TestCase):
          
         self.assertFalse(self.check_point_exists(name1))
         self.assertFalse(self.check_point_exists(name2))
+
+    def test_extended_data(self):
+        name = gt.make_name()
+        desc = '{"uuid" : "aaa"}'
+        self.create_point(name=name, description=desc)
+
+        ext = self.get_extended_data(name)
+        self.assertFalse('description' in ext, "Ext data was " + str(ext))
+        self.assertTrue('uuid' in ext)
 
 if __name__ == "__main__":
     unittest.main()

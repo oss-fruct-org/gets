@@ -84,7 +84,12 @@ if (!array_key_exists("uuid", $extended_data_array)) {
 }
 
 # Description always contains json encoded data
-$description = json_encode($extended_data_array, JSON_UNESCAPED_UNICODE);
+if (function_exists('unicode_json_encode')) {
+    $description = unicode_json_encode($extended_data_array);
+} else {
+    $description = json_encode($extended_data_array, JSON_UNESCAPED_UNICODE);
+}
+
 
 $channel_name = null;
 if (!$category_id_defined) {

@@ -61,7 +61,12 @@ $desc_array['description'] = $description;
 $desc_array['category_id'] = $category_id;
 if ($lang) $desc_array['lang'] = $lang;
 if ($hname) $desc_array['hname'] = $hname;
-$desc_json = json_encode($desc_array, JSON_UNESCAPED_UNICODE);
+
+if (function_exists('unicode_json_encode')) {
+    $desc_json = unicode_json_encode($desc_array);
+} else {
+    $desc_json = json_encode($desc_array, JSON_UNESCAPED_UNICODE);
+}
 
 $data_array['description'] = $desc_json;
 $data_array['url'] = $url;

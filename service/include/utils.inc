@@ -47,7 +47,7 @@ function process_json_request($method, $array, $gets_token = null, $allow_token_
         session_commit();
         $array['auth_token'] = $geo2tag_token;
     }
-    $request_json = json_encode($array);
+    $request_json = json_encode($array, JSON_UNESCAPED_UNICODE);
 
     $response_json = process_request($method, $request_json, 'Content-Type:application/json');
     if (!$response_json) {
@@ -56,7 +56,7 @@ function process_json_request($method, $array, $gets_token = null, $allow_token_
 
     $response_array = json_decode($response_json, true);
     if (!$response_array) {
-        throw new Exception('Error: can\'t decode data from geo2tag.');
+        throw new Exception('Error: can\'t decode data from geo2tag: '.$response_json);
     }
 
     $response_code = $response_array['errno'];

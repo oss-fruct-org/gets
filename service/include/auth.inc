@@ -117,7 +117,7 @@ function auth_refresh_geo2tag_access() {
         $arr['login'] = $_SESSION['login'];
         $arr['password'] = $_SESSION['password'];
 
-        $request_json = json_encode($arr);
+        $request_json = json_encode($arr, JSON_UNESCAPED_UNICODE);
         $response_json = process_request(LOGIN_METHOD_URL, $request_json, 'Content-Type:application/json');
 
         if (!$response_json) {

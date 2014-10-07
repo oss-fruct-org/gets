@@ -47,7 +47,7 @@ function process_json_request($method, $array, $gets_token = null, $allow_token_
         session_commit();
         $array['auth_token'] = $geo2tag_token;
     }
-    $request_json = json_encode($array, JSON_UNESCAPED_UNICODE);
+    $request_json = json_encode($array);
 
     $response_json = process_request($method, $request_json, 'Content-Type:application/json');
     if (!$response_json) {

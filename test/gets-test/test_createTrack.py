@@ -3,6 +3,7 @@ import unittest
 import getstest as gt
 import getsconfig
 import uuid
+import xml.etree.ElementTree as ET
 
 class TestCreateTrack(unittest.TestCase):
     def create_track(self, **args):
@@ -45,6 +46,10 @@ class TestCreateTrack(unittest.TestCase):
 
         return False
 
+    def get_track_id(self, resp):
+        xml = ET.fromstring(resp)
+        return xml.find("./content/track_id").text
+
     def test_wrong_token(self):
         resp = self.create_track(auth_token=getsconfig.TOKEN + "q")
         self.assertEqual(1, gt.get_code(resp))
@@ -66,6 +71,12 @@ class TestCreateTrack(unittest.TestCase):
         resp = self.create_track(name=name)
         
         self.assertTrue(self.check_track_exists(name))
+
+    def test_create_check_2(self):
+        name = gt.make_name_2()
+        resp = self.create_track(name=name)
+        
+        self.assertTrue(self.check_track_exists(self.get_track_id(resp)))
 
     def test_create_check_desc(self):
         name = gt.make_name()

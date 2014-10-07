@@ -10,6 +10,11 @@ def make_name():
     idx += 1
     return 'tr_' + str(uuid.uuid4()) + str(idx) + "testtrack"
 
+def make_name_2():
+    global idx
+    idx += 1
+    return 'test_' + str(uuid.uuid4()) + str(idx) + "test"
+
 def make_request(*p):
     "Make string GeTS request from tuples' varargs"
         

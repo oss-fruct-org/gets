@@ -103,6 +103,14 @@ function auth_get_geo2tag_token() {
     return $_SESSION['geo2tag_token'];
 }
 
+function auth_get_geo2tag_login() {
+    if (!isset($_SESSION['geo2tag_login'])) {
+        auth_refresh_geo2tag_access();
+    }
+
+    return $_SESSION['geo2tag_login'];
+}
+
 function auth_refresh_geo2tag_access() {
     if (!isset($_SESSION['gets_token'])) {
         throw new GetsAuthException('gets_token not set');
@@ -113,6 +121,8 @@ function auth_refresh_geo2tag_access() {
 
     // TODO: These two branches can be combined to one
     if (auth_is_public_token($gets_token)) {
+        $login = $_SESSION['login'];
+
         $arr = array();
         $arr['login'] = $_SESSION['login'];
         $arr['password'] = $_SESSION['password'];
@@ -176,6 +186,7 @@ function auth_refresh_geo2tag_access() {
 
     auth_set_token($gets_token);
     $_SESSION['geo2tag_token'] = $geo2tag_token;
+    $_SESSION['geo2tag_login'] = $login;
     session_commit();
 }
 

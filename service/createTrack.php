@@ -24,6 +24,13 @@ function update_channel_field($auth_token, $channel, $field, $value) {
     process_json_request(ALTER_CHANNEL_METHOD_URL, $alter_array, $auth_token);
 }
 
+function create_track_id($gets_token, $name, $lang) {
+    auth_set_token($gets_token);
+    $username = auth_get_geo2tag_login();
+    session_commit();
+    return "tr+${username}+${name}+${lang}";
+}
+
 $xml_post = file_get_contents('php://input');
 if (!$xml_post) {
     send_error(1, 'Error: no input file');
@@ -56,11 +63,25 @@ $hname = get_request_argument($dom, 'hname');
 
 $need_update = get_request_argument($dom, 'update', 'false') === 'true';
 
+if (!$lang)
+    $lang = 'en_GB';
+
+$prefix = substr($name, 0, 3);
+if ($prefix === 'tr_' || $prefix === 'tr+') {
+    # Compatibility with old clients that pass track name in format "tr_"
+    $track_id = $name;
+} else {
+    $track_id = create_track_id($auth_token, $name, $lang);
+    if (!$hname)
+        $hname = $name;
+}
+
+
 $desc_array = array();
 $desc_array['description'] = $description;
 $desc_array['category_id'] = $category_id;
-if ($lang) $desc_array['lang'] = $lang;
-if ($hname) $desc_array['hname'] = $hname;
+$desc_array['lang'] = $lang;
+$desc_array['hname'] = $hname;
 
 if (function_exists('unicode_json_encode')) {
     $desc_json = unicode_json_encode($desc_array);
@@ -70,7 +91,7 @@ if (function_exists('unicode_json_encode')) {
 
 $data_array['description'] = $desc_json;
 $data_array['url'] = $url;
-$data_array['name'] = $name;
+$data_array['name'] = $track_id;
 
 try {
     try {
@@ -86,9 +107,8 @@ try {
             die();
         }
     }
-
     try {
-        $response_array = process_json_request(SUBSCRIBE_METHOD_URL, Array('channel' => $name), $auth_token);
+        $response_array = process_json_request(SUBSCRIBE_METHOD_URL, Array('channel' => $track_id), $auth_token);
     } catch (ChannelAlreadySubscribedException $e) {
         // Ignore
     }
@@ -98,6 +118,8 @@ try {
     die();
 }
 
-send_result(0, 'success', '');
+$track_id_escaped = htmlspecialchars($track_id);
+$response = "<track_id>${track_id_escaped}</track_id>";
+send_result(0, 'success', $response);
 
 ?>

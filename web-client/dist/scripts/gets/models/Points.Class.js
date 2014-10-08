@@ -183,7 +183,6 @@ PointsClass.prototype.addPoint = function (paramsObj, callback) {
     var alt = 0.0;
     var imageURL = null;
     var audioURL = null;
-    var uuid = null;
     var channel = '';
     var time = '';
     var index = 1;
@@ -200,12 +199,10 @@ PointsClass.prototype.addPoint = function (paramsObj, callback) {
             lat = value.value;
         } else if (value.name === 'longitude') {
             lng = value.value;
-        } else if (value.name === 'imageURL') {
+        } else if (value.name === 'picture-url') {
             imageURL = value.value;
-        } else if (value.name === 'audioURL') {
+        } else if (value.name === 'audio-url') {
             audioURL = value.value;
-        } else if (value.name === 'uuid') {
-            uuid = value.value;
         } else if (value.name === 'channel') {
             channel = value.value;
         } else if (value.name === 'time') {
@@ -217,7 +214,7 @@ PointsClass.prototype.addPoint = function (paramsObj, callback) {
         }
     });
      
-    var description = this.createDescription(descriptionText, audioURL, imageURL, uuid, index, radius);
+    var description = this.createDescription(descriptionText, audioURL, imageURL, index, radius);
                            
     newParamsObj.channel = channel;
     newParamsObj.title = title;
@@ -242,14 +239,16 @@ PointsClass.prototype.addPoint = function (paramsObj, callback) {
     addPointRequest.fail(function( jqXHR, textStatus ) {
         throw new GetsWebClientException('Points Error', 'addPoint, addPointRequest failed ' + textStatus);
     });
-      
-    if ($( addPointRequest.responseText ).find('code').text() !== '0') {
-        throw new GetsWebClientException('Points Error', 'addPoint, ' + $( addPointRequest.responseText ).find('message').text());
-    }
     
-    if (callback) {
-        callback(title);
-    }
+    addPointRequest.done(function (data, textStatus, jqXHR) {
+        if ($(jqXHR.responseText).find('code').text() !== '0') {
+            throw new GetsWebClientException('Points Error', 'addPoint, ' + $(jqXHR.responseText).find('message').text());
+        }
+
+        if (callback) {
+            callback();
+        }
+    });   
 };
 
 /**
@@ -271,13 +270,7 @@ PointsClass.prototype.createDescription = function(text, audioURL, imageURL, uui
     } else {
         descObj.description = text;
     }
-    
-    if (!uuid) {
-        descObj.uuid = '';
-    } else {
-        descObj.uuid = uuid;
-    }
-        
+           
     if (audioURL) {
         descObj.audio = audioURL;
     }
@@ -312,7 +305,7 @@ PointsClass.prototype.removePoint = function (callback) {
         contentType: 'application/json',
         dataType: 'xml',
         data: JSON.stringify({
-            channel: point.track,
+            track_name: point.track,
             name: point.name
         })
     });

@@ -182,32 +182,13 @@ TracksPage.prototype.initPage = function() {
                     $(this).find('#edit-point-alt-input').val()
                     )) {
                 self._pointAdd.toggleOverlay();
-                var imageFile = $(self.document).find('#edit-point-picture-input').get(0).files[0];
-                var imageFileDownloadURL = null;
-                if (typeof imageFile !== 'undefined') {
-                    imageFileDownloadURL = self._utils.uploadFile({
-                        file: imageFile
-                    });
-                    Logger.debug('imageFileDownloadURL: ' + imageFileDownloadURL);
-                }
-                var audioFile = $(self.document).find('#edit-point-audio-input').get(0).files[0];
-                var audioFileDownloadURL = null;
-                if (typeof audioFile !== 'undefined') {
-                    audioFileDownloadURL = self._utils.uploadFile({
-                        file: audioFile
-                    });
-                    Logger.debug('audioFile mime-type: ' + audioFile.type);
-                }
+                
                 var paramsObj = $(this).serializeArray();
-                var guid = self._utils.guid();
                 var trackName = decodeURIComponent(self._utils.getHashVar('track_id'));
-                paramsObj.push({name: 'imageURL', value: imageFileDownloadURL});
-                paramsObj.push({name: 'audioURL', value: audioFileDownloadURL});
-                paramsObj.push({name: 'uuid', value: guid()});
                 paramsObj.push({name: 'channel', value: trackName});
                 paramsObj.push({name: 'time', value: self._utils.getDateTime()});
                 paramsObj.push({name: 'index', value: self._tracks.getTrack(trackName, true).points.length + 1});
-                self._points.addPoint(paramsObj, function(title) {
+                self._points.addPoint(paramsObj, function() {
                     self.window.location.replace('#form=track_info&track_id=' + trackName);
                     MessageBox.showMessage('Point was successfully added', MessageBox.SUCCESS_MESSAGE);
                 });                                          
@@ -316,6 +297,114 @@ TracksPage.prototype.initPage = function() {
             $(this).removeClass('active');
             self._mapCtrl.removeTempMarker();
         }
+    });
+    
+    // upload picture show/hide handler
+    $(this.document).on('click', '#edit-point-picture-toggle-upload', function (e){
+        e.preventDefault();
+        var upload = $(self.document).find('#edit-point-picture-upload');
+        if ($(upload).hasClass('hidden')) {
+            $(upload).removeClass('hidden').addClass('show');
+            $(self.document).find('#edit-point-picture-input-url').attr('disabled', 'disabled');
+        } else {
+            $(upload).removeClass('show').addClass('hidden');
+            $(self.document).find('#edit-point-picture-input-url').removeAttr('disabled');
+        }
+    });
+    
+    // Upload picture handler
+    $(this.document).on('click', '#edit-point-picture-input-file-upload', function (e) {
+        e.preventDefault();
+        self._pointAdd.toggleOverlay();
+        try {
+            var imageFile = $(self.document).find('#edit-point-picture-input-file').get(0).files[0];
+            if (typeof imageFile !== 'undefined') {
+                self._utils.uploadFile({
+                    file: imageFile
+                }, function (url) {
+                    $(self.document).find('#edit-point-picture-input-url').val(url);
+                    $(self.document).find('#edit-point-picture-upload').removeClass('show').addClass('hidden');
+                    $(self.document).find('#edit-point-picture-input-url').removeAttr('disabled');
+                    self._pointAdd.toggleOverlay();
+                });
+            }
+        } catch (Exception) {
+            MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
+        }
+    });
+    
+    $(this.document).on('change', '#edit-point-picture-input-file', function(e) {
+        e.preventDefault();
+        if ($(this).val() !== '') {
+            $(self.document).find('#edit-point-picture-input-file-upload').removeClass('disabled');
+        } else {
+            $(self.document).find('#edit-point-picture-input-file-upload').addClass('disabled');
+        }        
+    });
+    
+    // Clear file input handler
+    $(this.document).on('click', '#edit-point-picture-input-file-clear', function(e) {
+        e.preventDefault();
+        self._utils.resetFileInput($(self.document).find('#edit-point-picture-input-file'));
+    });
+    
+    $(this.document).on('click', '#edit-point-picture-input-file-cancel', function (e){
+        $(self.document).find('#edit-point-picture-upload').removeClass('show').addClass('hidden');
+        $(self.document).find('#edit-point-picture-input-url').removeAttr('disabled');
+    });
+    
+    // upload audio show/hide handler
+    $(this.document).on('click', '#edit-point-audio-toggle-upload', function (e){
+        e.preventDefault();
+        var upload = $(self.document).find('#edit-point-audio-upload');
+        if ($(upload).hasClass('hidden')) {
+            $(upload).removeClass('hidden').addClass('show');
+            $(self.document).find('#edit-point-audio-input-url').attr('disabled', 'disabled');
+        } else {
+            $(upload).removeClass('show').addClass('hidden');
+            $(self.document).find('#edit-point-audio-input-url').removeAttr('disabled');
+        }
+    });
+    
+    // Upload audio handler
+    $(this.document).on('click', '#edit-point-audio-input-file-upload', function (e) {
+        e.preventDefault();
+        self._pointAdd.toggleOverlay();
+        try {
+            var audioFile = $(self.document).find('#edit-point-audio-input-file').get(0).files[0];
+            if (typeof audioFile !== 'undefined') {
+                self._utils.uploadFile({
+                    file: audioFile
+                }, function (url) {
+                    $(self.document).find('#edit-point-audio-input-url').val(url);
+                    $(self.document).find('#edit-point-audio-upload').removeClass('show').addClass('hidden');
+                    $(self.document).find('#edit-point-audio-input-url').removeAttr('disabled');
+                    self._pointAdd.toggleOverlay();
+                });
+            }
+        } catch (Exception) {
+            MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
+        }
+    });
+    
+    $(this.document).on('change', '#edit-point-audio-input-file', function(e) {
+        e.preventDefault();//id="edit-point-audio-input-file-upload"
+        if ($(this).val() !== '') {
+            $(self.document).find('#edit-point-audio-input-file-upload').removeClass('disabled');
+        } else {
+            $(self.document).find('#edit-point-audio-input-file-upload').addClass('disabled');
+        }        
+    });
+    
+    // Clear file input handler
+    $(this.document).on('click', '#edit-point-audio-input-file-clear', function(e) {
+        e.preventDefault();
+        self._utils.resetFileInput($(self.document).find('#edit-point-audio-input-file'));
+    });
+    
+    $(this.document).on('click', '#edit-point-audio-input-file-cancel', function (e){
+        $(self.document).find('#edit-point-audio-upload').removeClass('show').addClass('hidden');
+        $(self.document).find('#edit-point-audio-input-url').removeAttr('disabled');
     });
     
     // get user's coordinates
@@ -489,39 +578,40 @@ TracksPage.prototype.updateTracksHandler = function() {
     }
 };
 
-TracksPage.prototype.addTrackHandler = function(form) {
-    try {
-        this._trackAdd.toggleOverlay();
-        var formData = $(form).serializeArray();
-        formData.push({name: 'user_name', value: this._user.getEmail()});
-        var that = this;
-        this._tracks.addTrack(formData, function (track_name) {
+TracksPage.prototype.addTrackHandler = function (form) {
+
+    this._trackAdd.toggleOverlay();
+    var formData = $(form).serializeArray();
+    formData.push({name: 'user_name', value: this._user.getEmail()});
+    var that = this;
+    this._tracks.addTrack(formData, function (track_name) {
+        try {
             that._trackAdd.toggleOverlay();
-            that.window.location.replace('#form=track_info&track_id=' + track_name);
+            that.window.location.replace('#form=' + TracksPage.MAIN);
             MessageBox.showMessage('Track was successfully added', MessageBox.SUCCESS_MESSAGE);
-        });
-    } catch (Exception) {
-        this._trackAdd.toggleOverlay();
-        MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
-        Logger.error(Exception.toString());
-    }
+        } catch (Exception) {
+            that._trackAdd.toggleOverlay();
+            MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
+            Logger.error(Exception.toString());
+        }
+    });
 };
 
-TracksPage.prototype.editTrackHandler = function(form) {
-    try {
-        this._trackEdit.toggleOverlay();
-        var formData = $(form).serializeArray();
-        formData.push({name: 'update', value: 'true'});
-        formData.push({name: 'user_name', value: this._user.getEmail()});
-        var that = this;
-        this._tracks.addTrack(formData, function (track_name) {
+TracksPage.prototype.editTrackHandler = function (form) {
+    this._trackEdit.toggleOverlay();
+    var formData = $(form).serializeArray();
+    formData.push({name: 'update', value: 'true'});
+    formData.push({name: 'user_name', value: this._user.getEmail()});
+    var that = this;
+    this._tracks.addTrack(formData, function (track_name) {
+        try {
             that._trackEdit.toggleOverlay();
-            that.window.location.replace('#form=track_info&track_id=' + track_name);
+            that.window.location.replace('#form=' + TracksPage.MAIN);
             MessageBox.showMessage('Track was successfully updated', MessageBox.SUCCESS_MESSAGE);
-        });
-    } catch (Exception) {
-        this._trackAdd.toggleOverlay();
-        MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
-        Logger.error(Exception.toString());
-    }
+        } catch (Exception) {
+            that._trackEdit.toggleOverlay();
+            MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
+            Logger.error(Exception.toString());
+        }
+    });
 };

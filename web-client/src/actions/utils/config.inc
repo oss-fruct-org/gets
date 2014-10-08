@@ -1,3 +1,3 @@
 <?php
-define('GETS_SERVER_URL', 'oss.fruct.org/projects/gets/service/');
+define('GETS_SERVER_URL', 'gets.cs.karelia.ru/gets/service/');
 ?>

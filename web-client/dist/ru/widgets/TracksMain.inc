@@ -30,7 +30,7 @@ echo   '<div id="tracks-main-page" class="action-menu-container hidden">
                             <div class="panel-body">
                                 <div class="main-block search-input-container">
                                     <label for="tracks-main-search-input">Фильтр по имени: </label>
-                                    <input id="tracks-main-search-input" class="form-control search-query" name="track-name" type="text" placeholder="Track name"/>            
+                                    <input id="tracks-main-search-input" class="form-control search-query" name="track-name" type="text" placeholder="Имя маршрута"/>            
                                 </div>
                                 <div class="main-block">
                                     <label for="tracks-main-filter-category">Фильтр по категории: </label>

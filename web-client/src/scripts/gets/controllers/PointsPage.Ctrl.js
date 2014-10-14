@@ -248,7 +248,7 @@ PointsPage.prototype.showPointsMain = function() {
 
 PointsPage.prototype.showPointInfo = function() {
     try {
-        this._headerView.changeOption('Point Info', 'glyphicon-chevron-left', '#form=main');
+        this._headerView.changeOption($(this._pointInfo.getView()).data('pagetitle'), 'glyphicon-chevron-left', '#form=main');
         
         var pointName = decodeURIComponent(this._utils.getHashVar('point_name'));
         if (!pointName) {

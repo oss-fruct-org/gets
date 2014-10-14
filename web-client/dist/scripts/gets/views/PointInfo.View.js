@@ -88,6 +88,10 @@ PointInfo.prototype.placePointInPointInfo = function(point, isAuth) {
     }
 };
 
+PointInfo.prototype.getView = function() {
+    return this.pointInfo;
+};
+
 /**
  * Show view
  */

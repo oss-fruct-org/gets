@@ -1,6 +1,6 @@
 <?php
 
-echo    '<div id="tracks-info-page" class="action-menu-container hidden">
+echo    '<div id="tracks-info-page" class="action-menu-container hidden" data-pagetitle="Track Info" data-messagesuccess-remove="Track was successfully removed">
             <div id="tracks-info-overlay" class="busy-overlay"></div>
             <div class="action-menu-toolbar-container">
                 <div class="btn-group btn-group-justified">
@@ -15,7 +15,7 @@ echo    '<div id="tracks-info-page" class="action-menu-container hidden">
                         </a>
                     </div>
                     <div class="btn-group">
-                        <a id="tracks-info-remove" class="btn btn-danger" href="#" title="Remove track" role="button">
+                        <a id="tracks-info-remove" class="btn btn-danger" href="#" title="Remove track" role="button" data-removetext="Are you sure you want to remove this track? (This action cannot be cancelled.)">
                             <span class="glyphicon glyphicon-remove"></span> Remove track 
                         </a>
                     </div>

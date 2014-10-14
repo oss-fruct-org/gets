@@ -71,7 +71,7 @@ UtilsClass.prototype.uploadFile = function(paramsObj, callback) {
     var that = this;
 
     var getPostURLRequest = $.ajax({
-        url: 'actions/getUploadLink.php',
+        url: GET_UPLOAD_LINK_ACTION,
         type: 'POST',
         async: true,
         contentType: 'application/json',
@@ -91,7 +91,7 @@ UtilsClass.prototype.uploadFile = function(paramsObj, callback) {
         var postURL = encodeURIComponent($(jqXHR.responseText).find('post_url').text());
         
         var uploadFileRequest = $.ajax({
-            url: 'actions/uploadFile.php?post_url=' + postURL,
+            url: UPLOAD_FILE_ACTION + '?post_url=' + postURL,
             type: 'POST',
             async: true,
             cache: false,

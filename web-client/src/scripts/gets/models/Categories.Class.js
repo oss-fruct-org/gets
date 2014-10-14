@@ -35,7 +35,7 @@ CategoriesClass.prototype.checkCategories = function () {
  */
 CategoriesClass.prototype.downloadCategories = function () {
     var getCategoriesRequest = $.ajax({
-        url: 'actions/getCategories.php',
+        url: GET_CATEGORIES_ACTION,
         type: 'POST',
         async: false, 
         contentType: 'application/json', 

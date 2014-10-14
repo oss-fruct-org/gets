@@ -47,7 +47,7 @@ MapClass.prototype.initMap = function() {
 
 L.NumberedDivIcon = L.Icon.extend({
     options: {
-        iconUrl: 'images/icons/marker_hole.png',
+        iconUrl: MARKER_HOLE_IMAGE,
         number: '',
         shadowUrl: null,
         iconSize: new L.Point(25, 41),
@@ -95,7 +95,7 @@ L.EditableCircleMarker = L.Class.extend({
                 iconSize: new L.Point(25, 41),
                 iconAnchor: new L.Point(13, 41),
                 popupAnchor: new L.Point(0, -33),
-                iconUrl: 'images/icons/marker_hole.png',
+                iconUrl: MARKER_HOLE_IMAGE,
                 className: 'leaflet-div-icon-num'
             }),
             draggable: true
@@ -459,7 +459,7 @@ MapClass.prototype.setSearchAreaParams = function(lat, lng, radius) {
 MapClass.prototype.createUserMarker = function(lat, lng) {
     if (this.userMarker == null) {
         var userIcon = L.icon({
-            iconUrl: 'images/icons/location.png',
+            iconUrl: LOCATION_IMAGE,
             shadowUrl: null,
             iconSize: new L.Point(48, 48),
             iconAnchor: new L.Point(13, 41),

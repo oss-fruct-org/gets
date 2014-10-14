@@ -102,7 +102,7 @@ PointsClass.prototype.downLoadPoints = function(paramsObj, callback) {
     //requestObj.space = space;
     
     var getPointsRequest = $.ajax({
-        url: 'actions/getPoints.php',
+        url: GET_POINTS_ACTION,
         type: 'POST',
         async: true, 
         contentType: 'application/json', 
@@ -228,7 +228,7 @@ PointsClass.prototype.addPoint = function (paramsObj, callback) {
     Logger.debug(newParamsObj); 
     
     var addPointRequest = $.ajax({
-        url: 'actions/addPoint.php',
+        url: ADD_POINT_ACTION,
         type: 'POST',
         async: false, 
         contentType: 'application/json', 
@@ -299,7 +299,7 @@ PointsClass.prototype.removePoint = function (callback) {
     }
     
     var removePointRequest = $.ajax({
-        url: 'actions/removePoint.php',
+        url: REMOVE_POINT_ACTION,
         type: 'POST',
         async: false,
         contentType: 'application/json',

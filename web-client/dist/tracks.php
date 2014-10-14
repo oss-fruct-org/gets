@@ -9,9 +9,16 @@ session_start();
         <link rel="stylesheet" type="text/css" href="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.css"/>
         <link rel="stylesheet" type="text/css" href="styles/bootstrap-3.2.0/bootstrap-lightbox.min.css"/>
         <link rel="stylesheet" type="text/css" href="styles/bootstrap-slider.min.css"/>
+        <link rel="stylesheet" href="styles/languages.min.css">
         <?php
         include_once('html_headers.php');
         ?>
+        
+        <!-- ADD ACTION CONSTANTS SPECIFIC FOR DOMAIN -->
+        <script src="actions/generateActionNames.php"></script>
+        <!-- ADD IMAGE CONSTANTS SPECIFIC FOR DOMAIN -->
+        <script src="images/generateImagesPaths.php"></script>
+        
         <script src="scripts/jquery/jquery-1.11.1.min.js"></script>
         <script src="scripts/bootstrap/bootstrap.min.js"></script>
         <script src="scripts/bootstrap/bootstrap-lightbox.min.js"></script>

@@ -3,50 +3,10 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/views/PointEdit.View.js</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/scripts/bootstrap-slider.min.js</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/models/Points.Class.js</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/views/TrackEdit.View.js</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/actions/addPoint.php</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/actions/utils/config.inc</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/actions/removePoint.php</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/views/TrackAdd.View.js</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/widgets/TrackInfo.inc</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/index.php</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/actions/login.php</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/actions/getUserInfo.php</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/views/PointInfo.View.js</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/widgets/PointInfo.inc</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/widgets/TrackEdit.inc</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/widgets/Header.inc</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/widgets/Message.inc</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/actions/isLoggedIn.php</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/widgets/PointsMain.inc</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/tracks.php</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/widgets/PointEdit.inc</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/points.php</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/views/TrackInfo.View.js</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/views/Map.View.js</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/actions/logout.php</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/views/PointAdd.View.js</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/models/Utils.Class.js</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/views/TracksMain.View.js</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/models/Map.Class.js</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/actions/utils/process_request.inc</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/models/User.Class.js</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/models/Tracks.Class.js</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/styles/gets/style.css</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/models/Categories.Class.js</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/controllers/Map.Ctrl.js</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/views/Header.View.js</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/views/Message.View.js</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/actions/uploadFile.php</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/controllers/PointsPage.Ctrl.js</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/login.php</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/styles/bootstrap-slider.min.css</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/views/PointsMain.View.js</file>
+            <file>file:/home/davidson/projects/gets/web-client/src/images/generateImagesPaths.php</file>
+            <file>file:/home/davidson/projects/gets/web-client/src/ru/widgets/TrackInfo.inc</file>
             <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/controllers/TracksPage.Ctrl.js</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/widgets/TracksMain.inc</file>
+            <file>file:/home/davidson/projects/gets/web-client/src/ru/widgets/TrackEdit.inc</file>
         </group>
     </open-files>
 </project-private>

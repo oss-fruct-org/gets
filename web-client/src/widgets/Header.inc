@@ -40,7 +40,16 @@ function get_navbar_depend_on_page($page_name) {
                                             <li><a id="sign-out-btn" href="#">Sign out</a></li>
                                         </ul>
                                     </li>' 
-                                )                           
+                                )
+                                . '<li class="dropdown">
+                                        <a href="#" class="dropdown-toggle" data-toggle="dropdown"> 
+                                            <span class="lang-sm lang-lbl-full" lang="en"></span><span class="caret"></span>
+                                        </a>
+                                        <ul class="dropdown-menu" role="menu">
+                                            <li><a id="en-lang" href="#"><span class="lang-sm lang-lbl-full" lang="en"></span></a></li>
+                                            <li><a id="ru-lang" href="./ru"><span class="lang-sm lang-lbl-full" lang="ru"></span></a></li>
+                                        </ul>
+                                    </li>'    
                             . '</ul>
                         </div>
                         <!-- /.navbar-collapse -->

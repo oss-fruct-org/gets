@@ -63,6 +63,7 @@ TracksMain.prototype.placeTracksInTrackList = function (trackList) {
  */
 TracksMain.prototype.placeCategoriesInTrackMain = function (categories) {
     var mainTracksCategories = $(this.mainTracks).find('#tracks-main-filter-category');
+    $( mainTracksCategories ).empty();
 
     // Add 'all' category with value ''
     $(this.document.createElement('option'))

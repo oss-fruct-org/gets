@@ -12,9 +12,6 @@
  * @param {Object} window window dom object of the current page.
  */
 function TracksPage(document, window) {
-    if (!window.hasOwnProperty('location')) {
-        throw new GetsWebClientException('Track Page Error', 'TracksPage, windowObj argument is not a window object');
-    }
     this.document = document;
     this.window = window;
 
@@ -190,7 +187,7 @@ TracksPage.prototype.initPage = function() {
                 paramsObj.push({name: 'index', value: self._tracks.getTrack(trackName, true).points.length + 1});
                 self._points.addPoint(paramsObj, function() {
                     self.window.location.replace('#form=track_info&track_id=' + trackName);
-                    MessageBox.showMessage('Point was successfully added', MessageBox.SUCCESS_MESSAGE);
+                    MessageBox.showMessage($(self._pointAdd.getView()).data('messagesuccessAdd'), MessageBox.SUCCESS_MESSAGE);
                 });                                          
             }
         } catch (Exception) {           
@@ -203,14 +200,14 @@ TracksPage.prototype.initPage = function() {
     // Remove track handler
     $(this.document).on('click', '#tracks-info-remove', function(e) {
         e.preventDefault();
-        if (confirm('Are you sure you want to remove this track? (This action cannot be cancelled.)')) {
+        if (confirm($(self._trackInfo.getView()).find('#tracks-info-remove').data('removetext'))) {
             try {
                 var trackName = decodeURIComponent(self._utils.getHashVar('track_id'));
                 self._mapCtrl.removeTrack(self._tracks.getTrack(trackName, false));
                 self._tracks.removeTrack();
                 self.window.location.replace('#form=main');
                 self.updateTracksHandler();
-                MessageBox.showMessage('Track was successfully removed', MessageBox.SUCCESS_MESSAGE);
+                MessageBox.showMessage($(self._trackInfo.getView()).data('messagesuccessRemove'), MessageBox.SUCCESS_MESSAGE);
             } catch (Exception) {
                 MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
             }
@@ -220,13 +217,13 @@ TracksPage.prototype.initPage = function() {
     // Remove point handler
     $(this.document).on('click', '#point-info-remove', function(e) {
         e.preventDefault();
-        if (confirm('Are you sure you want to remove this point? (This action cannot be cancelled.)')) {
+        if (confirm($(self._pointInfo.getView()).find('#point-info-remove').data('removetext'))) {
             try {
                 var trackName = decodeURIComponent(self._utils.getHashVar('track_id'));               
                 self._points.removePoint();
                 self._mapCtrl.removeTrack(self._tracks.getTrack(trackName, false));              
                 self.window.location.replace('#form=track_info&track_id=' + trackName);
-                MessageBox.showMessage('Point was successfully removed', MessageBox.SUCCESS_MESSAGE);
+                MessageBox.showMessage($(self._pointInfo.getView()).data('messagesuccessRemove'), MessageBox.SUCCESS_MESSAGE);
             } catch (Exception) {
                 MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
             }
@@ -306,10 +303,14 @@ TracksPage.prototype.initPage = function() {
         if ($(upload).hasClass('hidden')) {
             $(upload).removeClass('hidden').addClass('show');
             $(self.document).find('#edit-point-picture-input-url').attr('disabled', 'disabled');
+            // scroll to upload element
+            $(self.document).find('#edit-point-page .action-menu-inner-content').animate({
+                scrollTop: $('#edit-point-picture-input-file-upload').offset().top
+            }, 2000);
         } else {
             $(upload).removeClass('show').addClass('hidden');
             $(self.document).find('#edit-point-picture-input-url').removeAttr('disabled');
-        }
+        }       
     });
     
     // Upload picture handler
@@ -360,6 +361,10 @@ TracksPage.prototype.initPage = function() {
         if ($(upload).hasClass('hidden')) {
             $(upload).removeClass('hidden').addClass('show');
             $(self.document).find('#edit-point-audio-input-url').attr('disabled', 'disabled');
+            // scroll to upload element
+            $(self.document).find('#edit-point-page .action-menu-inner-content').animate({
+                scrollTop: $('#edit-point-audio-input-file-upload').offset().top
+            }, 2000);
         } else {
             $(upload).removeClass('show').addClass('hidden');
             $(self.document).find('#edit-point-audio-input-url').removeAttr('disabled');
@@ -460,7 +465,7 @@ TracksPage.prototype.showTrackMain = function() {
 
 TracksPage.prototype.showTrackInfo = function() {
     try {
-        this._headerView.changeOption('Track Info', 'glyphicon-chevron-left', '#form=main');
+        this._headerView.changeOption($(this._trackInfo.getView()).data('pagetitle'), 'glyphicon-chevron-left', '#form=main');
         var trackName = decodeURIComponent(this._utils.getHashVar('track_id'));
         Logger.debug('trackName: ' + trackName);
         if (trackName) {
@@ -482,7 +487,7 @@ TracksPage.prototype.showTrackInfo = function() {
 
 TracksPage.prototype.showAddTrack = function() {
     try {    
-        this._headerView.changeOption('Add Track', 'glyphicon-chevron-left', '#form=main');
+        this._headerView.changeOption($(this._trackAdd.getView()).data('pagetitleAdd'), 'glyphicon-chevron-left', '#form=main');
         this._utils.clearAllInputFields(this._trackAdd.getView());
         this._trackAdd.placeCategoriesInAddTrack(this._categories.getCategories());
         
@@ -498,7 +503,7 @@ TracksPage.prototype.showAddTrack = function() {
 TracksPage.prototype.showAddPoint = function() {
     try {
         var trackName = decodeURIComponent(this._utils.getHashVar('track_id'));
-        this._headerView.changeOption('Add Point', 'glyphicon-chevron-left', '#form=track_info&track_id=' + trackName);
+        this._headerView.changeOption($(this._pointAdd.getView()).data('pagetitleAdd'), 'glyphicon-chevron-left', '#form=track_info&track_id=' + trackName);
         this._utils.clearAllInputFields(this._pointAdd.getView());
         
         this.currentView.hideView();
@@ -513,7 +518,7 @@ TracksPage.prototype.showAddPoint = function() {
 TracksPage.prototype.showPointInfo = function() {
     try {
         var trackName = decodeURIComponent(this._utils.getHashVar('track_id'));
-        this._headerView.changeOption('Point Info', 'glyphicon-chevron-left', '#form=track_info&track_id=' + trackName);
+        this._headerView.changeOption($(this._pointInfo.getView()).data('pagetitle'), 'glyphicon-chevron-left', '#form=track_info&track_id=' + trackName);
         
         var pointName = decodeURIComponent(this._utils.getHashVar('point_name'));
         if (!pointName) {
@@ -535,7 +540,7 @@ TracksPage.prototype.showPointInfo = function() {
 TracksPage.prototype.showEditPoint = function() {
     try {
         var point = this._points.getPoint();
-        this._headerView.changeOption('Edit Point', 'glyphicon-chevron-left', '#form=point_info&track_id=' + point.track + '&point_name=' + point.name);
+        this._headerView.changeOption($(this._pointEdit.getView()).data('pagetitleEdit'), 'glyphicon-chevron-left', '#form=point_info&track_id=' + point.track + '&point_name=' + point.name);
         this._pointEdit.placePointInPointEdit(point);
         
         this.currentView.hideView();
@@ -550,7 +555,7 @@ TracksPage.prototype.showEditPoint = function() {
 TracksPage.prototype.showEditTrack = function() {
     try {
         var trackName = decodeURIComponent(this._utils.getHashVar('track_id'));
-        this._headerView.changeOption('Edit Track', 'glyphicon-chevron-left', '#form=' + TracksPage.TRACK_INFO + '&track_id=' + trackName);
+        this._headerView.changeOption($(this._trackEdit.getView()).data('pagetitleEdit'), 'glyphicon-chevron-left', '#form=' + TracksPage.TRACK_INFO + '&track_id=' + trackName);
         this._trackEdit.placeCategoriesInEditTrack(this._categories.getCategories());
         this._trackEdit.placeTrackInTrackEdit(this._tracks.getTrack(trackName, false));
         
@@ -588,7 +593,7 @@ TracksPage.prototype.addTrackHandler = function (form) {
         try {
             that._trackAdd.toggleOverlay();
             that.window.location.replace('#form=' + TracksPage.MAIN);
-            MessageBox.showMessage('Track was successfully added', MessageBox.SUCCESS_MESSAGE);
+            MessageBox.showMessage($(that._trackAdd.getView()).data('messagesuccessAdd'), MessageBox.SUCCESS_MESSAGE);
         } catch (Exception) {
             that._trackAdd.toggleOverlay();
             MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
@@ -607,7 +612,7 @@ TracksPage.prototype.editTrackHandler = function (form) {
         try {
             that._trackEdit.toggleOverlay();
             that.window.location.replace('#form=' + TracksPage.MAIN);
-            MessageBox.showMessage('Track was successfully updated', MessageBox.SUCCESS_MESSAGE);
+            MessageBox.showMessage($(that._trackEdit.getView()).data('messagesuccessEdit'), MessageBox.SUCCESS_MESSAGE);
         } catch (Exception) {
             that._trackEdit.toggleOverlay();
             MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);

@@ -1,6 +1,6 @@
 <?php
 
-echo    '<div id="edit-point-page" class="action-menu-container hidden">
+echo    '<div id="edit-point-page" class="action-menu-container hidden" data-pagetitle-add="Add Point" data-pagetitle-edit="Edit Point" data-messagesuccess-add="Point was successfully added" data-messagesuccess-edit="Point was successfully edited">
             <div id="edit-point-overlay" class="busy-overlay"></div>
             <form id="edit-point-form" action="javascript:void(null);" role="form">
                 <div class="action-menu-toolbar-container">

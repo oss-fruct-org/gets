@@ -93,7 +93,7 @@ TracksClass.prototype.downloadTrackList = function (paramsObj, callback) {
     var tracksArray = [];
 
     var getTrackList = $.ajax({
-        url: 'actions/getTracks.php',
+        url: GET_TRACKS_ACTION,
         type: 'POST',
         async: true,
         contentType: 'application/json',
@@ -152,7 +152,7 @@ TracksClass.prototype.downloadTrackByName = function(paramsObj) {
     var requestString = JSON.stringify(paramsObj);
 
     var getTrackRequest = $.ajax({
-        url: 'actions/getTrackByName.php',
+        url: GET_TRACK_BY_NAME_ACTION,
         type: 'POST',
         async: false,
         contentType: 'application/json',
@@ -257,7 +257,7 @@ TracksClass.prototype.addTrack = function (paramsObj, callback) {
     newParamsObj.update = update;
 
     var addTrackRequest = $.ajax({
-        url: 'actions/addTrack.php',
+        url: ADD_TRACK_ACTION,
         type: 'POST',
         async: true,
         contentType: 'application/json',
@@ -294,7 +294,7 @@ TracksClass.prototype.removeTrack = function() {
     }
 
     var removeTrackRequest = $.ajax({
-        url: 'actions/removeTrack.php',
+        url: REMOVE_TRACK_ACTION,
         type: 'POST',
         async: false,
         contentType: 'application/json',

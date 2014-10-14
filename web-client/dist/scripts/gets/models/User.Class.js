@@ -29,7 +29,7 @@ function UserClass(windowObj) {
  */ 
 UserClass.prototype.authorizeGoogle = function() {
     var getRedirectLinkRequest = $.ajax({
-        url: 'actions/login.php',
+        url: LOGIN_ACTION,
         type: 'POST',
         async: false, 
         contentType: 'application/json',
@@ -55,7 +55,7 @@ UserClass.prototype.authorizeGoogle = function() {
             clearInterval(timer);
             
             var getAuthTokenRequest = $.ajax({
-                url: 'actions/login.php',
+                url: LOGIN_ACTION,
                 type: 'POST',
                 async: true,
                 contentType: 'application/json',
@@ -81,7 +81,7 @@ UserClass.prototype.authorizeGoogle = function() {
 
 UserClass.prototype.logout = function() {
     $.ajax({
-        url: 'actions/logout.php',
+        url: LOGOUT_ACTION,
         type: 'GET',
         async: false,
         contentType: 'text/xml',
@@ -97,7 +97,7 @@ UserClass.prototype.logout = function() {
  */
 UserClass.prototype.fetchAuthorizationStatus = function() {
     var getAuthStatusRequest = $.ajax({
-        url: 'actions/isLoggedIn.php',
+        url: IS_LOGGED_IN_ACTION,
         type: 'GET',
         async: false,
         data: null
@@ -120,7 +120,7 @@ UserClass.prototype.fetchAuthorizationStatus = function() {
  */
 UserClass.prototype.fetchEmail = function() {
     var getEmailRequest = $.ajax({
-        url: 'actions/getUserInfo.php',
+        url: GET_USER_INFO_ACTION,
         type: 'GET',
         async: false,
         data: null

@@ -1,6 +1,6 @@
 <?php
 
-echo    '<div id="point-info-page" class="action-menu-container hidden">
+echo    '<div id="point-info-page" class="action-menu-container hidden" data-pagetitle="Point Info" data-messagesuccess-remove="Point was successfully removed">
             <div class="action-menu-toolbar-container">
                 <div class="btn-group btn-group-justified">
                     <div class="btn-group">
@@ -9,7 +9,7 @@ echo    '<div id="point-info-page" class="action-menu-container hidden">
                         </a>
                     </div>
                     <div class="btn-group">
-                        <a id="point-info-remove" class="btn btn-danger" href="#" title="Remove point" role="button">
+                        <a id="point-info-remove" class="btn btn-danger" href="#" title="Remove point" role="button" data-removetext="Are you sure you want to remove this point? (This action cannot be cancelled.)">
                             <span class="glyphicon glyphicon-remove"></span> Remove point 
                         </a>
                     </div>

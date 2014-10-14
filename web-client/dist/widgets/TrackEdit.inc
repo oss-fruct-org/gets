@@ -1,6 +1,6 @@
 <?php
 
-echo    '<div id="tracks-edit-track-page" class="action-menu-container hidden">
+echo    '<div id="tracks-edit-track-page" class="action-menu-container hidden" data-pagetitle-add="Add Track" data-pagetitle-edit="Edit Track" data-messagesuccess-add="Track was successfully added" data-messagesuccess-edit="Track was successfully edited">
             <div id="tracks-edit-track-overlay" class="busy-overlay"></div>
             <form id="tracks-edit-track-form" action="javascript:void(null);" role="form">
                 <div class="action-menu-toolbar-container">

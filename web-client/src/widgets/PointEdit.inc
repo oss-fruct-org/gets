@@ -40,37 +40,65 @@ echo    '<div id="edit-point-page" class="action-menu-container hidden">
                                     <label for="edit-point-lon-input" class="control-label">Longitude</label>                                               
                                     <input id="edit-point-lon-input" name="longitude" type="text" class="form-control" value="0.0" required">
                                 </div>
-                                <input id="edit-point-alt-input" name="altitude" type="hidden" value="0" required">
+                                <input id="edit-point-alt-input" name="altitude" type="hidden" value="0.0" required>
                             </div>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="edit-point-active-radius-input" class="block">Active radius (km)</label>
-                        <input id="edit-point-active-radius-input" name="active_radius" data-slider-id="slider" type="text" data-slider-min="0" data-slider-max="5" data-slider-step="0.5" data-slider-value="1"/>
+                        <label for="edit-point-active-radius-input" class="block">Active radius (meters) *</label>
+                        <input id="edit-point-active-radius-input" name="radius" type="text" class="form-control" value="63" required">
                     </div>
                     <div class="form-group">
-                        <label for="edit-point-picture-input">Picture</label>
+                        <label for="edit-point-picture-input">Picture<br>Paste URL or <a id="edit-point-picture-toggle-upload" href="#">upload file</a></label>
                         <button type="button" class="btn btn-default btn-xs" data-toggle="popover" title="Data upload" data-content="ddddd" data-container="#edit-point-page" data-placement="right" data-trigger="focus">
                             <span class="glyphicon glyphicon-question-sign"></span>
                         </button>
-                        <div class="input-group">
-                            <input id="edit-point-picture-input" class="form-control" name="picture" type="file" accept="image/*" />
-                            <span class="input-group-btn">
-                                <button id="edit-point-picture-input-clear" class="btn btn-default" type="button">
-                                    <span class="glyphicon glyphicon-remove"></span> Clear 
-                                </button>
-                            </span>
+                        <input id="edit-point-picture-input-url" name="picture-url" type="url" class="form-control">
+                        <br>
+                        <div id="edit-point-picture-upload" class="hidden">
+                            <input id="edit-point-picture-input-file" class="form-control" type="file" accept="image/*" /> 
+                            <div class="btn-group btn-group-justified">
+                                <div class="btn-group">
+                                    <button id="edit-point-picture-input-file-upload" class="btn btn-default disabled" type="button">
+                                        <span class="glyphicon glyphicon-upload"></span> Upload 
+                                    </button>
+                                </div>
+                                <div class="btn-group">
+                                    <button id="edit-point-picture-input-file-clear" class="btn btn-default" type="button">
+                                        <span class="glyphicon glyphicon-trash"></span> Clear 
+                                    </button>
+                                </div>
+                                <div class="btn-group">
+                                    <button id="edit-point-picture-input-file-cancel" class="btn btn-default" type="button">
+                                        <span class="glyphicon glyphicon-remove"></span> Close 
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="edit-point-audio-input">Audio track</label>
-                        <div class="input-group">
-                            <input id="edit-point-audio-input" class="form-control" name="audio" type="file" accept="audio/*" /> 
-                            <span class="input-group-btn">
-                                <button id="edit-point-audio-input-clear" class="btn btn-default" type="button">
-                                    <span class="glyphicon glyphicon-remove"></span> Clear 
-                                </button>
-                            </span>
+                        <label for="edit-point-audio-input">Audio track<br>Paste URL or <a id="edit-point-audio-toggle-upload" href="#">upload file</a></label>
+                        <input id="edit-point-audio-input-url" name="audio-url" type="url" class="form-control">
+                        <br>
+                        <div id="edit-point-audio-upload" class="hidden">
+                            <input id="edit-point-audio-input-file" class="form-control" type="file" accept="audio/*" /> 
+                            <div class="btn-group btn-group-justified">
+                                <div class="btn-group">
+                                    <button id="edit-point-audio-input-file-upload" class="btn btn-default disabled" type="button">
+                                        <span class="glyphicon glyphicon-upload"></span> Upload 
+                                    </button>
+                                </div>
+                                <div class="btn-group">
+                                    <button id="edit-point-audio-input-file-clear" class="btn btn-default" type="button">
+                                        <span class="glyphicon glyphicon-trash"></span> Clear 
+                                    </button>
+                                </div>
+                                <div class="btn-group">
+                                    <button id="edit-point-audio-input-file-cancel" class="btn btn-default" type="button">
+                                        <span class="glyphicon glyphicon-remove"></span> Close 
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <p>* - Required fields</p>

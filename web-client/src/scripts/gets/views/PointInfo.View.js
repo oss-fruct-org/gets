@@ -40,12 +40,7 @@ PointInfo.prototype.placePointInPointInfo = function(point, isAuth) {
     $(photoElement).attr('src', '');
 
     // Then fill elemnts with new values 
-    $(nameElement).text(point.name).attr('title', point.name).readmore({
-        maxHeight: 50,
-        embedCSS: false,
-        moreLink: '<a href="#">Expand</a>',
-        lessLink: '<a href="#">Collapse</a>'
-    });
+    $(nameElement).text(point.name).attr('title', point.name);
     
     $(coordsElement).text(point.coordinates);
     if (point.descriptionExt !== '') {
@@ -64,6 +59,8 @@ PointInfo.prototype.placePointInPointInfo = function(point, isAuth) {
         $(this.document.createElement('audio'))
                 .attr('src', point.audio)
                 .attr('controls', '')
+                .append($(this.document.createElement('span')).html('Your browser doesn\'t support audio feature or audio file has unsupported format. \n\
+                        Try to <a href="' + point.audio + '">download it</a>' + 'and open locally.' ))
                 .appendTo(audioElement);
     }
 

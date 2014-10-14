@@ -54,7 +54,7 @@ UtilsClass.prototype.updateHashParameter = function (param, paramVal) {
  * 
  * @returns {String} url that can be used to download file.
  */
-UtilsClass.prototype.uploadFile = function(paramsObj) {
+UtilsClass.prototype.uploadFile = function(paramsObj, callback) {
     if (!paramsObj.file) {
         throw new GetsWebClientException('Utils Error', 'uploadFile, paramsObj.file undefined or null');
     }
@@ -67,11 +67,13 @@ UtilsClass.prototype.uploadFile = function(paramsObj) {
     } else {
         fileTitle = paramsObj.title;
     }
+    
+    var that = this;
 
     var getPostURLRequest = $.ajax({
         url: 'actions/getUploadLink.php',
         type: 'POST',
-        async: false,
+        async: true,
         contentType: 'application/json',
         dataType: 'xml',
         data: JSON.stringify({title: fileTitle})
@@ -80,35 +82,37 @@ UtilsClass.prototype.uploadFile = function(paramsObj) {
     getPostURLRequest.fail(function(jqXHR, textStatus) {
         throw new GetsWebClientException('Utils Error', 'uploadFile, getPostURLRequest failed ' + textStatus);
     });
-
-    if ($(getPostURLRequest.responseText).find('code').text() !== '0') {
-        throw new GetsWebClientException('Utils Error', 'uploadFile, ' + $(getPostURLRequest.responseText).find('message').text());
-    }
-
-    var postURL = encodeURIComponent($(getPostURLRequest.responseText).find('post_url').text());
     
-    var uploadFileRequest = $.ajax({
-        url: 'actions/uploadFile.php?post_url=' + postURL,
-        type: 'POST',
-        async: false,
-        cache: false,
-        processData: false,
-        contentType: false,
-        data: file
+    getPostURLRequest.done(function(data, textStatus, jqXHR) {
+        if ($(jqXHR.responseText).find('code').text() !== '0') {
+            throw new GetsWebClientException('Utils Error', 'uploadFile, ' + $(jqXHR.responseText).find('message').text());
+        }
+        
+        var postURL = encodeURIComponent($(jqXHR.responseText).find('post_url').text());
+        
+        var uploadFileRequest = $.ajax({
+            url: 'actions/uploadFile.php?post_url=' + postURL,
+            type: 'POST',
+            async: true,
+            cache: false,
+            processData: false,
+            contentType: false,
+            data: file
+        });
+        
+        uploadFileRequest.fail(function (jqXHR, textStatus) {
+            throw new GetsWebClientException('Utils Error', 'uploadFile, uploadFileRequest failed ' + textStatus);
+        });
+        
+        uploadFileRequest.done(function(data, textStatus, jqXHRd) {
+            var downloadUrl = $(jqXHRd.responseText).find('downloadUrl').text();
+            Logger.debug('downloadUrl: ' + downloadUrl);
+            
+            if (callback) {
+                callback(that.htmlEscape(downloadUrl));
+            }
+        });
     });
-
-    uploadFileRequest.fail(function(jqXHR, textStatus) {
-        throw new GetsWebClientException('Utils Error', 'uploadFile, uploadFileRequest failed ' + textStatus);
-    });
-
-    if ($(uploadFileRequest.responseText).find('code').text() !== '0') {
-        throw new GetsWebClientException('Utils Error', 'uploadFile, ' + $(uploadFileRequest.responseText).find('message').text());
-    }
-
-    var downloadUrl = $(uploadFileRequest.responseText).find('downloadUrl').text();
-    Logger.debug('downloadUrl: ' + downloadUrl);
-    
-    return this.htmlEscape(downloadUrl);
 };
 
 /**

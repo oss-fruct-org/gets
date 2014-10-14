@@ -29,27 +29,40 @@ if (!$dom) {
     die();
 }
 
-if (!$dom->schemaValidate('schemes/deletePoint.xsd')) {
+if (!$dom->relaxNGValidate('rng-schemes/deletePoint.rng')) {
     send_error(1, 'Error: not valid input XML document.');
     die();
 }
 
 $auth_token = get_request_argument($dom, 'auth_token');
-$channel_name = get_request_argument($dom, 'channel');
-$point_name = get_request_argument($dom, 'name');
-$point_category = get_request_argument($dom, 'category_id');
+$channel_name = get_request_argument($dom, 'track_name');
+$category_id = get_request_argument($dom, 'category_id');
 
-$xmlrpc_array = array('channel' => $channel_name, 'gets_token' => $auth_token);
-if ($point_name)
-    $xmlrpc_array['name'] = $point_name;
-if ($point_category)
-    $xmlrpc_array['category_name'] = $point_category;
+$requested_fields = array('uuid', 'name', 'latitude', 'longitude', 'time', 'description');
+
+$xmlrpc_array = array('gets_token' => $auth_token);
+
+// One of track_name or category_id must already be no-null after schema validation
+if (!$channel_name) {
+    $channel_name = ensure_category_channel($auth_token, $category_id);
+    if (!$channel_name) {
+        send_error(1, "Request of category's channel failed");
+        die();
+    }
+}
+
+$xmlrpc_array['channel'] = $channel_name;
+foreach ($requested_fields as $field) {
+    $value = get_request_argument($dom, $field);
+    if ($value) {
+        $xmlrpc_array[$field] = $value;
+    }
+}
 
 $xmlrpc_request = xmlrpc_encode_request('deleteTag2', $xmlrpc_array);
 
 $xmlrpc_response =  process_request(GETS_SCRIPTS_URL, $xmlrpc_request, 'Content-Type: text/xml');
 $xmlrpc = xmlrpc_decode($xmlrpc_response);
-dump_error_log($xmlrpc_response);
 
 if (is_array($xmlrpc) && xmlrpc_is_fault($xmlrpc)) {
     send_error(1, 'Error: internal error: can\'t delete tag');

@@ -47,7 +47,8 @@ function process_json_request($method, $array, $gets_token = null, $allow_token_
         session_commit();
         $array['auth_token'] = $geo2tag_token;
     }
-    $request_json = json_encode($array);
+
+    $request_json = unicode_json_encode($array);
 
     $response_json = process_request($method, $request_json, 'Content-Type:application/json');
     if (!$response_json) {
@@ -251,7 +252,19 @@ function get_categories($token = null) {
         name of channel
   */
 function ensure_category_channel($auth_token, $category_id) {
+    $xmlrpc_request = xmlrpc_encode_request('getCategoryChannel',
+        array('gets_token' => $auth_token,
+              'category_id' => $category_id));
 
+    $xmlrpc_response =  process_request(GETS_SCRIPTS_URL, $xmlrpc_request, 'Content-Type: text/xml');
+    $xmlrpc = xmlrpc_decode($xmlrpc_response);
+
+    if (is_array($xmlrpc) && xmlrpc_is_fault($xmlrpc)) {
+        return null;
+    }
+
+    $channel_name = $xmlrpc;
+    return $channel_name;
 }
 
 /**
@@ -265,4 +278,33 @@ function dump_error_log($object) {
     error_log($contents);
 }
 
+# http://stackoverflow.com/questions/2040240/php-function-to-generate-v4-uuid
+function uuidv4()
+{
+    $data = openssl_random_pseudo_bytes(16);
+    assert(strlen($data) == 16);
+
+    $data[6] = chr(ord($data[6]) & 0x0f | 0x40); // set version to 0100
+    $data[8] = chr(ord($data[8]) & 0x3f | 0x80); // set bits 6-7 to 10
+
+    return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+}
+
+/*
+ * Hack for UNICODE strings in json_encode() for PHP 5.3 and below.
+ * 
+ * Source: http://php.net/manual/ru/function.json-encode.php#105789
+ */
+function unicode_json_encode($arr) {
+    //convmap since 0x80 char codes so it takes all multibyte codes (above ASCII 127). 
+    //So such characters are being "hidden" from normal json_encoding
+    array_walk_recursive($arr, 'unicode_callback');
+    return mb_decode_numericentity(json_encode($arr), array(0x80, 0xffff, 0, 0xffff), 'UTF-8');
+}
+
+function unicode_callback(&$item, $key) {
+    if (is_string($item)) {
+        $item = mb_encode_numericentity($item, array(0x80, 0xffff, 0, 0xffff), 'UTF-8');
+    }
+}
 ?>

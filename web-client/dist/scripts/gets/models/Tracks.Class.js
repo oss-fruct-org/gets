@@ -172,7 +172,8 @@ TracksClass.prototype.downloadTrackByName = function(paramsObj) {
 
     var trackPlacemarkList = $(getTrackRequest.responseText).find('Placemark');
     var trackPointArray = new Array();
-    $.each(trackPlacemarkList, function(index, value) {
+    Logger.debug(trackPlacemarkList);
+    $(trackPlacemarkList).each(function(index, value) {
         Logger.debug(value);
         var pointObj = {};
         pointObj.index = $(value).find("[name='idx']").length ? $(value).find("[name='idx']").text() : '';
@@ -183,6 +184,7 @@ TracksClass.prototype.downloadTrackByName = function(paramsObj) {
         pointObj.descriptionExt = $(value).find("[name='description']").length ? $(value).find("[name='description']").text() : '';
         pointObj.audio = $(value).find("[name='audio']").length ? $(value).find("[name='audio']").text() : '';
         pointObj.photo = $(value).find("[name='photo']").length ? $(value).find("[name='photo']").text() : '';
+        pointObj.radius = $(value).find("[name='radius']").length ? $(value).find("[name='radius']").text() : '';
         pointObj.coordinates = $(value).find('coordinates').length ? $(value).find('coordinates').text() : '';
 
         trackPointArray.push(pointObj);
@@ -222,7 +224,7 @@ TracksClass.prototype.addTrack = function (paramsObj, callback) {
     if (!paramsObj) {
         throw new GetsWebClientException('Tracks Error', 'addTrack, paramsObj undefined or null');
     }
-    var name, hname, desc, url, lang, categoryId, update, userName;
+    var hname, desc, url, lang, categoryId, update, userName;
 
     $(paramsObj).each(function(index, value) {
         if (value.name === 'hname') {
@@ -242,12 +244,12 @@ TracksClass.prototype.addTrack = function (paramsObj, callback) {
         }
     });
     
-    name = 'tr+' + userName + '+' + hname.toLowerCase().replace(/\+/g, '%2B') + '+' + lang;
+    //name = 'tr+' + userName + '+' + hname.toLowerCase().replace(/\+/g, '%2B') + '+' + lang;
     
     // Create single object from an array of objects
     var newParamsObj = {};
-    newParamsObj.name = name;
-    newParamsObj.hname = hname;
+    newParamsObj.name = hname;
+    //newParamsObj.hname = hname;
     newParamsObj.description = desc;
     newParamsObj.url = url;
     newParamsObj.category_id = categoryId;
@@ -273,7 +275,7 @@ TracksClass.prototype.addTrack = function (paramsObj, callback) {
         }
         
         if (callback) {
-            callback(name);
+            callback(hname);
         }
     });
 };

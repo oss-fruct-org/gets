@@ -14,12 +14,6 @@
 function PointEdit(document, editPoint) {
     this.document = document;
     this.editPoint = editPoint;
-    
-    $(this.editPoint).find('#edit-point-active-radius-input').slider({
-        formatter: function (value) {
-            return 'Current value: ' + value;
-        }
-    });
 }
 
 PointEdit.prototype.getView = function() {
@@ -30,6 +24,9 @@ PointEdit.prototype.placePointInPointEdit = function(point) {
     $(this.editPoint).find('#edit-point-name-input').val(point.name);
     $(this.editPoint).find('#edit-point-desc-input').val(point.descriptionExt);
     $(this.editPoint).find('#edit-point-url-input').val(point.url);
+    $(this.editPoint).find('#edit-point-active-radius-input').val(point.radius);
+    $(this.editPoint).find('#edit-point-picture-input-url').val(point.photo);
+    $(this.editPoint).find('#edit-point-audio-input-url').val(point.audio);
     
     var coords = point.coordinates.split(',');
     $(this.editPoint).find('#edit-point-lat-input').val(coords[1]);

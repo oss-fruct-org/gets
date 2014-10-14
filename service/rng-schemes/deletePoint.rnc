@@ -1,0 +1,15 @@
+start = Request
+Request = element request { Params }
+Params = element params {
+    element auth_token { text },
+    (element track_name { text} | element category_id { xsd:integer }),
+    OptionalCriteria+
+}
+
+OptionalCriteria = 
+    element uuid {text} |
+    element name {text} |
+    element latitude {xsd:double} |
+    element longitude {xsd:double} |
+    element time {text} |
+    element description {text}

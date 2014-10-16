@@ -173,10 +173,10 @@
 
     Params:
 	id - category id
-	login - geo2tag admin login
-	password - geo2tag admin password
+	projectName - the project name or main admin login (max 300 symbols, non required)
+	token - the user token (user should be an admin user)
 
-    Example of usage: curl -d "<methodCall><methodName>deleteCategory</methodName><params><param><struct><member><name>id</name><value>2</value></member><member><name>login</name><value>root</value></member><member><name>password</name><value>pass</value></member></struct></param></params></methodCall>" http://geo2tag.cs.prv/gets/geo2tag.php
+    Example of usage: curl -d "<methodCall><methodName>deleteCategory</methodName><params><param><struct><member><name>id</name><value>2</value></member><member><name>projectName</name><value>gets</value></member><member><name>token</name><value>gljt434jlgt435jlvj3l</value></member></struct></param></params></methodCall>" http://geo2tag.cs.prv/gets/geo2tag.php
  */
     function deletecategory_func($method_name, $params, $app_data)
     {
@@ -191,28 +191,53 @@
 	    die();
 	}
 
-	if (array_key_exists("login", $params[0])) {
-	    $login = $params[0]["login"];
-	    $login = pg_escape_string($login);
-	    $login = "'$login'";
+	if (array_key_exists("projectName", $params[0])) {
+	    $projectName = $params[0]["projectName"];
+	    $projectName = pg_escape_string($projectName);
+	    $projectName = "'$projectName'";
 	} else {
-	    trigger_error("Administrator login did not specified", E_USER_ERROR);
+	    trigger_error("ProjectName did not specified", E_USER_ERROR);
 	    die();
 	}
 	    
-	if (array_key_exists("password", $params[0])) {
-	    $password = $params[0]["password"];
-	    $password = pg_escape_string($password);
-	    $password = "'$password'";
-	} else {
-	    $password = "NULL";
+	if (array_key_exists("token", $params[0])) {
+	    $token = $params[0]["token"];
+	    $token = pg_escape_string($token);
 	}
 
-	check_permissions($login, $password);
+	/* check project name if exists */
+	if ($projectName != "NULL") {
+	    $sql_request = "select id from users where users.login=$projectName;";
+	    $res = pg_query($dbconn, $sql_request);
+	    
+	    if (!$res) {
+		trigger_error("SQL error", E_USER_ERROR);
+		die();
+	    }
+
+	    $row = pg_fetch_row($res);
+	    if (!$row) {
+		trigger_error("SQL error", E_USER_ERROR);
+		die();
+	    }
+	    $projectID=$row[0];
+	    if (!$projectID > 0) {
+		trigger_error("The project name doesn't exists");
+		die();
+	    }
+	}else{
+	    $projectID=0;
+	}
+
+	/* check user rights */
+	if (!isset($token) || !isset($projectID) || !has_admin_rights($token, $projectID)) {
+	    trigger_error("User don't have admin rights");
+	    die();
+	}
 
 	/* remove category */
 
-	$sql_request = array("id" => $id);
+	$sql_request = array("id" => $id, "owner_id" => $projectID);
 	$res = pg_delete($dbconn, 'category', $sql_request);
 
 	if (!$res) {
@@ -238,7 +263,7 @@
 	    die();
 	}
 
-        return "Category '$id' removed";
+        return $id;
 
     }
 

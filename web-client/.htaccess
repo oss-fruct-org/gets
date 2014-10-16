@@ -1,0 +1,9 @@
+RewriteEngine On
+# Don't favicon!
+RewriteCond %{REQUEST_FILENAME} !^favicon\.ico
+# use exist folders
+RewriteCond %{REQUEST_FILENAME} !-d
+# use exist files
+RewriteCond %{REQUEST_FILENAME} !-f
+# move requested language to GET param
+RewriteRule ^(.+)/([a-z]{2,2})/(.+)$ $1/$3?lang=$2 [QSA,L]

@@ -29,8 +29,10 @@ function process_request($method, $data, $content_type) {
 function receive_email_by_token($token) {
     $sess_id = sha1("2b7mPwLS" . $token);
     session_id($sess_id);
-    session_start();
-
+    if(!isset($_SESSION)){
+        session_start();
+    }
+    
     if (isset($_SESSION['cached_email'])) {
         return $_SESSION['cached_email'];
     }

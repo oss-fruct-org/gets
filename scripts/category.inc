@@ -135,6 +135,149 @@
     }
     
 /*
+    Function update category in database
+
+    Params:
+        id - the ID of updated category
+	name - any non existent name of category (max 300 symbols, non required)
+	projectName - the project name or main admin login (max 300 symbols)
+	token - the user token (user should be an admin user)
+	description - any short category description (max 2048 symbols, not required)
+	url - any url for corresponded category (max 2048 symbols, not required)
+
+    Return: id of updated category or error message
+
+    Example of usage: curl -d "<methodCall><methodName>updateCategory</methodName><params><param><struct><member><name>id</name><value>23</value></member><member><name>token</name><value>bhbmdlbm</value></member><member><name>name</name><value>shops</value></member><member><name>projectName</name><value>gets2</value></member><member><name>description</name><value>Shops, markets, etc.</value></member><member><name>url</name><value>http://en.wikipedia.org/wiki/Market</value></member></struct></param></params></methodCall>" http://geo2tag.cs.prv/gets/geo2tag.php
+ */
+
+    function updatecategory_func($method_name, $params, $app_data)
+    {
+	global $dbconn;
+
+	if (array_key_exists("id", $params[0])) {
+	    $id = $params[0]["id"];
+	    $id = pg_escape_string($id);
+	} else {
+	    trigger_error("Category ID did not specified", E_USER_ERROR);
+	    die();
+	}
+
+	if (array_key_exists("name", $params[0])) {
+	    $name = $params[0]["name"];
+	    $name = pg_escape_string($name);
+	    $name = "'$name'";
+	}
+
+	if (array_key_exists("description", $params[0])) {
+	    $description = $params[0]["description"];
+	    $description = pg_escape_string($description);
+	    $description = "'$description'";
+	}
+
+	if (array_key_exists("projectName", $params[0])) {
+	    $projectName = $params[0]["projectName"];
+	    $projectName = pg_escape_string($projectName);
+	    $projectName = "'$projectName'";
+	}
+	    
+	if (array_key_exists("token", $params[0])) {
+	    $token = $params[0]["token"];
+	}
+	    
+	if (array_key_exists("url", $params[0])) {
+	    $url = $params[0]["url"];
+	    $url = pg_escape_string($url);
+	    $url = "'$url'";
+	}
+
+	/* check project name if exists */
+	if (isset($projectName)) {
+	    $sql_request = "select id from users where users.login=$projectName;";
+	    $res = pg_query($dbconn, $sql_request);
+	    
+	    if (!$res) {
+		trigger_error("SQL error", E_USER_ERROR);
+		die();
+	    }
+
+	    $row = pg_fetch_row($res);
+	    if (!$row) {
+		trigger_error("SQL error", E_USER_ERROR);
+		die();
+	    }
+	    $projectID=$row[0];
+	    if (!$projectID > 0) {
+		trigger_error("The project name doesn't exists");
+		die();
+	    }
+	}else{
+	    $projectID=0;
+	}
+
+	/* check user rights */
+	if (!isset($token) || !isset($projectID) || !has_admin_rights($token, $projectID)) {
+	    trigger_error("User don't have admin rights");
+	}
+
+	/* check availability category name */
+
+	if (isset($projectName))
+	{
+	    $sql_request = "select count(*) from category,users where category.name=$name and category.owner_id=users.id and users.login=$projectName and (category.id < $id or category.id > $id);";
+	} else {
+	    $sql_request = "select count(*) from category where category.name=$name and (category.id < $id or category.id > $id);";
+	}
+	$res = pg_query($dbconn, $sql_request);
+
+	if (!$res) {
+	    trigger_error("SQL error", E_USER_ERROR);
+	    die();
+	}
+
+	$row = pg_fetch_row($res);
+
+	if ($row[0] > 0) {
+	    trigger_error("The category name already exists");
+	    die();
+	}
+
+	$sql_request = "update category SET ";
+	$and_flag=0;
+	if (isset($name)) {
+	    $sql_request .= ($and_flag == 1? ", ":"") . "name=$name"; 
+	    $and_flag=1;
+	}
+	if (isset($description)) {$sql_request .= ($and_flag == 1? ", ":"") . "description=$description"; $and_flag=1;}
+	if (isset($url)) {$sql_request .= ($and_flag == 1? ", ":"") . "url=$url"; $and_flag=1;}
+	
+	$sql_request .= " where id=$id;";
+	
+	$res = pg_query($dbconn, $sql_request);
+
+	if (!$res) {
+	    trigger_error("SQL error", E_USER_ERROR);
+	    die();
+	}
+
+	$sql_request = "select category.id from category where category.name=$name;";
+	$res = pg_query($dbconn, $sql_request);
+
+	if (!$res) {
+	    trigger_error("SQL error", E_USER_ERROR);
+	    die();
+	}
+	$row = pg_fetch_row($res);
+	if (!$row) {
+	    trigger_error("SQL error", E_USER_ERROR);
+	    die();
+	}
+
+	$name = $row[0];
+
+        return "$name";
+    }
+
+/*
     Function gets list of categories
 
     Params:

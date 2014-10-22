@@ -454,7 +454,7 @@
         $user_name = $user_row[0];
         $user_id = $user_row[1];
 
-        $channel_name = "ch_${category_name}_${user_name}";
+        $channel_name = "ch+${category_id}+${user_id}";
         $channel_name_escaped = pg_escape_string($dbconn, $channel_name);
 
         $select_request = "SELECT channel.id FROM channel WHERE channel.name='${channel_name_escaped}';";
@@ -464,7 +464,7 @@
                     'category_id' => "${category_id}");
             $description = pg_escape_string($dbconn, json_encode($desc_array));
 
-            $insert_request = "INSERT INTO channel (name, description, url, owner_id) VALUES ('${channel_name_escaped}', '${description}', '', ${user_id}) RETURNING channel.id;";
+            $insert_request = "INSERT INTO channel (name, description, url, owner_id) VALUES ('${channel_name_escaped}', '${description}', '{}', ${user_id}) RETURNING channel.id;";
             $insert_resp = pg_query($dbconn, $insert_request);
             $tmp_row = pg_fetch_row($insert_resp);
             $channel_id = $tmp_row[0];

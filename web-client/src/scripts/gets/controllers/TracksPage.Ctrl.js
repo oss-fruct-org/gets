@@ -281,13 +281,13 @@ TracksPage.prototype.initPage = function() {
                 coords = self._mapCtrl.getMapCenter();
             } 
             self._pointAdd.setLatLng(
-                        Math.floor(coords.lat * 10000) / 10000, 
-                        Math.floor(coords.lng * 10000) / 10000
+                        Math.floor(coords.lat * 1000000) / 1000000, 
+                        Math.floor(coords.lng * 1000000) / 1000000
             );
             self._mapCtrl.createTempMarker(coords.lat, coords.lng, function (position) {
                 self._pointAdd.setLatLng(
-                    Math.floor(position.lat * 10000) / 10000, 
-                    Math.floor(position.lng * 10000) / 10000
+                    Math.floor(position.lat * 1000000) / 1000000, 
+                    Math.floor(position.lng * 1000000) / 1000000
                 );
             });
         } else {

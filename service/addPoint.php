@@ -102,21 +102,28 @@ if (!$category_id_defined) {
     }
 }
 
+// if time not defined then set now
+if ($time_element->length > 0) {
+    $time = $time_element->item(0)->nodeValue;
+} else {
+    $time = date("d m Y H:i:s.000");
+}
+
 $data_array = array();
 $data_array['channel'] = $channel_name;
 $data_array['title'] = $title_element->item(0)->nodeValue;
 $data_array['description'] = $description;
 
-if ($link_element->length > 0) {
+if ($link_element->length > 0 && $link_element->item(0)->nodeValue->length > 0) {
     $data_array['link'] = $link_element->item(0)->nodeValue;
 } else {
-    $data_array['link'] = "http://example.com";
+    $data_array['link'] = "{}";
 }
 
 $data_array['latitude'] = /*(float)*/ $latitude_element->item(0)->nodeValue;
 $data_array['longitude'] = /*(float)*/ $longitude_element->item(0)->nodeValue;
-$data_array['altitude'] = /*(float)*/ $altitude_element->item(0)->nodeValue;
-$data_array['time'] = $time_element->item(0)->nodeValue;
+$data_array['altitude'] = /*(float)*/ ($altitude_element->item(0)->nodeValue == null ? "0.0" : $altitude_element->item(0)->nodeValue);
+$data_array['time'] = $time;
 
 try {
     $response_array = process_json_request(WRITE_TAG_METHOD_URL, $data_array, $auth_token);

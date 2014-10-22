@@ -1,6 +1,6 @@
 <?php
 
-echo    '<div id="tracks-edit-track-page" class="action-menu-container hidden" data-pagetitle-add="Add Track" data-pagetitle-edit="Edit Track" data-messagesuccess-add="Track was successfully added" data-messagesuccess-edit="Track was successfully edited">
+echo    '<div id="tracks-edit-track-page" class="action-menu-container hidden" data-pagetitle-add="' . getString('add-track-title','Add Track') . '" data-pagetitle-edit="' . getString('edit-track-title','Edit Track') . '" data-messagesuccess-add="' . getString('track-add-success','Track was successfully added') . '" data-messagesuccess-edit="' . getString('track-edit-success','Track was successfully edited') . '">
             <div id="tracks-edit-track-overlay" class="busy-overlay"></div>
             <form id="tracks-edit-track-form" action="javascript:void(null);" role="form">
                 <div class="action-menu-toolbar-container">
@@ -14,29 +14,29 @@ echo    '<div id="tracks-edit-track-page" class="action-menu-container hidden" d
                 </div>
                 <div class="action-menu-inner-content">
                     <div class="form-group">
-                        <label for="tracks-edit-track-name-input">Name *</label>
+                        <label for="tracks-edit-track-name-input">' . getString('name','Name') . ' *</label>
                         <input id="tracks-edit-track-name-input" class="form-control" name="hname" type="text" required/>            
                     </div>
                     <div class="form-group">
-                        <label for="tracks-edit-track-desc-input">Description</label>
+                        <label for="tracks-edit-track-desc-input">' . getString('description','Description') . '</label>
                         <textarea id="tracks-edit-track-desc-input" class="form-control" name="description"></textarea>            
                     </div>
                     <div class="form-group">
-                        <label for="tracks-edit-track-url-input">Url</label>
+                        <label for="tracks-edit-track-url-input">' . getString('url','Url') . '</label>
                         <input id="tracks-edit-track-url-input" class="form-control" name="url" type="url" />            
                     </div>
                     <div class="form-group">
-                        <label for="tracks-edit-track-category-input">Category</label>
+                        <label for="tracks-edit-track-category-input">' . getString('category','Category') . '</label>
                         <select id="tracks-edit-track-category-input" class="form-control" name="category_id" size="1"></select>
                     </div>
                     <div class="form-group">
-                        <label for="tracks-edit-track-lang-input">Language</label>
+                        <label for="tracks-edit-track-lang-input">' . getString('language','Language') . '</label>
                         <select id="tracks-edit-track-lang-input" class="form-control" name="lang" size="1">
                             <option value="en_US">English en_US</option>
                             <option value="ru_RU">Russian ru_RU</option>
                         </select>
                     </div>
-                    <p>* - Required fields</p>
+                    <p>* - ' . getString('required-fields','Required fields') . '</p>
                 </div>
             </form>
         </div>';

@@ -1,16 +1,16 @@
 <?php
 
-echo    '<div id="point-info-page" class="action-menu-container hidden" data-pagetitle="Point Info" data-messagesuccess-remove="Point was successfully removed">
+echo    '<div id="point-info-page" class="action-menu-container hidden" data-pagetitle="' . getString('point-info-title','Point Info') . '" data-messagesuccess-remove="' . getString('point-remove-success','Point was successfully removed') . '">
             <div class="action-menu-toolbar-container">
                 <div class="btn-group btn-group-justified">
                     <div class="btn-group">
-                        <a id="point-info-edit" class="btn btn-default" title="Edit point" role="button">
-                            <span class="glyphicon glyphicon-pencil"></span> Edit point 
+                        <a id="point-info-edit" class="btn btn-default" title="' . getString('edit-point','Edit point') . '" role="button">
+                            <span class="glyphicon glyphicon-pencil"></span> ' . getString('edit-point','Edit point') . ' 
                         </a>
                     </div>
                     <div class="btn-group">
-                        <a id="point-info-remove" class="btn btn-danger" href="#" title="Remove point" role="button" data-removetext="Are you sure you want to remove this point? (This action cannot be cancelled.)">
-                            <span class="glyphicon glyphicon-remove"></span> Remove point 
+                        <a id="point-info-remove" class="btn btn-danger" href="#" title="' . getString('remove-point','Remove point') . '" role="button" data-removetext="' . getString('point-remove-text','Are you sure you want to remove this point? (This action cannot be cancelled.)') . '">
+                            <span class="glyphicon glyphicon-remove"></span> ' . getString('remove-point','Remove point') . ' 
                         </a>
                     </div>
                 </div>
@@ -22,7 +22,7 @@ echo    '<div id="point-info-page" class="action-menu-container hidden" data-pag
                 </div>-->
                 <div id="point-info-coords" class="main-block"></div>
                 <div id="point-info-image" class="main-block">
-                    <img class="info-image" alt="No image">
+                    <img class="info-image" alt="' . getString('no-image','No image') . '">
                 </div>
                 <div id="point-info-description" class="main-block"></div>
                 <div id="point-info-url" class="main-block">

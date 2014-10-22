@@ -1,0 +1,35 @@
+<disabilities>
+  <disability>
+    <name xml:lang="ru_RU">передвигающиеся на креслах-колясках</name>
+    <category>23</category>
+    <category>24</category>
+    <category>27</category>
+    <category>28</category>
+    <category>29</category>
+  </disability>
+  <disability>
+    <name xml:lang="ru_RU">с нарушениями зрения</name>
+    <category>24</category>
+    <category>25</category>
+    <category>26</category>
+    <category>29</category>
+  </disability>
+  <disability>
+    <name xml:lang="ru_RU">с нарушениями опорно-двигательного аппарата</name>
+    <category>23</category>
+    <category>24</category>
+    <category>27</category>
+    <category>28</category>
+    <category>29</category>
+  </disability>
+  <disability>
+    <name xml:lang="ru_RU">с нарушениями слуха</name>
+    <category>25</category>
+    <category>26</category>
+  </disability>
+  <disability>
+    <name xml:lang="ru_RU">с нарушениями умственного развития</name>
+    <category>25</category>
+    <category>26</category>
+  </disability>
+</disabilities>

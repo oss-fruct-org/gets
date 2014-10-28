@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Get HTML nav bar string to put on a page. 
  * Nav bar active tab will depend on given page name.
@@ -7,10 +6,12 @@
  * @param String $page_name Given page name string.
  */
 function get_navbar_depend_on_page($page_name) {
+    global $lang;
+    
     return '
                <div class="navbar navbar-static-top navbar-default">
                     <div class="navbar-header">
-                        <a class="navbar-brand navbar-option">dd</a>
+                        <a class="navbar-brand navbar-option"></a>
                         <a class="navbar-brand" href="index.php">
                             <span class="glyphicon glyphicon-home"></span> GeTS Project
                         </a>
@@ -24,30 +25,37 @@ function get_navbar_depend_on_page($page_name) {
                     <div class="container">
                         <div class="navbar-collapse collapse">
                             <ul class="nav navbar-nav">
-                                <li ' . ($page_name === 'points' ? 'class="active"' : '') . '><a href="points.php">Points</a></li>
-                                <li ' . ($page_name === 'tracks' ? 'class="active"' : '') . '><a href="tracks.php">Tracks</a></li>
-                                <li ' . ($page_name === 'polygons' ? 'class="active"' : '') . '><a href="polygons.php">Polygons</a></li>
+                                <li ' . ($page_name === 'points' ? 'class="active"' : '') . '><a href="points.php">' . getString('points', 'Points') . '</a></li>
+                                <li ' . ($page_name === 'tracks' ? 'class="active"' : '') . '><a href="tracks.php">' . getString('tracks', 'Tracks') . '</a></li>
+                                <li ' . ($page_name === 'polygons' ? 'class="active"' : '') . '><a href="polygons.php">' . getString('polygons', 'Polygons') . '</a></li>
                             </ul>
                             <ul class="nav navbar-nav navbar-right">' . 
                                 (
                                     !isset($_SESSION['g2t_token']) ? 
-                                    '<li><a id="sign-in-btn" href="#">Sign in</a></li>' : 
+                                    '<li><a id="sign-in-btn" href="#">' . getString('sign-in', 'Sign In') . '</a></li>' : 
                                     '<li class="dropdown">
                                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">' . 
                                             (isset($_SESSION['email']) ? $_SESSION['email'] : 'Unknown' ) . '<span class="caret"></span>
                                         </a>
                                         <ul class="dropdown-menu" role="menu">
-                                            <li><a id="sign-out-btn" href="#">Sign out</a></li>
+                                            <li><a id="sign-out-btn" href="#">' . getString('sign-out', 'Sign Out') . '</a></li>
                                         </ul>
                                     </li>' 
                                 )
                                 . '<li class="dropdown">
-                                        <a href="#" class="dropdown-toggle" data-toggle="dropdown"> 
-                                            <span class="lang-sm lang-lbl-full" lang="en"></span><span class="caret"></span>
-                                        </a>
+                                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">' . 
+                                        ( 
+                                            $lang && $lang === 'en' ?
+                                                '<span class="lang-sm lang-lbl-full" lang="en"></span><span class="caret"></span>' 
+                                            : ($lang && $lang === 'ru' ? 
+                                                '<span class="lang-sm lang-lbl-full" lang="ru"></span><span class="caret"></span>'
+                                            : 
+                                                '<span class="lang-sm lang-lbl-full" lang="en"></span><span class="caret"></span>')        
+                                        ) 
+                                        . '</a>
                                         <ul class="dropdown-menu" role="menu">
-                                            <li><a id="en-lang" href="#"><span class="lang-sm lang-lbl-full" lang="en"></span></a></li>
-                                            <li><a id="ru-lang" href="./ru"><span class="lang-sm lang-lbl-full" lang="ru"></span></a></li>
+                                            <li><a id="en-lang" class="lang-button" data-lang="en" href="#"><span class="lang-sm lang-lbl-full" lang="en"></span></a></li>
+                                            <li><a id="ru-lang" class="lang-button" data-lang="ru" href="#"><span class="lang-sm lang-lbl-full" lang="ru"></span></a></li>
                                         </ul>
                                     </li>'    
                             . '</ul>

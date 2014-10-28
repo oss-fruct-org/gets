@@ -1,6 +1,8 @@
 <?php
-session_start();
+require_once('./config.php');
+require_once(TRANSLATIONS_SCRIPT);
 
+session_start();
 ?>
 <html>
     <head>               
@@ -20,6 +22,7 @@ session_start();
         <script src="images/generateImagesPaths.php"></script>
         
         <script src="scripts/jquery/jquery-1.11.1.min.js"></script>
+        <script src="scripts/jquery/jquery.cookie.js"></script>
         <script src="scripts/bootstrap/bootstrap.min.js"></script>
         <script src="scripts/bootstrap/bootstrap-lightbox.min.js"></script>
         <script src="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.js"></script>
@@ -43,7 +46,8 @@ session_start();
         <script src="scripts/gets/views/Message.View.js"></script>
         <script src="scripts/gets/views/Header.View.js"></script>
         <script src="scripts/gets/controllers/TracksPage.Ctrl.js"></script>
-        <script src="scripts/gets/controllers/Map.Ctrl.js"></script>    
+        <script src="scripts/gets/controllers/Map.Ctrl.js"></script> 
+        <script src="scripts/gets/controllers/Language.Ctrl.js"></script>
         <script>
             $( document ).ready(function() {
                 Logger.useDefaults();

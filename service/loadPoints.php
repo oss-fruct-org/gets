@@ -67,17 +67,22 @@ if ($space_condition) {
     }
 }
 
-// if there is no token in a request, 
-// then only public data will be sent in a response
-if (!$is_auth_token_defined) {
-    $space = SPACE_PUBLIC;
-}
-
 // We use cached token, not new
 //$old_token = true;
 if ($is_auth_token_defined) {
     $token_user = $auth_token_element->item(0)->nodeValue; 
+    
+    if (strlen($token_user) == 0) {
+	$token_user = NULL;
+	$is_auth_token_defined = FALSE;
+    }
     //$old_token = false;
+}
+
+// if there is no token in a request, 
+// then only public data will be sent in a response
+if (!$is_auth_token_defined) {
+    $space = SPACE_PUBLIC;
 }
 
 if (!($is_auth_token_defined && ($space === SPACE_PRIVATE))) {

@@ -62,7 +62,7 @@ function handleGETParam() {
                 $lang = $lang_value;
                 return TRUE;
             }           
-        }
+        } 
     }
     
     return FALSE;
@@ -76,8 +76,7 @@ function handleCookieValue() {
         if (strlen($lang_value) === 2) {
             if (array_key_exists($lang_value, $available_langs)) {
                 $lang = $lang_value;
-                echo 'yo';
-                header('Location: ' . $_SERVER['REQUEST_URI'] . '?lang=' . $lang);
+                header('Location: ' . $_SERVER['PHP_SELF'] . '?lang=' . $lang);
                 return TRUE;
             }
         }
@@ -96,7 +95,7 @@ function handleAcceptLanguage() {
             if (array_key_exists($acc_lang, $available_langs)) {
                 $lang = $acc_lang;
                 setcookie('lang', $lang, time() + (10 * 365 * 24 * 60 * 60));
-                header('Location: ' . $_SERVER['REQUEST_URI'] . '?lang=' . $lang);
+                header('Location: ' . $_SERVER['PHP_SELF'] . '?lang=' . $lang);
                 return TRUE;
             }
         }

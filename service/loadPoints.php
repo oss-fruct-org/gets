@@ -99,10 +99,10 @@ function getChannelCategory($auth_token, $channel_name) {
     global $channel_categories;
     
     if (array_key_exists($channel_name, $channel_categories)) {
-        error_log("Using cached category");
+#        error_log("Using cached category");
         return $channel_categories[$channel_name];
     } else {
-        error_log("Receiving category");
+#        error_log("Receiving category");
         $channel_info = get_channel_info($channel_name, $auth_token);
         return cacheChannelCategory($channel_name, $channel_info['description']);
     }

@@ -267,6 +267,19 @@ function ensure_category_channel($auth_token, $category_id) {
     return $channel_name;
 }
 
+function get_channel_info($channel_name, $token) {
+    $request = xmlrpc_encode_request('getChannelDescription', array('channel' => $channel_name, 'gets_token' => $token));
+    $response = process_request(GETS_SCRIPTS_URL, $request, 'Content-Type: text/xml');
+
+    $xmlrpc = xmlrpc_decode($response);
+    if (!is_array($xmlrpc) || xmlrpc_is_fault($xmlrpc)) {
+        send_error(1, 'Can\'t load channel information');
+        die();
+    }
+
+    return $xmlrpc;
+}
+
 /**
     Like var_dump but outputs to error log instead of stdin
   */

@@ -26,8 +26,8 @@ function get_navbar_depend_on_page($page_name) {
                         <div class="navbar-collapse collapse">
                             <ul class="nav navbar-nav">
                                 <li ' . ($page_name === 'points' ? 'class="active"' : '') . '><a href="points.php">' . getString('points', 'Points') . '</a></li>
-                                <li ' . ($page_name === 'tracks' ? 'class="active"' : '') . '><a href="tracks.php">' . getString('tracks', 'Tracks') . '</a></li>
-                                <li ' . ($page_name === 'polygons' ? 'class="active"' : '') . '><a href="polygons.php">' . getString('polygons', 'Polygons') . '</a></li>
+                                <!-- <li ' . ($page_name === 'tracks' ? 'class="active"' : '') . '><a href="tracks.php">' . getString('tracks', 'Tracks') . '</a></li>
+                                <li ' . ($page_name === 'polygons' ? 'class="active"' : '') . '><a href="polygons.php">' . getString('polygons', 'Polygons') . '</a></li> -->
                             </ul>
                             <ul class="nav navbar-nav navbar-right">' . 
                                 (

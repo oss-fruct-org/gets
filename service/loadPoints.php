@@ -67,17 +67,22 @@ if ($space_condition) {
     }
 }
 
-// if there is no token in a request, 
-// then only public data will be sent in a response
-if (!$is_auth_token_defined) {
-    $space = SPACE_PUBLIC;
-}
-
 // We use cached token, not new
 //$old_token = true;
 if ($is_auth_token_defined) {
     $token_user = $auth_token_element->item(0)->nodeValue; 
+    
+    if (strlen($token_user) == 0) {
+	$token_user = NULL;
+	$is_auth_token_defined = FALSE;
+    }
     //$old_token = false;
+}
+
+// if there is no token in a request, 
+// then only public data will be sent in a response
+if (!$is_auth_token_defined) {
+    $space = SPACE_PUBLIC;
 }
 
 if (!($is_auth_token_defined && ($space === SPACE_PRIVATE))) {
@@ -86,6 +91,34 @@ if (!($is_auth_token_defined && ($space === SPACE_PRIVATE))) {
         send_error(1, 'Error: can\'t receive new token');
         die();
     }
+}
+
+$channel_categories = array();
+
+function getChannelCategory($auth_token, $channel_name) {
+    global $channel_categories;
+    
+    if (array_key_exists($channel_name, $channel_categories)) {
+#        error_log("Using cached category");
+        return $channel_categories[$channel_name];
+    } else {
+#        error_log("Receiving category");
+        $channel_info = get_channel_info($channel_name, $auth_token);
+        return cacheChannelCategory($channel_name, $channel_info['description']);
+    }
+}
+
+function cacheChannelCategory($channel_name, $channel_description_json) {
+    global $channel_categories;
+
+    $channel_description_array = json_decode($channel_description_json, true);
+    if ($channel_description_array == NULL || !array_key_exists("category_id", $channel_description_array)) {
+        send_error(1, "Error: can't load channel's category");
+        die();
+    }
+
+    $channel_categories[$channel_name] = (int) $channel_description_array["category_id"];
+    return $channel_categories[$channel_name];
 }
 
 function getChannelsAsDom($token) {
@@ -113,6 +146,8 @@ function getChannelsAsDom($token) {
 function getChannelNames(&$token, $category_id) {  
     global $token_user;
     global $is_wrong_token_error;
+    global $channel_categories;
+
     $channels_name_array = array();
     
     $subs_channels_response_dom = getChannelsAsDom($token);
@@ -150,15 +185,20 @@ function getChannelNames(&$token, $category_id) {
 
     $channels_elements = $subs_channels_response_dom->getElementsByTagName('channel');
     foreach($channels_elements as $channel) {
-        if ($category_id == $channel->getElementsByTagName('category_id')->item(0)->nodeValue) {
-            $channels_name_array[] = $channel->getElementsByTagName('name')->item(0)->nodeValue;
+        $channel_name = $channel->getElementsByTagName('name')->item(0)->nodeValue; 
+        $channel_description = $channel->getElementsByTagName('description')->item(0)->nodeValue; 
+        $channel_category_id = $channel->getElementsByTagName('category_id')->item(0)->nodeValue;
+        $channel_categories[$channel_name] = (int) $channel_category_id;
+
+        if ($category_id == $channel_category_id) {
+            $channels_name_array[] = $channel_name;
         }
     }
  
     return $channels_name_array;
 }
 
-function addItemIntoXml($item, &$xml, $is_private) {
+function addItemIntoXml($item, &$xml, $is_private, $fallback_category) {
     $description = $item['description'];
     $description_json = json_decode($description, true);
 
@@ -182,6 +222,11 @@ function addItemIntoXml($item, &$xml, $is_private) {
             $xml .= "<Data name=\"$field\"><value>$value</value></Data>";
         }
     }
+
+    if (!array_key_exists("category_id", $item)) {
+        $xml .= '<Data name="category_id"><value>' . htmlspecialchars($fallback_category) . '</value></Data>';
+    }
+
     $xml .= '</ExtendedData>';
     $xml .= '<Point><coordinates>' . $item['longitude'] . ',' . $item['latitude'] . ',0.0' . '</coordinates></Point>';
 
@@ -207,14 +252,14 @@ function getData($data_array, $request_type, &$xml, $location_condition, &$is_wr
         }
 
         // Try receive new token from server
-        $token = get_public_token();
-        if (!$token) {
+        $auth_token = get_public_token();
+        if (!$auth_token) {
             send_error(1, 'Error: can\'t receive new token');
             die();
         }
 
         // Send request with new token
-        $data_array['auth_token'] = $token;
+        $data_array['auth_token'] = $auth_token;
         try {
             $response_array = process_load_points_request($data_array, $request_type);
         } catch (WrongTokenException $e) {
@@ -231,13 +276,17 @@ function getData($data_array, $request_type, &$xml, $location_condition, &$is_wr
     
     if ($location_condition) {
         foreach($response_array['channels'] as $channel) {
+            $channel_name = $channel['channel']['name'];
+            $channel_category = getChannelCategory($auth_token, $channel_name);
             foreach($channel['channel']['items'] as $item) {
-                addItemIntoXml($item, $xml, $is_private);
+                addItemIntoXml($item, $xml, $is_private, $channel_category);
             }
         }
     } else {
+        $channel_name = $response_array['channel']['name'];
+        $channel_category = getChannelCategory($auth_token, $channel_name);
         foreach($response_array['channel']['items'] as $item) {
-            addItemIntoXml($item, $xml, $is_private);
+            addItemIntoXml($item, $xml, $is_private, $channel_category);
         }	
     }
 }

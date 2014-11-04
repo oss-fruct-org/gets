@@ -97,20 +97,6 @@ if ($category_name) {
     }
 }
 
-
-function get_channel_info($channel_name, $token) {
-    $request = xmlrpc_encode_request('getChannelDescription', array('channel' => $channel_name, 'gets_token' => $token));
-    $response = process_request(GETS_SCRIPTS_URL, $request, 'Content-Type: text/xml');
-
-    $xmlrpc = xmlrpc_decode($response);
-    if (!is_array($xmlrpc) || xmlrpc_is_fault($xmlrpc)) {
-        send_error(1, 'Can\'t load channel information');
-        die();
-    }
-
-    return $xmlrpc;
-}
-
 function process_subscribed_channels($response_array, $access, &$resp, $is_incomplete_channel, $token, &$processed_channels) {
     global $requested_category_id;
 

@@ -58,9 +58,13 @@ $translations = array(
     // Add Point widget strings
     'add-point-title' => 'Добавить точку', 
     'coordinates' => 'Координаты', 
+    'use-map' => 'Использовать карту',
+    'my-location' => 'Мое местоположение',
+    'center-map' => 'Центр карты',
     'latitude' => 'Широта', 
     'longitude' => 'Долгота', 
     'active-radius' => 'Активный радиус (метры)', 
+    'use-default-value' => 'Использовать значение по умолчанию',
     'picture' => 'Изображение', 
     'audio-track' => 'Аудио трек', 
     'paste-url-or' => 'Вставить ссылку (URL) или', 

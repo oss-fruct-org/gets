@@ -43,7 +43,7 @@ CategoriesClass.prototype.downloadCategories = function () {
         data: ''
     });
     
-    Logger.debug(getCategoriesRequest.responseText);
+    //Logger.debug(getCategoriesRequest.responseText);
     
     getCategoriesRequest.fail(function( jqXHR, textStatus ) {
         throw new GetsWebClientException('Categories Error', 'getCategoriesAsArray, getCategoriesRequest failed ' + textStatus);

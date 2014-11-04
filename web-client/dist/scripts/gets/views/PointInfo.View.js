@@ -43,11 +43,7 @@ PointInfo.prototype.placePointInPointInfo = function(point, isAuth) {
     $(nameElement).text(point.name).attr('title', point.name);
     
     $(coordsElement).text(point.coordinates);
-    if (point.descriptionExt !== '') {
-        $(descElement).text(point.descriptionExt);
-    } else {
-        $(descElement).html(point.description);
-    }
+    $(descElement).html(point.description);
 
     
     if (point.url !== '') {

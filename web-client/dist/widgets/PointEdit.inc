@@ -24,12 +24,25 @@ echo    '<div id="edit-point-page" class="action-menu-container hidden" data-pag
                     <div class="form-group">
                         <label for="edit-point-url-input">' . getString('url','Url') . '</label>
                         <input id="edit-point-url-input" class="form-control" name="url" type="url" />            
-                    </div>                                      
+                    </div>
+                    <div class="form-group hidden">
+                        <label for="edit-point-category-input">' . getString('category','Category') . '</label>
+                        <select id="edit-point-category-input" class="form-control" name="category" size="1"></select>
+                    </div> 
                     <div class="form-group">
                         <label class="control-label">' . getString('coordinates','Coordinates') . ' * </label>
-                        <button id="edit-point-use-map" type="button" class="btn btn-default" title="' . getString('show-on-map','Show on map') . '">
-                            <span class="glyphicon glyphicon-globe"></span> 
-                        </button>
+                        <div class="btn-group">
+                            <button id="edit-point-use-map" class="btn btn-default btn-sm" type="button">
+                                <span class="glyphicon glyphicon-map-marker"></span> ' . getString('use-map','Use map') . '
+                            </button> 
+                            <button class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" type="button">
+                                &nbsp; <span class="caret"></span> &nbsp;
+                            </button>
+                            <ul id="edit-point-use-map-settings" class="dropdown-menu" role="menu">           
+                                <li><a href="#" role="button" class="btn-sm marked-list-item" data-item="center">' . getString('center-map', 'Center of the map') . '</a></li>
+                                <li><a href="#" role="button" class="btn-sm" data-item="location">' . getString('my-location', 'My location') . '</a></li>    
+                            </ul>
+                        </div>                       
                         <div class="col-md-12">
                             <div class="form-group row">
                                 <div class="col-md-6">
@@ -46,7 +59,12 @@ echo    '<div id="edit-point-page" class="action-menu-container hidden" data-pag
                     </div>
                     <div class="form-group">
                         <label for="edit-point-active-radius-input" class="block">' . getString('active-radius','Active radius (meters)') . ' *</label>
-                        <input id="edit-point-active-radius-input" name="radius" type="text" class="form-control" value="63" required">
+                        <div class="checkbox">
+                            <label for="edit-point-radius-default" class="control-label">
+                                <input id="edit-point-radius-default" type="checkbox" data-default-value="63"> ' . getString('use-default-value','Use default value') . '
+                            </label>
+                        </div>
+                        <input id="edit-point-active-radius-input" name="radius" type="text" class="form-control" value="63" required">                       
                     </div>
                     <div class="form-group">
                         <label for="edit-point-picture-input">' . getString('picture','Picture') . '<br>' . getString('paste-url-or','Paste URL or') . ' <a id="edit-point-picture-toggle-upload" href="#">' . getString('upload-file','upload file') . '</a></label>
@@ -77,7 +95,7 @@ echo    '<div id="edit-point-page" class="action-menu-container hidden" data-pag
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="edit-point-audio-input">' . getString('audio-track','Audio track') . '<br>' . getString('paste-url-or','Paste URL or') . '<a id="edit-point-audio-toggle-upload" href="#">' . getString('upload-file','upload file') . '</a></label>
+                        <label for="edit-point-audio-input">' . getString('audio-track','Audio track') . '<br>' . getString('paste-url-or','Paste URL or') . ' <a id="edit-point-audio-toggle-upload" href="#">' . getString('upload-file','upload file') . '</a></label>
                         <input id="edit-point-audio-input-url" name="audio-url" type="url" class="form-control">
                         <br>
                         <div id="edit-point-audio-upload" class="hidden">

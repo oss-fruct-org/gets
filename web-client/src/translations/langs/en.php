@@ -57,10 +57,14 @@ $translations = array(
     
     // Add Point widget strings
     'add-point-title' => 'Add Point', 
-    'coordinates' => 'Coordinates', 
+    'coordinates' => 'Coordinates',
+    'use-map' => 'Use map',
+    'my-location' => 'My location',
+    'center-map' => 'Center of the map',
     'latitude' => 'Latitude', 
     'longitude' => 'Longitude', 
     'active-radius' => 'Active radius (meters)', 
+    'use-default-value' => 'Use default value', 
     'picture' => 'Picture', 
     'audio-track' => 'Audio track', 
     'paste-url-or' => 'Paste URL or', 

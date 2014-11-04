@@ -65,8 +65,7 @@ TracksPage.prototype.changeForm = function() {
     } else if (form === TracksPage.EDIT_POINT) {
         this.showEditPoint();
     } else if (typeof form === 'undefined') {
-        this.window.location.hash = 'form=' + TracksPage.MAIN;
-        this.showTrackMain();
+        this.window.location.replace('#form=' + TracksPage.MAIN);
     }
 };
 
@@ -168,33 +167,26 @@ TracksPage.prototype.initPage = function() {
         }
     });
     
+    // Use default active radius 
+    $(this.document).on('change', '#edit-point-radius-default', function(e) {
+        e.preventDefault();
+        if($(this).is(":checked")) {
+            $(self.document).find('#edit-point-active-radius-input').val($(this).data('defaultValue')).attr('disabled', 'disabled');        
+            Logger.debug('checked');
+        } else {
+            $(self.document).find('#edit-point-active-radius-input').removeAttr('disabled');
+        }       
+    });
+    
     // Add point handler
     $(this.document).on('submit', '#edit-point-form', function(e) {
         e.preventDefault();
-
-        try {
-            if (self._utils.checkCoordsInput(
-                    $(this).find('#edit-point-lat-input').val(),
-                    $(this).find('#edit-point-lon-input').val(),
-                    $(this).find('#edit-point-alt-input').val()
-                    )) {
-                self._pointAdd.toggleOverlay();
-                
-                var paramsObj = $(this).serializeArray();
-                var trackName = decodeURIComponent(self._utils.getHashVar('track_id'));
-                paramsObj.push({name: 'channel', value: trackName});
-                paramsObj.push({name: 'time', value: self._utils.getDateTime()});
-                paramsObj.push({name: 'index', value: self._tracks.getTrack(trackName, true).points.length + 1});
-                self._points.addPoint(paramsObj, function() {
-                    self.window.location.replace('#form=track_info&track_id=' + trackName);
-                    MessageBox.showMessage($(self._pointAdd.getView()).data('messagesuccessAdd'), MessageBox.SUCCESS_MESSAGE);
-                });                                          
-            }
-        } catch (Exception) {           
-            MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
-        } finally {
-            self._pointAdd.toggleOverlay();
-        }
+        var form = self._utils.getHashVar('form');
+        if (form === TracksPage.ADD_POINT) {
+            self.addPointHandler(this);
+        } else if (form === TracksPage.EDIT_POINT){
+            //self.editTrackHandler(this);
+        }     
     });
 
     // Remove track handler
@@ -219,9 +211,13 @@ TracksPage.prototype.initPage = function() {
         e.preventDefault();
         if (confirm($(self._pointInfo.getView()).find('#point-info-remove').data('removetext'))) {
             try {
-                var trackName = decodeURIComponent(self._utils.getHashVar('track_id'));               
+                var trackName = decodeURIComponent(self._utils.getHashVar('track_id'));    
+                var track = self._tracks.getTrack(trackName, false);
                 self._points.removePoint();
-                self._mapCtrl.removeTrack(self._tracks.getTrack(trackName, false));              
+                if (self._mapCtrl.checkTrack(track)) {
+                    self._mapCtrl.removeTrack(track);
+                    self._mapCtrl.addTrack(self._tracks.getTrack(trackName, true));
+                }              
                 self.window.location.replace('#form=track_info&track_id=' + trackName);
                 MessageBox.showMessage($(self._pointInfo.getView()).data('messagesuccessRemove'), MessageBox.SUCCESS_MESSAGE);
             } catch (Exception) {
@@ -268,18 +264,23 @@ TracksPage.prototype.initPage = function() {
         }
     });
     
-    // Create/remove temp marker (Use map) handler
+    // Create/remove temp marker (Use map) handler edit-point-use-map
     $(this.document).on('click', '#edit-point-use-map', function (e){
         e.preventDefault();
         var form = self._utils.getHashVar('form');
         if(!$(this).hasClass('active') && (form === TracksPage.ADD_POINT || form === TracksPage.EDIT_POINT)) {
             $(this).addClass('active');
             var coords = null;
-            if (self._user.isCoordsSet()) {
-                coords = self._user.getUsersGeoPosition();
-            } else {
+            var settings = $(self.document).find('#edit-point-use-map-settings li a.marked-list-item').data('item');
+            
+            if (settings === 'center') {
                 coords = self._mapCtrl.getMapCenter();
-            } 
+            } else if (settings === 'location') {
+                if (self._user.isCoordsSet()) {
+                    coords = self._user.getUsersGeoPosition();
+                }
+            }
+            
             self._pointAdd.setLatLng(
                         Math.floor(coords.lat * 1000000) / 1000000, 
                         Math.floor(coords.lng * 1000000) / 1000000
@@ -295,6 +296,25 @@ TracksPage.prototype.initPage = function() {
             self._mapCtrl.removeTempMarker();
         }
     });
+    
+    // Use different settings for Use map button
+    $(this.document).on('click', '#edit-point-use-map-settings li a', function (e){
+        e.preventDefault();
+        
+        $(self.document).find('#edit-point-use-map-settings li a').removeClass('marked-list-item');   
+        
+        if ($(this).hasClass('marked-list-item')) {
+            $(this).removeClass('marked-list-item');
+        } else {
+            $(this).addClass('marked-list-item');
+        }
+        
+        var useMapButton = $(self.document).find('#edit-point-use-map');
+        if($(useMapButton).hasClass('active')) {
+            $(useMapButton).removeClass('active');
+            $(useMapButton).click();
+        }
+    });    
     
     // upload picture show/hide handler
     $(this.document).on('click', '#edit-point-picture-toggle-upload', function (e){
@@ -619,4 +639,36 @@ TracksPage.prototype.editTrackHandler = function (form) {
             Logger.error(Exception.toString());
         }
     });
+};
+
+TracksPage.prototype.addPointHandler = function (form) {
+    try {
+        if (this._utils.checkCoordsInput(
+                $(form).find('#edit-point-lat-input').val(),
+                $(form).find('#edit-point-lon-input').val(),
+                $(form).find('#edit-point-alt-input').val()
+                )) {
+            this._pointAdd.toggleOverlay();
+
+            var paramsObj = $(form).serializeArray();
+            var trackName = decodeURIComponent(this._utils.getHashVar('track_id'));
+            paramsObj.push({name: 'channel', value: trackName});
+            paramsObj.push({name: 'time', value: this._utils.getDateTime()});
+            paramsObj.push({name: 'index', value: this._tracks.getTrack(trackName, true).points.length + 1});
+            var that = this;
+            this._points.addPoint(paramsObj, function () {
+                var track = that._tracks.getTrack(trackName, false);
+                if (that._mapCtrl.checkTrack(track)) {
+                    that._mapCtrl.removeTrack(track);
+                    that._mapCtrl.addTrack(that._tracks.getTrack(trackName, true));
+                }
+                that.window.location.replace('#form=' + TracksPage.TRACK_INFO + '&track_id=' + trackName);
+                MessageBox.showMessage($(that._pointAdd.getView()).data('messagesuccessAdd'), MessageBox.SUCCESS_MESSAGE);
+            });
+        }
+    } catch (Exception) {
+        MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
+    } finally {
+        this._pointAdd.toggleOverlay();
+    }
 };

@@ -5,7 +5,7 @@ echo   '<div id="points-main-page" class="action-menu-container hidden">
             <div class="action-menu-toolbar-container">
                 <div class="btn-group btn-group-justified">
                     <div class="btn-group">
-                        <a id="points-main-add-point" class="btn btn-default" href="#form=add_point" title="' . getString('add-point','Add point') . '" role="button">
+                        <a id="points-main-add-point" class="btn btn-default" href="#form=point_add" title="' . getString('add-point','Add point') . '" role="button">
                             <span class="glyphicon glyphicon-plus"></span> ' . getString('add-point','Add point') . '
                         </a>
                     </div>                   

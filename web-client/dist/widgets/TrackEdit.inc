@@ -32,8 +32,13 @@ echo    '<div id="tracks-edit-track-page" class="action-menu-container hidden" d
                     <div class="form-group">
                         <label for="tracks-edit-track-lang-input">' . getString('language','Language') . '</label>
                         <select id="tracks-edit-track-lang-input" class="form-control" name="lang" size="1">
-                            <option value="en_US">English en_US</option>
-                            <option value="ru_RU">Russian ru_RU</option>
+                            <option value="en_US">English / English en_US</option>
+                            <option value="en_GB">English / English en_GB</option>
+                            <option value="ru_RU">Русский / Russian ru_RU</option>
+                            <option value="fi_FI">Suomi / Finnish fi_FI</option>
+                            <option value="fr_FR">Français / French fr_FR</option>
+                            <option value="de_DE">Deutsch / German de_DE</option>
+                            <option value="es_ES">Español / Spanish es_ES</option>                           
                         </select>
                     </div>
                     <p>* - ' . getString('required-fields','Required fields') . '</p>

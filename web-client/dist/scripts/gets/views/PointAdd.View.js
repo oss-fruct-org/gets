@@ -58,3 +58,27 @@ PointAdd.prototype.setLatLng = function(lat, lng) {
     $(this.addPoint).find('#edit-point-lon-input').val(lng);
 };
 
+/**
+ * Place categories into point pointAdd HTML object.
+ * 
+ * @param {Array} categories Array which contains categories.
+ * 
+ * @throws {GetsWebClientException}
+ */
+PointAdd.prototype.placeCategoriesInPointAdd = function (categories) {
+    var pointAddCategories = $(this.addPoint).find('#edit-point-category-input');
+    var pointAddCategoriesParent = $(pointAddCategories).parent();
+    if ($(pointAddCategoriesParent).hasClass('hidden')) {
+        $(pointAddCategoriesParent).removeClass('hidden').addClass('show');
+    }
+    $(pointAddCategories).empty();
+
+    var self = this;
+    $(categories).each(function(index, value) {
+        var categoryItem = $(self.document.createElement('option'));
+        $(categoryItem).attr('value', value.id);
+        $(categoryItem).text(value.name);
+        $(categoryItem).appendTo(pointAddCategories);
+    });
+};
+

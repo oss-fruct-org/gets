@@ -65,6 +65,7 @@ PointsMain.prototype.placePointsInPointList = function (pointList) {
  */
 PointsMain.prototype.placeCategoriesInPointMain = function (categories) {
     var mainPointsCategories = $(this.mainPoints).find('#points-main-filter-category');
+    $(mainPointsCategories).empty();
 
     // Add 'none' category with value -1
     $(this.document.createElement('option'))
@@ -73,7 +74,7 @@ PointsMain.prototype.placeCategoriesInPointMain = function (categories) {
             .appendTo(mainPointsCategories);
 
     var self = this;
-    $.each(categories, function(index, value) {
+    $(categories).each(function(index, value) {
         var categoryItem = $(self.document.createElement('option'));
         $(categoryItem).attr('value', value.id);
         $(categoryItem).text(value.name);

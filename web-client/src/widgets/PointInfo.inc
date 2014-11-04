@@ -16,7 +16,7 @@ echo    '<div id="point-info-page" class="action-menu-container hidden" data-pag
                 </div>
             </div>
             <div class="action-menu-inner-content">
-                <div id="point-info-name" class="main-block font-big width-three-fourth height-100"></div>               
+                <div id="point-info-name" class="main-block font-big height-half"></div>               
                 <!--<div id="point-info-map" class="button-w-icon" title="Show on map">
                     <img src="images/icons/map.png" alt="Show on map">
                 </div>-->

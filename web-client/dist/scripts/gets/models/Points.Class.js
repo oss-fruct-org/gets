@@ -110,7 +110,7 @@ PointsClass.prototype.downLoadPoints = function(paramsObj, callback) {
         data: JSON.stringify(requestObj)
     });
     
-    Logger.debug(getPointsRequest.responseText);
+    //Logger.debug(getPointsRequest.responseText);
 
     getPointsRequest.fail(function(jqXHR, textStatus) {
         throw new GetsWebClientException('Points Error', 'getPointsRequest failed ' + textStatus);
@@ -139,7 +139,7 @@ PointsClass.prototype.downLoadPoints = function(paramsObj, callback) {
             pointsArray.push(pointObj);
         });
 
-        Logger.debug(pointsArray);
+        //Logger.debug(pointsArray);
         self.pointList = pointsArray;
         if (callback) {
             callback();
@@ -183,10 +183,11 @@ PointsClass.prototype.addPoint = function (paramsObj, callback) {
     var alt = 0.0;
     var imageURL = null;
     var audioURL = null;
-    var channel = '';
+    var channel = null;
+    var category = null;
     var time = '';
-    var index = 1;
-    var radius = 0;
+    var index = null;
+    var radius = null;
       
     $(paramsObj).each(function (idx, value) {
         if (value.name === 'title') {
@@ -205,6 +206,8 @@ PointsClass.prototype.addPoint = function (paramsObj, callback) {
             audioURL = value.value;
         } else if (value.name === 'channel') {
             channel = value.value;
+        } else if (value.name === 'category') {
+            category = value.value;
         } else if (value.name === 'time') {
             time = value.value;
         } else if (value.name === 'index') {
@@ -214,16 +217,22 @@ PointsClass.prototype.addPoint = function (paramsObj, callback) {
         }
     });
      
-    var description = this.createDescription(descriptionText, audioURL, imageURL, index, radius);
-                           
-    newParamsObj.channel = channel;
+    var extendedData = this.createDescription(audioURL, imageURL, index, radius);
+   
+    if (channel) {
+        newParamsObj.channel = channel;
+    } else {
+        newParamsObj.category_id = category;
+    }
+    
     newParamsObj.title = title;
-    newParamsObj.description = description;
+    newParamsObj.description = descriptionText;
     newParamsObj.link = url;
     newParamsObj.latitude = lat;
     newParamsObj.longitude = lng;
     newParamsObj.altitude = alt;
     newParamsObj.time = time;
+    newParamsObj.extended_data = extendedData;
     
     Logger.debug(newParamsObj); 
     
@@ -254,7 +263,6 @@ PointsClass.prototype.addPoint = function (paramsObj, callback) {
 /**
  * Create description for add point as object.
  * 
- * @param {String} text Description text.
  * @param {String} audioURL Audio track url.
  * @param {String} imageURL Description text.
  * @param {String} uuid Point's UUID.
@@ -262,14 +270,14 @@ PointsClass.prototype.addPoint = function (paramsObj, callback) {
  * 
  * @returns {Object} New description object    
  */
-PointsClass.prototype.createDescription = function(text, audioURL, imageURL, uuid, index, radius) {
+PointsClass.prototype.createDescription = function(audioURL, imageURL, index, radius) {
     var descObj = {};
      
-    if (!text) {
+    /*if (!text) {
         descObj.description = '';
     } else {
         descObj.description = text;
-    }
+    }*/
            
     if (audioURL) {
         descObj.audio = audioURL;
@@ -283,10 +291,10 @@ PointsClass.prototype.createDescription = function(text, audioURL, imageURL, uui
         descObj.idx = index;
     }
     
-    if (!radius) {
-        descObj.radius = 0;
+    if (radius) {
+        descObj.radius = radius;       
     } else {
-        descObj.radius = radius;
+        descObj.radius = 63;
     }
     
     return descObj;
@@ -327,9 +335,8 @@ PointsClass.prototype.findPointInPointList = function(name) {
     if (!name || !this.pointList) {
         return;
     }
-    
     for (var i = 0, len = this.pointList.length; i < len; i++) {
-        if (this.pointList[i].name === name) {
+        if (this.pointList[i].name.toLowerCase().trim() === name.toLowerCase().trim()) {
             this.point = this.pointList[i];
             return this.point;
         }

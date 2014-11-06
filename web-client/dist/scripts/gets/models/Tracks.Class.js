@@ -125,7 +125,7 @@ TracksClass.prototype.downloadTrackList = function (paramsObj, callback) {
         });
 
         tracksArray.sort(self.sortTracksAlphabetically);
-        Logger.debug(tracksArray);
+        //Logger.debug(tracksArray);
         self.trackList = tracksArray;
         
         if (callback) {
@@ -160,7 +160,7 @@ TracksClass.prototype.downloadTrackByName = function(paramsObj) {
         data: requestString
     });
 
-    Logger.debug(getTrackRequest.responseText);
+    //Logger.debug(getTrackRequest.responseText);
 
     getTrackRequest.fail(function(jqXHR, textStatus) {
         throw new GetsWebClientException('Tracks Error', 'getTrackAsObject, getTrackRequest failed ' + textStatus);
@@ -172,9 +172,9 @@ TracksClass.prototype.downloadTrackByName = function(paramsObj) {
 
     var trackPlacemarkList = $(getTrackRequest.responseText).find('Placemark');
     var trackPointArray = new Array();
-    Logger.debug(trackPlacemarkList);
+    //Logger.debug(trackPlacemarkList);
     $(trackPlacemarkList).each(function(index, value) {
-        Logger.debug(value);
+        //Logger.debug(value);
         var pointObj = {};
         pointObj.index = $(value).find("[name='idx']").length ? $(value).find("[name='idx']").text() : '';
         pointObj.uuid = $(value).find("[name='uuid']").length ? $(value).find("[name='uuid']").text() : '';
@@ -203,7 +203,7 @@ TracksClass.prototype.downloadTrackByName = function(paramsObj) {
     newtrack.name = paramsObj.name;
     newtrack.points = trackPointArray;
 
-    Logger.debug(newtrack);
+    //Logger.debug(newtrack);
     this.track = newtrack;
 };
 
@@ -326,7 +326,7 @@ TracksClass.prototype.findPoint = function(pointName) {
     var track = this.track;
     var point = null;   
     $(track.points).each(function (index, value) {
-        if (pointName.toLowerCase() === value.name.toLowerCase()) {
+        if (pointName.toLowerCase().trim() === value.name.toLowerCase().trim()) {
             point = value;
             point.access = track.access;
             point.track = track.name;

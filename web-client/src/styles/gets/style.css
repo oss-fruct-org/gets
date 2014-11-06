@@ -20,7 +20,6 @@ html, body {
     min-height: 600px;
     width: calc(100% - 400px);
     height: calc(100% - 50px);
-    top: -20px;
     left: 401px;
 }
 
@@ -32,24 +31,47 @@ html, body {
 
 .main-content {
     display: block;
-    position: relative;
+    position: absolute;
     height: 100%;
     width: 100%;
+    top: 50px;
+}
+
+.main-header {
+    display: block;
+    width: 100%;
+    top: 0px;
+}
+
+.main-footer {
+    display: block;
+    position: absolute;
+    width: 100%;
+    height: 50px;
+    background-color: #F5F5F5;
+    top: 100%;
+}
+
+.main-footer p {
+    display: block;
+    position: absolute;
+    width: 1000px;
+    text-align: center;
+    left: 50%;
+    top: 50%;   
+    margin-left: -500px;
+    margin-top: -15px;
 }
 
 .action-menu {
     display: inline-block;
     position: absolute;
     vertical-align: top;
+    width: 400px;
     min-width: 400px;
     height: calc(100% - 50px);
-    top: -20px;
     left: 1px;
 }
-
-.action-menu{
-    width: 400px;
-} 
 
 .navbar-option {
     width: 200px !important;
@@ -65,15 +87,17 @@ html, body {
     display: block;
     position: relative;
     width: 400px;
+    height: 100%;
     border-color: #bbbbbb;
     border-style: solid;
     border-width: 1px;
+    overflow: auto;
 }
 
 .action-menu-inner-content {
+    display: block;
+    position: relative;
     padding: 10px;
-    overflow: auto;
-    max-height: 500px;
 }
 
 .action-menu-toolbar-container {
@@ -147,6 +171,15 @@ input.search-query {
     letter-spacing: -0.3em;
 }
 
+.marked-list-item {
+    
+}
+
+.marked-list-item:before {
+    content: "\2022\0020";
+    margin-left: -7px;
+}
+
 /* Accordion styles */
 .panel-heading .accordion-toggle:after {
     /* symbol for "opening" panels */
@@ -204,8 +237,8 @@ input.search-query {
     width: 75%;
 }
 
-.height-100 {
-    height: 50px;
+.height-half {
+    max-height: 50%;
 }
 
 .width-half {

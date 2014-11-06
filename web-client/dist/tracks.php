@@ -12,6 +12,7 @@ session_start();
         <link rel="stylesheet" type="text/css" href="styles/bootstrap-3.2.0/bootstrap-lightbox.min.css"/>
         <link rel="stylesheet" type="text/css" href="styles/bootstrap-slider.min.css"/>
         <link rel="stylesheet" href="styles/languages.min.css">
+        <link rel="stylesheet" type="text/css" href="styles/leaflet.contextmenu.css"/>
         <?php
         include_once('html_headers.php');
         ?>
@@ -29,6 +30,8 @@ session_start();
         <script src="scripts/logger.min.js"></script>
         <script src="scripts/readmore.min.js"></script>
         <script src="scripts/bootstrap-slider.min.js"></script>
+        <script src="scripts/leaflet.contextmenu.js"></script>
+        <script type="text/javascript" src="https://raw.github.com/meetselva/attrchange/master/attrchange.js"></script>
         <script src="scripts/gets/models/Categories.Class.js"></script>
         <script src="scripts/gets/models/Points.Class.js"></script>
         <script src="scripts/gets/models/Tracks.Class.js"></script>
@@ -79,6 +82,11 @@ session_start();
                     ?>
                 </div>
                 <div id="map"></div> 
+            </div>
+            <div class="main-footer">
+                <?php
+                require_once('./widgets/Footer.inc');
+                ?>
             </div>
         </div>       
     </body>

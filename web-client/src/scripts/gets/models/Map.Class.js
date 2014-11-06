@@ -30,14 +30,22 @@ MapClass.prototype.initMap = function() {
         this.baseMapLayer = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
         });
-    }   
+    } 
+    
     if (!this.map) {
         this.map = L.map('map', {
             center: [61.7830, 34.350],
             zoom: 10,
-            layers: [this.baseMapLayer]
+            layers: [this.baseMapLayer],
+            contextmenu: true,
+            contextmenuWidth: 140,
+            contextmenuItems: [{
+                text: 'Add marker',
+                callback: function () { alert('click add marker') }
+            }]
         });
     }
+      
     if (!this.layersControl) {
         this.layersControl = L.control.layers({
             "Base map": this.baseMapLayer
@@ -169,6 +177,8 @@ L.EditableCircleMarker = L.Class.extend({
  * array.
  */
 MapClass.prototype.getRouteIndex = function(route) {
+    Logger.debug(route);
+    Logger.debug(this.routes);   
     for (var i = 0, len = this.routes.length; i < len; i++) {
         if (this.routes[i].id === route.id){
             return i;
@@ -385,10 +395,20 @@ MapClass.prototype.getCenter = function() {
  */
 MapClass.prototype.createTempMarker = function(latitude, longitude, callback) {
     this.map.setView([latitude, longitude], this.map.getZoom());
-    if (!this.tempMarker) {       
+    if (!this.tempMarker) { 
+        var tempMarkerIcon = L.icon({
+            iconUrl: TEMP_MARKER_IMAGE,
+            shadowUrl: null,
+            zIndexOffset: 0,
+            iconSize: new L.Point(25, 41),
+            iconAnchor: new L.Point(13, 41),
+            popupAnchor: new L.Point(0, -33),
+            className: 'leaflet-div-icon-num'
+        });
         this.tempMarker = L.marker([latitude, longitude], {
             draggable: true,
-            riseOnHover: true
+            riseOnHover: true,
+            icon: tempMarkerIcon
         }).addTo(this.map);
         if (callback) {
             this.tempMarker.on('drag', function(e) {
@@ -404,6 +424,16 @@ MapClass.prototype.createTempMarker = function(latitude, longitude, callback) {
             });
         }    
     }
+};
+
+/**
+ * Set temporary marker location.
+ */
+MapClass.prototype.setTempMarkerLocation = function(latitude, longitude) {
+    if (!this.tempMarker) {
+        return;
+    }
+    this.tempMarker.setLatLng(L.latLng(latitude, longitude));
 };
 
 /**
@@ -457,7 +487,7 @@ MapClass.prototype.setSearchAreaParams = function(lat, lng, radius) {
  * Create user icon
  */
 MapClass.prototype.createUserMarker = function(lat, lng) {
-    if (this.userMarker == null) {
+    if (!this.userMarker) {
         var userIcon = L.icon({
             iconUrl: LOCATION_IMAGE,
             shadowUrl: null,

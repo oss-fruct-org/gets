@@ -3,14 +3,29 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/home/davidson/projects/gets/web-client/src/widgets/Header.inc</file>
+            <file>file:/home/davidson/projects/gets/web-client/src/images/generateImagesPaths.php</file>
+            <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/models/Points.Class.js</file>
+            <file>file:/home/davidson/projects/gets/web-client/src/user.php</file>
+            <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/views/PointAdd.View.js</file>
             <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/controllers/Language.Ctrl.js</file>
+            <file>file:/home/davidson/projects/gets/web-client/src/widgets/Footer.inc</file>
+            <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/views/TracksMain.View.js</file>
+            <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/models/Map.Class.js</file>
+            <file>file:/home/davidson/projects/gets/web-client/src/widgets/PointInfo.inc</file>
+            <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/models/Tracks.Class.js</file>
+            <file>file:/home/davidson/projects/gets/web-client/src/styles/gets/style.css</file>
+            <file>file:/home/davidson/projects/gets/web-client/src/widgets/Header.inc</file>
+            <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/controllers/Map.Ctrl.js</file>
             <file>file:/home/davidson/projects/gets/web-client/src/translations/langs/en.php</file>
+            <file>file:/home/davidson/projects/gets/web-client/src/widgets/PointsMain.inc</file>
             <file>file:/home/davidson/projects/gets/web-client/src/translations/translations.php</file>
+            <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/controllers/PointsPage.Ctrl.js</file>
             <file>file:/home/davidson/projects/gets/web-client/src/tracks.php</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/scripts/jquery/jquery.cookie.js</file>
+            <file>file:/home/davidson/projects/gets/web-client/src/widgets/PointEdit.inc</file>
             <file>file:/home/davidson/projects/gets/web-client/src/points.php</file>
+            <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/controllers/TracksPage.Ctrl.js</file>
             <file>file:/home/davidson/projects/gets/web-client/src/translations/langs/ru.php</file>
+            <file>file:/home/davidson/projects/gets/web-client/src/widgets/TracksMain.inc</file>
         </group>
     </open-files>
 </project-private>

@@ -54,6 +54,7 @@ $translations = array(
     'no-image' => 'No image', 
     'point-remove-text' => 'Are you sure you want to remove this point? (This action cannot be cancelled.)', 
     'point-remove-success' => 'Point was successfully removed', 
+    'put-point-in-point-info' => 'Put point into the «Point Info» window',
     
     // Add Point widget strings
     'add-point-title' => 'Add Point', 

@@ -22,7 +22,26 @@ PointEdit.prototype.getView = function() {
 
 PointEdit.prototype.placePointInPointEdit = function(point) {
     $(this.editPoint).find('#edit-point-name-input').val(point.name);
-    $(this.editPoint).find('#edit-point-desc-input').val(point.descriptionExt);
+    
+    if (point.descriptionExt !== '') {
+        $(this.editPoint).find('#edit-point-desc-input').val(point.descriptionExt);
+    } else {
+        $(this.editPoint).find('#edit-point-desc-input').val(point.description);
+        
+        var json = null;
+        var descriptionText = '';
+        try {          
+            json = JSON.parse(point.description);
+        } catch (Exception) {} 
+        
+        if (json) {
+            $.each(json, function (key, val) {
+                descriptionText += '<div class="emulate-tab"><label>' + key + ': &nbsp;</label><input class="inline" type="text" value="' + val + '"/></div>';
+            });
+            $(this.editPoint).find('#edit-point-desc-input-keyvalue').html(descriptionText);
+        }        
+    }
+    
     $(this.editPoint).find('#edit-point-url-input').val(point.url);
     $(this.editPoint).find('#edit-point-active-radius-input').val(point.radius);
     $(this.editPoint).find('#edit-point-picture-input-url').val(point.photo);

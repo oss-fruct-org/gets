@@ -46,6 +46,7 @@ $translations = array(
     'point-list' => 'Список точек', 
     'track-remove-text' => 'Вы уверены что хотите удалить этот маршрут? (Действие не может быть отменено)', 
     'track-remove-success' => 'Маршрут был успешно удален', 
+    'put-point-in-point-info' => 'Поместить точку в окно «Информация о точке»',
     
     // Point Info widget strings
     'point-info-title' => 'Информация о точке', 
@@ -63,6 +64,7 @@ $translations = array(
     'center-map' => 'Центр карты',
     'latitude' => 'Широта', 
     'longitude' => 'Долгота', 
+    'altitude' => 'Высота',
     'active-radius' => 'Активный радиус (метры)', 
     'use-default-value' => 'Использовать значение по умолчанию',
     'picture' => 'Изображение', 

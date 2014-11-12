@@ -121,7 +121,8 @@ PointsClass.prototype.downLoadPoints = function(paramsObj, callback) {
         if ($(jqXHR.responseText).find('code').text() !== '0') {
             throw new GetsWebClientException('Points Error', 'getPointsRequest: ' + $(jqXHR.responseText).find('message').text());
         }
-
+        
+        Logger.debug(jqXHR.responseText);
         var pointListItems = $($.parseXML(jqXHR.responseText)).find('Placemark');
         var pointsArray = [];
         $(pointListItems).each(function(index, value) {
@@ -135,6 +136,8 @@ PointsClass.prototype.downLoadPoints = function(paramsObj, callback) {
             pointObj.audio = $(value).find("[name='audio']").length ? $(value).find("[name='audio']").text() : '';
             pointObj.photo = $(value).find("[name='photo']").length ? $(value).find("[name='photo']").text() : '';
             pointObj.coordinates = $(value).find('coordinates').length ? $(value).find('coordinates').text() : '';
+            pointObj.access = $(value).find("[name='access']").length ? $(value).find("[name='access']").text() : '';
+            pointObj.categoryId = $(value).find("[name='category_id']").length ? $(value).find("[name='category_id']").text() : '';
 
             pointsArray.push(pointObj);
         });
@@ -331,12 +334,12 @@ PointsClass.prototype.removePoint = function (callback) {
     }
 };
 
-PointsClass.prototype.findPointInPointList = function(name) {
-    if (!name || !this.pointList) {
+PointsClass.prototype.findPointInPointList = function(uuid) {
+    if (!uuid || !this.pointList) {
         return;
     }
     for (var i = 0, len = this.pointList.length; i < len; i++) {
-        if (this.pointList[i].name.toLowerCase().trim() === name.toLowerCase().trim()) {
+        if (this.pointList[i].uuid.trim() === uuid.trim()) {
             this.point = this.pointList[i];
             return this.point;
         }

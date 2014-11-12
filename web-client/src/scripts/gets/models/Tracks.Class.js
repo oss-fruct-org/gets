@@ -174,7 +174,7 @@ TracksClass.prototype.downloadTrackByName = function(paramsObj) {
     var trackPointArray = new Array();
     //Logger.debug(trackPlacemarkList);
     $(trackPlacemarkList).each(function(index, value) {
-        //Logger.debug(value);
+        Logger.debug(value);
         var pointObj = {};
         pointObj.index = $(value).find("[name='idx']").length ? $(value).find("[name='idx']").text() : '';
         pointObj.uuid = $(value).find("[name='uuid']").length ? $(value).find("[name='uuid']").text() : '';

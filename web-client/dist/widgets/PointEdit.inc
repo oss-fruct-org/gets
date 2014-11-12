@@ -19,7 +19,11 @@ echo    '<div id="edit-point-page" class="action-menu-container hidden" data-pag
                     </div>
                     <div class="form-group">
                         <label for="edit-point-desc-input">' . getString('description','Description') . '</label>
-                        <textarea id="edit-point-desc-input" class="form-control" name="description"></textarea>            
+                        <div>
+                            <div><label><input id="edit-point-desc-input-raw-check" type="checkbox" /> Raw JSON</label><label><input id="edit-point-desc-input-keyvalue-check" type="checkbox" /> Key-Value input</label></div>
+                            <textarea id="edit-point-desc-input" class="form-control" name="description"></textarea>
+                            <div id="edit-point-desc-input-keyvalue"></div>
+                        </div>    
                     </div>
                     <div class="form-group">
                         <label for="edit-point-url-input">' . getString('url','Url') . '</label>

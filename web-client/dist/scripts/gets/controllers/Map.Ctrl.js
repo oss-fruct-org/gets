@@ -67,8 +67,8 @@ MapController.prototype.removeTrack = function(track) {
     this._map.removeTrackFromMap(track);
 };
 
-MapController.prototype.placePointsOnMap = function(pointList) {
-    this._map.placePointsOnMap(pointList);
+MapController.prototype.placePointsOnMap = function(pointList, markerBaseLink) {
+    this._map.placePointsOnMap(pointList, markerBaseLink);
 };
 
 MapController.prototype.removePointsFromMap = function() {

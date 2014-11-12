@@ -245,6 +245,10 @@ input.search-query {
     width: 50%;
 }
 
+.emulate-tab {
+    margin-left: 10px;
+}
+
 .ellipsis-text {
     display: block;
     white-space: nowrap; 

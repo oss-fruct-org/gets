@@ -49,7 +49,7 @@ PointsMain.prototype.placePointsInPointList = function (pointList) {
         var pointElement = $(self.document.createElement('li'));
         $(pointElement).addClass('list-group-item');
         var pointLinkElement = $(self.document.createElement('a'));
-        $(pointLinkElement).attr('href', '#form=point_info&point_name=' + value.name);
+        $(pointLinkElement).attr('href', '#form=point_info&point_uuid=' + value.uuid);
         $(pointLinkElement).text(value.name);
         $(pointLinkElement).appendTo(pointElement);
         $(pointElement).appendTo(pointListElement);

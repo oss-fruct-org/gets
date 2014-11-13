@@ -1,6 +1,6 @@
 <?php
 
-echo    '<div id="point-info-page" class="action-menu-container hidden" data-pagetitle="' . getString('point-info-title','Point Info') . '" data-messagesuccess-remove="' . getString('point-remove-success','Point was successfully removed') . '">
+echo    '<div id="point-info-page" class="action-menu-container hidden" data-pagetitle="' . getString('point-info-title','Point Info') . '" data-messagesuccess-remove="' . getString('point-remove-success','Point was successfully removed') . '" data-putpoint="' . getString('put-point-in-point-info','Put point into the «Point Info» window') . '">
             <div class="action-menu-toolbar-container">
                 <div class="btn-group btn-group-justified">
                     <div class="btn-group">
@@ -15,22 +15,39 @@ echo    '<div id="point-info-page" class="action-menu-container hidden" data-pag
                     </div>
                 </div>
             </div>
-            <div class="action-menu-inner-content">
+            <div class="action-menu-inner-content">              
                 <div id="point-info-name" class="main-block font-big height-half"></div>               
                 <!--<div id="point-info-map" class="button-w-icon" title="Show on map">
                     <img src="images/icons/map.png" alt="Show on map">
                 </div>-->
-                <div id="point-info-coords" class="main-block"></div>
-                <div id="point-info-image" class="main-block">
-                    <img class="info-image" alt="' . getString('no-image','No image') . '">
+                <div class="main-block">
+                    <label>' . getString('coordinates','Coordinates') . '</label>
+                    <div class="emulate-tab"><label>' . getString('latitude','Latitude') . ': &nbsp;</label><div id="point-info-coords-lat" class="inline"></div></div>
+                    <div class="emulate-tab"><label>' . getString('longitude','Longitude') . ': &nbsp;</label><div id="point-info-coords-lon" class="inline"></div></div>
+                    <div class="emulate-tab"><label>' . getString('altitude','Altitude') . ': &nbsp;</label><div id="point-info-coords-alt" class="inline"></div></div>    
                 </div>
-                <div id="point-info-description" class="main-block"></div>
-                <div id="point-info-url" class="main-block">
-                    <a target="_blank"></a>                 
+                <div class="main-block">
+                    <label for="point-info-image">' . getString('picture','Picture') . '</label>
+                    <div id="point-info-image">
+                        <img class="info-image" alt="' . getString('no-image','No image') . '">
+                    </div>
                 </div>
-                <div id="point-info-audio" class="main-block">
-                    <!--<audio controls>
-                    </audio>-->                
+                <div class="main-block">
+                    <label for="point-info-description">' . getString('description','Description') . '</label>
+                    <div id="point-info-description"></div>
+                </div>
+                <div class="main-block">
+                    <label for="point-info-url">' . getString('url','Link') . '</label>
+                    <div id="point-info-url">
+                        <a target="_blank"></a>                 
+                    </div>
+                </div> 
+                <div class="main-block">
+                    <label for="point-info-audio">' . getString('audio-track','Audio track') . '</label>
+                    <div id="point-info-audio">
+                        <!--<audio controls>
+                        </audio>-->                
+                    </div>
                 </div>
             </div>            
         </div>';

@@ -286,7 +286,7 @@ MapClass.prototype.removeTrackFromMap = function (track) {
     this.routes.splice(index, 1);
 }
 
-MapClass.prototype.placePointsOnMap = function(pointList) {
+MapClass.prototype.placePointsOnMap = function(pointList, markerBaseLink) {
     if (!pointList) {
         throw new GetsWebClientException('Map Error', 'placePointsOnMap, pointList undefined or null.');
     }
@@ -294,10 +294,27 @@ MapClass.prototype.placePointsOnMap = function(pointList) {
     
     for (var i = 0; i < pointList.length; i++) {
         var coords = pointList[i].coordinates.split(',');
-        L.marker([coords[1], coords[0]], {title: pointList[i].name})
-            .bindPopup('<b>' + pointList[i].name + '</b><br>' + pointList[i].description).addTo(this.pointsLayer);
+           
+        var marker = L.marker([coords[1], coords[0]], {title: pointList[i].name}); 
+        marker.addTo(this.pointsLayer);
+        
+        var popup = L.popup()
+            .setContent(
+                '<b>' + pointList[i].name + 
+                '</b><br>' + pointList[i].description + 
+                (markerBaseLink ? 
+                    '<br><a id="' + this.pointsLayer.getLayerId(marker) + '" href="' + markerBaseLink.url + pointList[i].uuid + '">' + markerBaseLink.text + '</a>' : '')
+            );  
+        marker.bindPopup(popup);
     }
     this.pointsLayer.addTo(this.map);
+};
+
+MapClass.prototype.closePopupInPointsLayer = function(id) {
+    var marker = this.pointsLayer.getLayer(id);
+    if (marker) {
+        marker.closePopup();
+    }
 };
 
 MapClass.prototype.removePointsLayer = function() {

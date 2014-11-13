@@ -25,7 +25,9 @@ function PointInfo(document, pointInfo) {
 PointInfo.prototype.placePointInPointInfo = function(point, isAuth) {
     // Get all elements
     var nameElement = $('#point-info-name');
-    var coordsElement = $('#point-info-coords');
+    var coordsElementLat = $('#point-info-coords-lat');
+    var coordsElementLon = $('#point-info-coords-lon');
+    var coordsElementAlt = $('#point-info-coords-alt');
     var descElement = $('#point-info-description');
     var urlElement = $('#point-info-url a');
     var audioElement = $('#point-info-audio');
@@ -33,8 +35,10 @@ PointInfo.prototype.placePointInPointInfo = function(point, isAuth) {
 
     // Clear value of all elements
     $(nameElement).text('');
-    $(coordsElement).text('');
-    $(descElement).text('');
+    $(coordsElementLat).text('');
+    $(coordsElementLon).text('');
+    $(coordsElementAlt).text('');
+    $(descElement).html('');
     $(urlElement).attr('href', '').text('');
     $(audioElement).empty();
     $(photoElement).attr('src', '');
@@ -42,8 +46,29 @@ PointInfo.prototype.placePointInPointInfo = function(point, isAuth) {
     // Then fill elemnts with new values 
     $(nameElement).text(point.name).attr('title', point.name);
     
-    $(coordsElement).text(point.coordinates);
-    $(descElement).html(point.description);
+    var coords = point.coordinates.split(',');
+    $(coordsElementLat).text(coords[1]);
+    $(coordsElementLon).text(coords[0]);
+    $(coordsElementAlt).text(coords[2]);
+    
+    if (point.descriptionExt !== '') {
+        $(descElement).html(point.descriptionExt);
+    } else {      
+        var json = null;
+        var descriptionText = '';
+        try {          
+            json = JSON.parse(point.description);
+        } catch (Exception) {} 
+        
+        if (json) {
+            $.each(json, function (key, val) {
+                descriptionText += '<div class="emulate-tab"><label>' + key + ': &nbsp;</label><div class="inline">' + val + '</div></div>';
+            });
+            $(descElement).html(descriptionText);
+        } else {
+            $(descElement).html(point.description);
+        }       
+    }
 
     
     if (point.url !== '') {
@@ -67,7 +92,7 @@ PointInfo.prototype.placePointInPointInfo = function(point, isAuth) {
     var pointsInfoEdit = $('#point-info-edit');
     var pointsInfoRemove = $('#point-info-remove');
     
-    $(pointsInfoEdit).attr('href', '#form=point_edit&track_id=' + point.track + '&point_name=' + point.name);
+    $(pointsInfoEdit).attr('href', '#form=point_edit' + (point.track ? ('&track_id=' + point.track) : '') + '&point_uuid=' + point.uuid);
 
     if (!isAuth || point.access === 'r') {
         $(pointsInfoEdit).on('click', function(e) {

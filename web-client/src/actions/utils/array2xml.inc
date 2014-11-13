@@ -4,7 +4,6 @@
  * Function returns XML string for input associative array.
  * @param Array $array Input associative array
  * @param String $wrap Wrapping tag
- * @param Boolean $upper To set tags in uppercase
  */
 function array2xml($array, $wrap='params') {
     // set initial value for XML string

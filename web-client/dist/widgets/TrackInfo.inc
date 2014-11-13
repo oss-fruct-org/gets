@@ -22,7 +22,7 @@ echo    '<div id="tracks-info-page" class="action-menu-container hidden" data-pa
                 </div>
             </div>
             <div class="action-menu-inner-content">
-                <div id="tracks-info-name" class="main-block font-big width-three-fourth ellipsis-text">                   
+                <div id="tracks-info-name" class="main-block font-big height-half">                   
                 </div>
                 <button id="tracks-info-map" type="button" class="btn btn-default" title="' . getString('show-on-map','Show on map') . '">
                     <span class="glyphicon glyphicon-globe"></span> ' . getString('show-on-map','Show on map') . '

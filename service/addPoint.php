@@ -114,7 +114,7 @@ $data_array['channel'] = $channel_name;
 $data_array['title'] = $title_element->item(0)->nodeValue;
 $data_array['description'] = $description;
 
-if ($link_element->length > 0 && $link_element->item(0)->nodeValue->length > 0) {
+if ($link_element->length > 0 && strlen($link_element->item(0)->nodeValue) > 0) {
     $data_array['link'] = $link_element->item(0)->nodeValue;
 } else {
     $data_array['link'] = "{}";

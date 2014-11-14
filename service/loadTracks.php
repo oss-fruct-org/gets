@@ -68,11 +68,15 @@ $where_arr = array();
 $email_where_arr = array();
 if ($space === SPACE_ALL || $space === SPACE_PRIVATE) {
     auth_set_token($auth_token);
-    $email = auth_get_google_email();
-    $email_escaped = pg_escape_string($dbconn, $email);
+    $private_email = auth_get_google_email();
+    $private_email_escaped = pg_escape_string($dbconn, $private_email);
     session_commit();
 
-    $email_where_arr[] = "users.email='${email_escaped}'";
+    $email_where_arr[] = "users.email='${private_email_escaped}'";
+    $access_row = "users.email='${private_email_escaped}' AS permission";
+} else {
+    $private_email = null;
+    $access_row = 'false AS permission';
 }
 
 if ($space === SPACE_ALL || $space === SPACE_PUBLIC) {
@@ -80,7 +84,7 @@ if ($space === SPACE_ALL || $space === SPACE_PUBLIC) {
     $email_where_arr[] = "users.email='${email_escaped}'";
 }
 
-$query =  'SELECT DISTINCT channel.name, channel.description, channel.url FROM channel ';
+$query =  "SELECT DISTINCT ON (channel.name) channel.name, channel.description, channel.url, ${access_row} FROM channel ";
 $query .= 'INNER JOIN tag ON tag.channel_id = channel.id ';
 $query .= 'INNER JOIN subscribe ON channel.id = subscribe.channel_id ';
 $query .= 'INNER JOIN users ON subscribe.user_id=users.id ';
@@ -104,8 +108,7 @@ if ($is_radius_filter) {
     $where_arr[] = "gets_geo_distance(tag.latitude, tag.longitude, ${latitude}, ${longitude}) < ${radius}";
 }
 
-$query .= 'WHERE ' . implode(' AND ', $where_arr) . ';';
-
+$query .= 'WHERE ' . implode(' AND ', $where_arr) . ' ORDER BY channel.name ASC, permission DESC;';
 $result = pg_query($dbconn, $query);
 
 $resp = '<tracks>';
@@ -113,6 +116,7 @@ while ($row = pg_fetch_row($result)) {
     $channel_name = $row[0];
     $channel_desc = $row[1];
     $channel_url = $row[2];
+    $access = $row[3] == 'f' ? 'r' : 'rw';
 
     $channel_description = null;
     $channel_category_id = null;
@@ -145,7 +149,7 @@ while ($row = pg_fetch_row($result)) {
 
 $resp .= '</tracks>';
 
-pg_close($db_conn);
+pg_close($dbconn);
 
 send_result(0, 'success', $resp);
 

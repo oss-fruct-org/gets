@@ -67,10 +67,15 @@ $dbconn = pg_connect('host=localhost dbname=geo2tag user=geo2tag');
 $where_arr = array();
 $email_where_arr = array();
 if ($space === SPACE_ALL || $space === SPACE_PRIVATE) {
-    auth_set_token($auth_token);
-    $private_email = auth_get_google_email();
-    $private_email_escaped = pg_escape_string($dbconn, $private_email);
-    session_commit();
+    try {
+        auth_set_token($auth_token);
+        $private_email = auth_get_google_email();
+        $private_email_escaped = pg_escape_string($dbconn, $private_email);
+        session_commit();
+    } catch (GetsAuthException $ex) {
+        send_error(1, $ex->getMessage());
+        die();
+    }
 
     $email_where_arr[] = "users.email='${private_email_escaped}'";
     $access_row = "users.email='${private_email_escaped}' AS permission";

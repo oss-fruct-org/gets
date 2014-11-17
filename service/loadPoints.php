@@ -32,320 +32,87 @@ if (!$dom->schemaValidate('schemes/loadPoints.xsd')) {
     die();
 }
 
-$auth_token_element = $dom->getElementsByTagName('auth_token');
-$category_id_element = $dom->getElementsByTagName('category_id');
-$latitude_element = $dom->getElementsByTagName('latitude');
-$longitude_element = $dom->getElementsByTagName('longitude');
-$radius_element = $dom->getElementsByTagName('radius');
-$space_element = $dom->getElementsByTagName('space');
+$auth_token = get_request_argument($dom, 'auth_token');
+$category_id = get_request_argument($dom, 'category_id');
+$space_arg = get_request_argument($dom, 'space');
+$radius = get_request_argument($dom, 'radius', 0);
+$longitude = get_request_argument($dom, 'longitude', 0);
+$latitude = get_request_argument($dom, 'latitude', 0);
 
-$is_auth_token_defined = $auth_token_element->length > 0;
-$category_condition = $category_id_element->length > 0;
-$location_condition = ($latitude_element->length > 0) && 
-                    ($longitude_element->length > 0) && 
-                    ($radius_element->length > 0);
-$space_condition = $space_element->length > 0;
+$is_radius_filter = ($radius !== 0);
 
-					   
-$category_id = $category_condition ? 
-                htmlspecialchars($category_id_element->item(0)->nodeValue) : 
-		-1;
-
-// for different spaces we use different tokens
-$token_public = NULL;
-$token_user = NULL;
-$is_wrong_token_error = false;
-
-// check what is space condition, by default it is 'all'
 $space = SPACE_ALL;
-if ($space_condition) {
-    $space_string = htmlspecialchars($space_element->item(0)->nodeValue);
-    if ($space_string === 'public') {
+if ($space_arg) {
+    if ($space_arg === 'public') {
         $space = SPACE_PUBLIC;
-    } elseif ($space_string === 'private') {
+    } elseif ($space_arg === 'private') {
         $space = SPACE_PRIVATE;
     }
 }
 
-// We use cached token, not new
-//$old_token = true;
-if ($is_auth_token_defined) {
-    $token_user = $auth_token_element->item(0)->nodeValue; 
-    
-    if (strlen($token_user) == 0) {
-	$token_user = NULL;
-	$is_auth_token_defined = FALSE;
-    }
-    //$old_token = false;
+if ($space === SPACE_PRIVATE && !$auth_token) {
+    send_error(1, 'Private space requires auth_token');
+    die();
 }
 
-// if there is no token in a request, 
-// then only public data will be sent in a response
-if (!$is_auth_token_defined) {
+if ($space === SPACE_ALL && !$auth_token) {
     $space = SPACE_PUBLIC;
 }
 
-if (!($is_auth_token_defined && ($space === SPACE_PRIVATE))) {
-    $token_public = get_public_token();
-    if (!$token_public) {
-        send_error(1, 'Error: can\'t receive new token');
-        die();
-    }
-}
+$dbconn = pg_connect('host=localhost dbname=geo2tag user=geo2tag');
 
-$channel_categories = array();
-
-function getChannelCategory($auth_token, $channel_name) {
-    global $channel_categories;
-    
-    if (array_key_exists($channel_name, $channel_categories)) {
-#        error_log("Using cached category");
-        return $channel_categories[$channel_name];
-    } else {
-#        error_log("Receiving category");
-        $channel_info = get_channel_info($channel_name, $auth_token);
-        return cacheChannelCategory($channel_name, $channel_info['description']);
-    }
-}
-
-function cacheChannelCategory($channel_name, $channel_description_json) {
-    global $channel_categories;
-
-    $channel_description_array = json_decode($channel_description_json, true);
-    if ($channel_description_array == NULL || !array_key_exists("category_id", $channel_description_array)) {
-        send_error(1, "Error: can't load channel's category");
-        die();
-    }
-
-    $channel_categories[$channel_name] = (int) $channel_description_array["category_id"];
-    return $channel_categories[$channel_name];
-}
-
-function getChannelsAsDom($token) {
-    $subs_channels_request_content = '<request><params><auth_token>' . $token . '</auth_token></params></request>';
-    
-    $subs_channels_response = process_request(SUBSCRIBED_CHANNELS_METHOD_URL_GETS, 
-                                            $subs_channels_request_content, 
-                                            'Content-Type: text/xml');
-    
-    if (!$subs_channels_response) {
-        send_error(1, 'Error: internal server error');
-        die();
-    }
-    
-    $subs_channels_response_dom = new DOMDocument();
-    $subs_channels_response_dom->loadXML($subs_channels_response);
-    if (!$subs_channels_response_dom) {
-        send_error(1, 'Error: internal server error');
-        die();
-    }
-    
-    return $subs_channels_response_dom;
-}
-
-function getChannelNames(&$token, $category_id) {  
-    global $token_user;
-    global $is_wrong_token_error;
-    global $channel_categories;
-
-    $channels_name_array = array();
-    
-    $subs_channels_response_dom = getChannelsAsDom($token);
-       
-    if ($subs_channels_response_dom->getElementsByTagName('code')->item(0)->nodeValue != 0) {
-        $response_code = check_errors($subs_channels_response_dom->getElementsByTagName('code')->item(0)->nodeValue);
-
-        // Geo2tag server requires authentication and we're using cached token
-        if ($response_code === 'Wrong token error') {
-            if ($token === $token_user) {
-                $is_wrong_token_error = true;
-                return array();
-            }
-
-            // Try receive new token from server
-            $token = get_public_token();
-            if (!$token) {
-                send_error(1, 'Error: can\'t receive new token');
-                die();
-            }
-
-            $subs_channels_response_dom = getChannelsAsDom($token);
-            $response_code = check_errors($subs_channels_response_dom->getElementsByTagName('code')->item(0)->nodeValue);
-
-            // Same error, new token invalid
-            if ($response_code === 'Wrong token error') {
-                send_error(1, 'Error: geo2tag server returned invalid token');
-                die();
-            }
-        } else {
-            send_error(1, 'Error: internal server error');
-            die();
-        }
-    }
-
-    $channels_elements = $subs_channels_response_dom->getElementsByTagName('channel');
-    foreach($channels_elements as $channel) {
-        $channel_name = $channel->getElementsByTagName('name')->item(0)->nodeValue; 
-        $channel_description = $channel->getElementsByTagName('description')->item(0)->nodeValue; 
-        $channel_category_id = $channel->getElementsByTagName('category_id')->item(0)->nodeValue;
-        $channel_categories[$channel_name] = (int) $channel_category_id;
-
-        if ($category_id == $channel_category_id) {
-            $channels_name_array[] = $channel_name;
-        }
-    }
- 
-    return $channels_name_array;
-}
-
-function addItemIntoXml($item, &$xml, $is_private, $fallback_category) {
-    $description = $item['description'];
-    $description_json = json_decode($description, true);
-
-    if ($description_json && isset($description_json['description'])) {
-        $description = $description_json['description'];
-    }
-
-    $xml .= '<Placemark>';
-    $xml .= '<name><![CDATA[' . $item['title'] . ']]></name>';
-    $xml .= '<description><![CDATA[' .  $description . ']]></description>';
-
-    $xml .= '<ExtendedData>';
-    $xml .= '<Data name="link"><value>' . htmlspecialchars($item['link']) . '</value></Data>';
-    $xml .= '<Data name="time"><value>' . htmlspecialchars($item['pubDate']) . '</value></Data>';
-    $xml .= '<Data name="access"><value>' . ($is_private ? 'rw' : 'r') . '</value></Data>';
-
-    if ($description_json) {
-        foreach ($description_json as $key => $value) {
-            $field = $key;
-            $value = htmlspecialchars($value);
-            $xml .= "<Data name=\"$field\"><value>$value</value></Data>";
-        }
-    }
-
-    if (!array_key_exists("category_id", $item)) {
-        $xml .= '<Data name="category_id"><value>' . htmlspecialchars($fallback_category) . '</value></Data>';
-    }
-
-    $xml .= '</ExtendedData>';
-    $xml .= '<Point><coordinates>' . $item['longitude'] . ',' . $item['latitude'] . ',0.0' . '</coordinates></Point>';
-
-    $xml .= '</Placemark>';
-}
-
-function process_load_points_request($data_array, $request_type) {
-    $auth_token = $data_array['auth_token'];
-    $data_array['auth_token'] = null;
-
-    return process_json_request($request_type, $data_array, $auth_token, false);
-}
-
-function getData($data_array, $request_type, &$xml, $location_condition, &$is_wrong_token_error, $is_private) {
-    global $token_user;
-    $auth_token = $data_array['auth_token'];
+// email where query
+$where_arr = array();
+$email_where_arr = array();
+if ($space === SPACE_ALL || $space === SPACE_PRIVATE) {
     try {
-        $response_array = process_load_points_request($data_array, $request_type);
-    } catch (WrongTokenException $e) {
-        if ($auth_token === $token_user) {
-            $is_wrong_token_error = true;
-            return;
-        }
-
-        // Try receive new token from server
-        $auth_token = get_public_token();
-        if (!$auth_token) {
-            send_error(1, 'Error: can\'t receive new token');
-            die();
-        }
-
-        // Send request with new token
-        $data_array['auth_token'] = $auth_token;
-        try {
-            $response_array = process_load_points_request($data_array, $request_type);
-        } catch (WrongTokenException $e) {
-            send_error(1, 'Error: geo2tag server returned invalid token');
-            die();
-        } catch (Exception $e) {
-            send_error(1, $e->getMessage());
-            die();
-        }
-    } catch (Exception $e) {
-        send_error(1, $e->getMessage());
+        auth_set_token($auth_token);
+        $private_email = auth_get_google_email();
+        $private_email_escaped = pg_escape_string($dbconn, $private_email);
+        session_commit();
+    } catch (GetsAuthException $ex) {
+        send_error(1, $ex->getMessage());
         die();
     }
-    
-    if ($location_condition) {
-        foreach($response_array['channels'] as $channel) {
-            $channel_name = $channel['channel']['name'];
-            $channel_category = getChannelCategory($auth_token, $channel_name);
-            foreach($channel['channel']['items'] as $item) {
-                addItemIntoXml($item, $xml, $is_private, $channel_category);
-            }
-        }
-    } else {
-        $channel_name = $response_array['channel']['name'];
-        $channel_category = getChannelCategory($auth_token, $channel_name);
-        foreach($response_array['channel']['items'] as $item) {
-            addItemIntoXml($item, $xml, $is_private, $channel_category);
-        }	
-    }
+
+    $email_where_arr[] = "users.email='${private_email_escaped}'";
+    $access_row = "users.email='${private_email_escaped}' AS permission";
+} else {
+    $private_email = null;
+    $access_row = 'false AS permission';
 }
 
-function makeRequestBasedOnConditions(&$xml, $category_condition, $location_condition, 
-        $channels_name_array, $latitude_element, $longitude_element, $radius_element, $is_wrong_token_error, $token, $is_private) {
-    
-    $data_array = array();
-    $data_array['auth_token'] = $token;
-
-    $request_type = '';
-    if ($category_condition && $location_condition) {
-        $data_array['latitude'] = floatval($latitude_element->item(0)->nodeValue);
-        $data_array['longitude'] = floatval($longitude_element->item(0)->nodeValue);
-        $data_array['radius'] = floatval($radius_element->item(0)->nodeValue);
-        $data_array['time_from'] = '01 01 0001 00:00:00.000';
-        $data_array['time_to'] = '01 01 2999 00:00:00.000';
-        $request_type = LOAD_POINTS_METHOD_URL;
-        foreach ($channels_name_array as $channel_name) {
-            $data_array['channel'] = $channel_name;
-            getData($data_array, $request_type, $xml, $location_condition, $is_wrong_token_error, $is_private);
-        }
-    } else if ($category_condition) {
-        $data_array['amount'] = 10000;
-        $request_type = FILTER_CHANNEL_METHOD_URL;
-        foreach ($channels_name_array as $channel_name) {
-            $data_array['channel'] = $channel_name;
-            getData($data_array, $request_type, $xml, $location_condition, $is_wrong_token_error, $is_private);
-        }
-    } else {
-        $data_array['latitude'] = floatval($latitude_element->item(0)->nodeValue);
-        $data_array['longitude'] = floatval($longitude_element->item(0)->nodeValue);
-        $data_array['radius'] = floatval($radius_element->item(0)->nodeValue);
-        $data_array['time_from'] = '01 01 0001 00:00:00.000';
-        $data_array['time_to'] = '01 01 2999 00:00:00.000';
-        $request_type = LOAD_POINTS_METHOD_URL;
-        getData($data_array, $request_type, $xml, $location_condition, $is_wrong_token_error, $is_private);
-    }
+if ($space === SPACE_ALL || $space === SPACE_PUBLIC) {
+    $email_escaped = pg_escape_string($dbconn, GEO2TAG_EMAIL);
+    $email_where_arr[] = "users.email='${email_escaped}'";
 }
 
+$query =  "SELECT DISTINCT ON(tag.id) tag.time, tag.label, tag.latitude, tag.longitude, 
+                                      tag.altitude, tag.description, tag.url, tag.id, category.id, ${access_row} FROM tag ";
+$query .= 'INNER JOIN channel ON tag.channel_id = channel.id ';
+$query .= 'INNER JOIN subscribe ON channel.id = subscribe.channel_id ';
+$query .= 'INNER JOIN users ON subscribe.user_id=users.id ';
 
-$channels_name_array_public = array();
-$channels_name_array_user = array();
-if ($category_id != -1) {
-    if ($space === SPACE_ALL) {
-        $channels_name_array_public = getChannelNames($token_public, $category_id);
-        $channels_name_array_user = getChannelNames($token_user, $category_id);
-    } elseif ($space === SPACE_PUBLIC) {
-        $channels_name_array_public = getChannelNames($token_public, $category_id);
-    } elseif ($space === SPACE_PRIVATE) {
-        $channels_name_array_user = getChannelNames($token_user, $category_id);
-    }
-    
-    if (!(count($channels_name_array_public) > 0) && !(count($channels_name_array_user))) {
-        send_error(1, 'Error: there is no category in the system with given id');
-        die();
-    }
+if ($category_id) {
+    $query .= 'INNER JOIN category ON safe_cast_to_json(channel.description)->>\'category_id\'=category.id::text ';
 }
 
+$email_where = '(' . implode(' OR ', $email_where_arr) . ')';
+
+$where_arr[] = $email_where;
+if ($category_id) {
+    $where_arr[] = "category.id=${category_id}";
+}
+
+#$where_arr[] = "(substr(channel.name, 0, 4)='tr+' OR substr(channel.name, 0, 4)='tr_')";
+
+# Distance where
+if ($is_radius_filter) {
+    $where_arr[] = "gets_geo_distance(tag.latitude, tag.longitude, ${latitude}, ${longitude}) < ${radius}";
+}
+
+$query .= 'WHERE ' . implode(' AND ', $where_arr) . ' ORDER BY tag.id ASC, permission DESC;';
+$result = pg_query($dbconn, $query);
 
 $xml = '<kml xmlns="http://www.opengis.net/kml/2.2">';
 $xml .= '<Document>';
@@ -353,34 +120,63 @@ $xml .= '<name>any.kml</name>';
 $xml .= '<open>1</open>';
 $xml .= '<Style id="styleDocument"><LabelStyle><color>ff0000cc</color></LabelStyle></Style>';
 
-// make requests based on different spaces
-if ($space === SPACE_ALL) {
-    makeRequestBasedOnConditions($xml, $category_condition, $location_condition, 
-                                $channels_name_array_public, $latitude_element, 
-                                $longitude_element, $radius_element, 
-                                $is_wrong_token_error, $token_public, false);
-    makeRequestBasedOnConditions($xml, $category_condition, $location_condition, 
-                               $channels_name_array_user, $latitude_element, 
-                                $longitude_element, $radius_element, 
-                                $is_wrong_token_error, $token_user, true);
-} elseif ($space === SPACE_PUBLIC) {
-    makeRequestBasedOnConditions($xml, $category_condition, $location_condition, 
-                                $channels_name_array_public, $latitude_element, 
-                                $longitude_element, $radius_element, 
-                                $is_wrong_token_error, $token_public, false);
-} elseif ($space === SPACE_PRIVATE) {
-    makeRequestBasedOnConditions($xml, $category_condition, $location_condition, 
-                                $channels_name_array_user, $latitude_element, 
-                                $longitude_element, $radius_element, 
-                                $is_wrong_token_error, $token_user, true);
+// Output points
+while ($row = pg_fetch_row($result)) {
+    $datetime = $row[0];
+    $label = $row[1];
+    $latitude = $row[2];
+    $longitude = $row[3];
+    $altitude = $row[4];
+    $description = $row[5];
+    $url = $row[6];
+    $category_id = $row[8];
+    $access = $row[9] == 'f' ? 'r' : 'rw';;
+
+    // Try parse description json
+    $description_json = json_decode($description, true);
+
+    //Get inner description
+    $inner_description = null;
+    if ($description_json) {
+        $inner_description = $description_json['description'];
+    }
+
+    $xml .= '<Placemark>';
+    $xml .= '<name>' . htmlspecialchars($label) . '</name>';
+
+    if (!$description_json)
+        $xml .= '<description>' . '<![CDATA[' .  $description . ']]>' . '</description>';
+    else if ($inner_description)
+        $xml .= '<description>' . '<![CDATA[' .  $inner_description . ']]>' . '</description>';
+    else
+        $xml .= '<description></description>';
+
+    $xml .= '<ExtendedData>';
+    $xml .= '<Data name="url"><value>' . htmlspecialchars($url) . '</value></Data>';
+    $xml .= '<Data name="time"><value>' . htmlspecialchars($datetime) . '</value></Data>';
+    $xml .= '<Data name="access"><value>' . $access . '</value></Data>';
+
+    if (!$description_json || !array_key_exists("category_id", $description_json)) {
+        $xml .= '<Data name="category_id"><value>' . htmlspecialchars($category_id) . '</value></Data>';
+    }
+
+    if ($description_json) {
+        foreach ($description_json as $key => $value) {
+            $field = $key;
+            $value = htmlspecialchars($value);
+
+            $xml .= "<Data name=\"$field\"><value>$value</value></Data>";
+        }
+    }
+
+    $xml .= '</ExtendedData>';
+
+    $xml .= '<Point><coordinates>' . $longitude . ',' . $latitude . ',0.0' . '</coordinates></Point>';
+    $xml .= '</Placemark>';
 }
 
-$xml .= '</Document>';
-$xml .= '</kml>';
+$xml .= '</Document></kml>';
 
-if ($is_wrong_token_error && $is_auth_token_defined) {
-    send_result(2, 'Wrong token error. Response contains only public data.', $xml);
-} else {
-    send_result(0, 'success', $xml);
-}
+send_result(0, 'success', $xml);
+
 ?>

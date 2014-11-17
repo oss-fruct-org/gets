@@ -151,7 +151,6 @@ while ($row = pg_fetch_row($result)) {
     $resp .= '</track>';
 }
 
-
 $resp .= '</tracks>';
 
 pg_close($dbconn);

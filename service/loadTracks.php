@@ -90,7 +90,11 @@ if ($space === SPACE_ALL || $space === SPACE_PUBLIC) {
 }
 
 $query =  "SELECT DISTINCT ON (channel.name) channel.name, channel.description, channel.url, ${access_row} FROM channel ";
-$query .= 'INNER JOIN tag ON tag.channel_id = channel.id ';
+
+if ($is_radius_filter) {
+    $query .= 'INNER JOIN tag ON tag.channel_id = channel.id ';
+}
+
 $query .= 'INNER JOIN subscribe ON channel.id = subscribe.channel_id ';
 $query .= 'INNER JOIN users ON subscribe.user_id=users.id ';
 
@@ -114,6 +118,7 @@ if ($is_radius_filter) {
 }
 
 $query .= 'WHERE ' . implode(' AND ', $where_arr) . ' ORDER BY channel.name ASC, permission DESC;';
+error_log($query);
 $result = pg_query($dbconn, $query);
 
 $resp = '<tracks>';

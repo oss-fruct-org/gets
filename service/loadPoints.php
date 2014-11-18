@@ -93,9 +93,9 @@ $query .= 'INNER JOIN channel ON tag.channel_id = channel.id ';
 $query .= 'INNER JOIN subscribe ON channel.id = subscribe.channel_id ';
 $query .= 'INNER JOIN users ON subscribe.user_id=users.id ';
 
-if ($category_id) {
+#if ($category_id) {
     $query .= 'INNER JOIN category ON safe_cast_to_json(channel.description)->>\'category_id\'=category.id::text ';
-}
+#}
 
 $email_where = '(' . implode(' OR ', $email_where_arr) . ')';
 

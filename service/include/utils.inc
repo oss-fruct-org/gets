@@ -326,11 +326,9 @@ function unicode_callback(&$item, $key) {
  * Null $auth_token means public token
  * Returns: array (user_id, channel_id)
  */
-function require_channel_subscribed($dbconn, $auth_token, $channel_name) {
-    if ($auth_token) {
-        auth_set_token($auth_token);
+function require_channel_subscribed($dbconn, $channel_name, $is_public) {
+    if (!$is_public) {
         $email = auth_get_google_email();
-        session_commit();
     } else {
         $email = GEO2TAG_EMAIL;
     }
@@ -348,18 +346,11 @@ function require_channel_subscribed($dbconn, $auth_token, $channel_name) {
 }
 
 /*
- * Check that user with $auth_token owns channel $channel_name
+ * Check that current user owns channel $channel_name
  * Returns: array (user_id, channel_id)
  */
-function require_channel_owned($dbconn, $auth_token, $channel_name) {
-    if ($auth_token) {
-        auth_set_token($auth_token);
-        $email = auth_get_google_email();
-        session_commit();
-    } else {
-        throw new Exception('Token not specified');
-    }
-
+function require_channel_owned($dbconn, $channel_name) {
+    $email = auth_get_google_email();
     $result_check = pg_query_params($dbconn, 'SELECT users.id, channel.id FROM channel 
             INNER JOIN users ON users.id = channel.owner_id 
             WHERE users.email=$1 AND channel.name=$2;', array($email, $channel_name));
@@ -369,6 +360,16 @@ function require_channel_owned($dbconn, $auth_token, $channel_name) {
     }
 
     return $result_check_row;
+}
+
+function get_channel_id($dbconn, $channel_name) {
+    $result = pg_query_params($dbconn, 'SELECT id FROM channel WHERE name = $1;', array($channel_name));
+    $row = pg_fetch_row($result);
+    if ($row) {
+        return $row[0];
+    } else {
+        return null;
+    }
 }
 
 function date_gets_to_postgres($gets_date) {

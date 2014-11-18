@@ -95,6 +95,22 @@ function auth_get_google_email() {
     return $_SESSION['email'];
 }
 
+function auth_get_db_login($dbconn) {
+    if (!isset($_SESSION['db_login'])) {
+        auth_refresh_db_access($dbconn);
+    }
+
+    return $_SESSION['db_login'];
+}
+
+function auth_get_db_id($dbconn) {
+    if (!isset($_SESSION['db_id'])) {
+        auth_refresh_db_access($dbconn);
+    }
+
+    return $_SESSION['db_id'];
+}
+
 function auth_get_geo2tag_token() {
     if (!isset($_SESSION['geo2tag_token'])) {
         auth_refresh_geo2tag_access();
@@ -109,6 +125,22 @@ function auth_get_geo2tag_login() {
     }
 
     return $_SESSION['geo2tag_login'];
+}
+
+function auth_refresh_db_access($dbconn) {
+    $email = auth_get_google_email();
+    $result = pg_query_params($dbconn, 'SELECT id, login FROM users WHERE email=$1;', array($email));
+    $row = pg_fetch_row($result);
+
+    if (!$row) {
+        // Create new user
+        $result = pg_query_params($dbconn, 'INSERT INTO users VALUES ($1, $2, $3) RETURNING users.id, users.login', $email, $email, $email);
+        $row = pg_fetch_row($result);
+    }
+
+    list($id, $login) = $row; 
+    $_SESSION['db_id'] = $id;
+    $_SESSION['db_login'] = $login;
 }
 
 function auth_refresh_geo2tag_access() {

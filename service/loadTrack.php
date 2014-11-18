@@ -36,10 +36,14 @@ if (!$dom->schemaValidate('schemes/loadTrack.xsd')) {
 $auth_token = get_request_argument($dom, 'auth_token');
 $channel_name = get_request_argument($dom, 'name');
 
+if ($auth_token) {
+    set_auth_token($auth_token);
+}
+
 $dbconn = pg_connect(GEO2TAG_DB_STRING);
 
 try {
-    list($user_id, $channel_id) = require_channel_subscribed($dbconn, $auth_token, $channel_name);
+    list($user_id, $channel_id) = require_channel_subscribed($dbconn, $channel_name, $auth_token == null);
 } catch (Exception $ex) {
     send_error(1, $ex->getMessage());
     die();

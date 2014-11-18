@@ -75,7 +75,6 @@ class TestCreateTrack(unittest.TestCase):
     def test_create_check_2(self):
         name = gt.make_name_2()
         resp = self.create_track(name=name)
-        
         self.assertTrue(self.check_track_exists(self.get_track_id(resp)))
 
     def test_create_check_desc(self):

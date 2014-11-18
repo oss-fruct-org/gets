@@ -124,11 +124,12 @@ $data_array['longitude'] = /*(float)*/ $longitude_element->item(0)->nodeValue;
 $data_array['altitude'] = /*(float)*/ ($altitude_element->item(0)->nodeValue == null ? "0.0" : $altitude_element->item(0)->nodeValue);
 $data_array['time'] = $time;
 
+auth_set_token($auth_token);
 $dbconn = pg_connect(GEO2TAG_DB_STRING);
 
 # Check permission
 try {
-    list($user_id, $channel_id) = require_channel_owned($dbconn, $auth_token, $channel_name);
+    list($user_id, $channel_id) = require_channel_owned($dbconn, $channel_name);
 } catch (Exception $ex) {
     send_error(1, $ex->getMessage());
     die();

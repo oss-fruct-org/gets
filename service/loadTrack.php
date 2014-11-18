@@ -36,31 +36,14 @@ if (!$dom->schemaValidate('schemes/loadTrack.xsd')) {
 $auth_token = get_request_argument($dom, 'auth_token');
 $channel_name = get_request_argument($dom, 'name');
 
+$dbconn = pg_connect(GEO2TAG_DB_STRING);
+
 try {
-    if ($auth_token) {
-        auth_set_token($auth_token);
-        $email = auth_get_google_email();
-        session_commit();
-    } else {
-        $email = GEO2TAG_EMAIL;
-    }
-} catch (GetsAuthException $ex) {
+    list($user_id, $channel_id) = require_channel_subscribed($dbconn, $auth_token, $channel_name);
+} catch (Exception $ex) {
     send_error(1, $ex->getMessage());
     die();
 }
-
-$dbconn = pg_connect('host=localhost dbname=geo2tag user=geo2tag');
-$result_check = pg_query_params($dbconn, 'SELECT channel.id FROM channel 
-        INNER JOIN subscribe ON channel.id = subscribe.channel_id 
-        INNER JOIN users ON users.id = subscribe.user_id 
-        WHERE users.email=$1 AND channel.name=$2;', array($email, $channel_name));
-
-if (!($result_check_row = pg_fetch_row($result_check))) {
-    send_error(1, 'Channel not subscribed');
-    die();
-}
-
-$channel_id = $result_check_row[0];
 
 $result_tag = pg_query_params($dbconn, 'SELECT time, label, latitude, longitude, altitude, description, url FROM tag WHERE tag.channel_id=$1 ORDER BY time;',
         array($channel_id));

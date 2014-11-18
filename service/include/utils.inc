@@ -320,4 +320,60 @@ function unicode_callback(&$item, $key) {
         $item = mb_encode_numericentity($item, array(0x80, 0xffff, 0, 0xffff), 'UTF-8');
     }
 }
+
+/*
+ * Check that user with $auth_token subscribed to channel $channel_name
+ * Null $auth_token means public token
+ * Returns: array (user_id, channel_id)
+ */
+function require_channel_subscribed($dbconn, $auth_token, $channel_name) {
+    if ($auth_token) {
+        auth_set_token($auth_token);
+        $email = auth_get_google_email();
+        session_commit();
+    } else {
+        $email = GEO2TAG_EMAIL;
+    }
+
+    $result_check = pg_query_params($dbconn, 'SELECT users.id, channel.id FROM channel 
+            INNER JOIN subscribe ON channel.id = subscribe.channel_id 
+            INNER JOIN users ON users.id = subscribe.user_id 
+            WHERE users.email=$1 AND channel.name=$2;', array($email, $channel_name));
+
+    if (!($result_check_row = pg_fetch_row($result_check))) {
+        throw new Exception('Channel not subscribed');
+    }
+
+    return $result_check_row;
+}
+
+/*
+ * Check that user with $auth_token owns channel $channel_name
+ * Returns: array (user_id, channel_id)
+ */
+function require_channel_owned($dbconn, $auth_token, $channel_name) {
+    if ($auth_token) {
+        auth_set_token($auth_token);
+        $email = auth_get_google_email();
+        session_commit();
+    } else {
+        throw new Exception('Token not specified');
+    }
+
+    $result_check = pg_query_params($dbconn, 'SELECT users.id, channel.id FROM channel 
+            INNER JOIN users ON users.id = channel.owner_id 
+            WHERE users.email=$1 AND channel.name=$2;', array($email, $channel_name));
+
+    if (!($result_check_row = pg_fetch_row($result_check))) {
+        throw new Exception('Channel not subscribed');
+    }
+
+    return $result_check_row;
+}
+
+function date_gets_to_postgres($gets_date) {
+    $date_parsed = date_create_from_format('d m Y H:i:s.u', $gets_date);
+    return date_format($date_parsed, 'Y-m-d H:i:s.u');
+}
+
 ?>

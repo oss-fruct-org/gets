@@ -86,6 +86,12 @@ class TestCreatePoint(unittest.TestCase):
         self.assertEqual(0, gt.get_code(resp))
         self.assertTrue(self.check_point_exists(name))
 
+    def test_create_check_escape(self):
+        name = gt.make_name() + '\''
+        resp = self.create_point(name=name)
+        self.assertEqual(0, gt.get_code(resp))
+        self.assertTrue(self.check_point_exists(name))
+
     def test_delete_point(self):
         name = gt.make_name()
         resp = self.create_point(name=name)

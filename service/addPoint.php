@@ -104,20 +104,19 @@ if (!$category_id_defined) {
 
 // if time not defined then set now
 if ($time_element->length > 0) {
-    $time = $time_element->item(0)->nodeValue;
+    $time = date_gets_to_postgres($time_element->item(0)->nodeValue);
 } else {
-    $time = date("d m Y H:i:s.000");
+    $time = date("d-m-Y H:i:s.000");
 }
 
 $data_array = array();
-$data_array['channel'] = $channel_name;
-$data_array['title'] = $title_element->item(0)->nodeValue;
+$data_array['label'] = $title_element->item(0)->nodeValue;
 $data_array['description'] = $description;
 
 if ($link_element->length > 0 && strlen($link_element->item(0)->nodeValue) > 0) {
-    $data_array['link'] = $link_element->item(0)->nodeValue;
+    $data_array['url'] = $link_element->item(0)->nodeValue;
 } else {
-    $data_array['link'] = "{}";
+    $data_array['url'] = "{}";
 }
 
 $data_array['latitude'] = /*(float)*/ $latitude_element->item(0)->nodeValue;
@@ -125,13 +124,24 @@ $data_array['longitude'] = /*(float)*/ $longitude_element->item(0)->nodeValue;
 $data_array['altitude'] = /*(float)*/ ($altitude_element->item(0)->nodeValue == null ? "0.0" : $altitude_element->item(0)->nodeValue);
 $data_array['time'] = $time;
 
+$dbconn = pg_connect(GEO2TAG_DB_STRING);
+
+# Check permission
 try {
-    $response_array = process_json_request(WRITE_TAG_METHOD_URL, $data_array, $auth_token);
-} catch (Exception $e) {
-    send_error(1, $e->getMessage());
+    list($user_id, $channel_id) = require_channel_owned($dbconn, $auth_token, $channel_name);
+} catch (Exception $ex) {
+    send_error(1, $ex->getMessage());
     die();
 }
 
-send_result(0, 'success', '');
+$data_array['channel_id'] = $channel_id;
+$data_array['user_id'] = $user_id;
+
+if (!pg_insert($dbconn, 'tag', $data_array)) {
+    send_error(1, 'Can\'t insert point to database');
+} else {
+    send_result(0, 'success', '');
+}
+
 ?>
 

@@ -59,7 +59,7 @@ if ($space === SPACE_ALL && !$auth_token) {
     $space = SPACE_PUBLIC;
 }
 
-$dbconn = pg_connect('host=localhost dbname=geo2tag user=geo2tag');
+$dbconn = pg_connect(GEO2TAG_DB_STRING);
 
 // email where query
 $where_arr = array();

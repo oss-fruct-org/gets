@@ -52,6 +52,7 @@ $translations = array(
     'edit-point' => 'Edit point', 
     'remove-point' => 'Remove point', 
     'no-image' => 'No image', 
+    'extended-data' => 'Extended data',
     'point-remove-text' => 'Are you sure you want to remove this point? (This action cannot be cancelled.)', 
     'point-remove-success' => 'Point was successfully removed', 
     'put-point-in-point-info' => 'Put point into the «Point Info» window',

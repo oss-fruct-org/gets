@@ -122,25 +122,29 @@ PointsClass.prototype.downLoadPoints = function(paramsObj, callback) {
             throw new GetsWebClientException('Points Error', 'getPointsRequest: ' + $(jqXHR.responseText).find('message').text());
         }
         
-        Logger.debug(jqXHR.responseText);
+        //Logger.debug(jqXHR.responseText);
         var pointListItems = $($.parseXML(jqXHR.responseText)).find('Placemark');
         var pointsArray = [];
-        $(pointListItems).each(function(index, value) {
+        for (var i = 0, len = pointListItems.length; i < len; i++) {          
             var pointObj = {};
-            pointObj.index = $(value).find("[name='idx']").length ? $(value).find("[name='idx']").text() : '';
-            pointObj.uuid = $(value).find("[name='uuid']").length ? $(value).find("[name='uuid']").text() : '';
-            pointObj.name = $(value).find('name').length ? $(value).find('name').text() : '';
-            pointObj.description = $(value).find('description').length ? $(value).find('description').text() : '';
-            pointObj.url = $(value).find("[name='url']").length ? $(value).find("[name='url']").text() : '';
-            pointObj.descriptionExt = $(value).find("[name='description']").length ? $(value).find("[name='description']").text() : '';
-            pointObj.audio = $(value).find("[name='audio']").length ? $(value).find("[name='audio']").text() : '';
-            pointObj.photo = $(value).find("[name='photo']").length ? $(value).find("[name='photo']").text() : '';
-            pointObj.coordinates = $(value).find('coordinates').length ? $(value).find('coordinates').text() : '';
-            pointObj.access = $(value).find("[name='access']").length ? $(value).find("[name='access']").text() : '';
-            pointObj.categoryId = $(value).find("[name='category_id']").length ? $(value).find("[name='category_id']").text() : '';
+            var pointExtendedData = [];
+            
+            pointObj.name = $(pointListItems[i]).find('name').length ? $(pointListItems[i]).find('name').text() : '';
+            pointObj.description = $(pointListItems[i]).find('description').length ? $(pointListItems[i]).find('description').text() : '';
+            pointObj.uuid = $(pointListItems[i]).find("[name='uuid']").length ? $(pointListItems[i]).find("[name='uuid']").text() : '';
+            pointObj.access = $(pointListItems[i]).find("[name='access']").length ? $(pointListItems[i]).find("[name='access']").text() : '';
+            pointObj.photo = $(pointListItems[i]).find("[name='photo']").length ? $(pointListItems[i]).find("[name='photo']").text() : '';
+            pointObj.audio = $(pointListItems[i]).find("[name='audio']").length ? $(pointListItems[i]).find("[name='audio']").text() : '';
+            pointObj.url = $(pointListItems[i]).find("[name='url']").length ? $(pointListItems[i]).find("[name='url']").text() : '';
+            pointObj.coordinates = $(pointListItems[i]).find('coordinates').length ? $(pointListItems[i]).find('coordinates').text() : '';
+            
+            $(pointListItems[i]).find('Data').each(function(index, newValue) {
+                pointExtendedData.push({name: $(newValue).attr('name'), value: $(newValue).text()});
+            });                                    
+            pointObj.extendedData = pointExtendedData;
 
             pointsArray.push(pointObj);
-        });
+        }
 
         //Logger.debug(pointsArray);
         self.pointList = pointsArray;

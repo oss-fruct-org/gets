@@ -83,23 +83,33 @@ if (!array_key_exists("uuid", $extended_data_array)) {
     $extended_data_array["uuid"] = uuidv4();
 }
 
-# Description always contains json encoded data
-if (function_exists('unicode_json_encode')) {
-    $description = unicode_json_encode($extended_data_array);
-} else {
-    $description = json_encode($extended_data_array, JSON_UNESCAPED_UNICODE);
-}
-
+auth_set_token($auth_token);
+$dbconn = pg_connect(GEO2TAG_DB_STRING);
 
 $channel_name = null;
 if (!$category_id_defined) {
     $channel_name = $channel_name_element->item(0)->nodeValue;
 } else {
-    $channel_name = ensure_category_channel($auth_token, $category_id_element->item(0)->nodeValue);
+    $extended_data_array["category_id"] = $category_id_element->item(0)->nodeValue;
+
+    try {
+        $channel_name = ensure_category_channel($dbconn, $auth_token, $category_id_element->item(0)->nodeValue);
+    } catch (Exception $e) {
+        send_error(1, $e->getMessage());
+        die();
+    }
+
     if (!$channel_name) {
         send_error(1, "Request of category's channel failed");
         die();
     }
+}
+
+# Description always contains json encoded data
+if (function_exists('unicode_json_encode')) {
+    $description = unicode_json_encode($extended_data_array);
+} else {
+    $description = json_encode($extended_data_array, JSON_UNESCAPED_UNICODE);
 }
 
 // if time not defined then set now
@@ -123,9 +133,6 @@ $data_array['latitude'] = /*(float)*/ $latitude_element->item(0)->nodeValue;
 $data_array['longitude'] = /*(float)*/ $longitude_element->item(0)->nodeValue;
 $data_array['altitude'] = /*(float)*/ ($altitude_element->item(0)->nodeValue == null ? "0.0" : $altitude_element->item(0)->nodeValue);
 $data_array['time'] = $time;
-
-auth_set_token($auth_token);
-$dbconn = pg_connect(GEO2TAG_DB_STRING);
 
 # Check permission
 try {

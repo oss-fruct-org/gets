@@ -109,5 +109,16 @@ class TestCreateTrack(unittest.TestCase):
         self.assertEqual(0, gt.get_code(resp))
         self.assertFalse(self.check_track_exists(name))
 
+    def test_keep_old_tracks(self):
+        name = gt.make_name()
+        self.create_track(name=name)
+        
+        name2 = gt.make_name()
+        self.create_track(name=name2, update='true')
+        self.create_track(name=name2, update='true')
+
+        self.assertTrue(self.check_track_exists(name))
+        self.assertTrue(self.check_track_exists(name2))
+
 if __name__ == "__main__":
     unittest.main()

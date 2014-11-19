@@ -137,7 +137,7 @@ while ($row = pg_fetch_row($result)) {
 
     //Get inner description
     $inner_description = null;
-    if ($description_json) {
+    if ($description_json && array_key_exists('description', $description_json)) {
         $inner_description = $description_json['description'];
     }
 

@@ -82,7 +82,7 @@ $data_array['url'] = $url;
 $data_array['name'] = $track_id;
 
 try {
-    $user_id = auth_get_db_id($dbconn, $auth_token);
+    $user_id = auth_get_db_id($dbconn);
     $existing_channel_id = get_channel_id($dbconn, $track_id);
 } catch (Exception $e) {
     send_error(1, $e->getMessage());
@@ -99,9 +99,9 @@ if ($existing_channel_id && !$need_update) {
     die();
 }
 
-if ($need_update) {
-    if (!pg_query_params($dbconn, 'UPDATE channel SET name=$1, description=$2, url=$3, owner_id=$4;', 
-                array($track_id, $desc_json, $url, $user_id))) {
+if ($existing_channel_id && $need_update) {
+    if (!pg_query_params($dbconn, 'UPDATE channel SET name=$1, description=$2, url=$3, owner_id=$4 WHERE channel.id=$5;', 
+                array($track_id, $desc_json, $url, $user_id, $existing_channel_id))) {
         send_error(1, 'Database error');
         die();
     }

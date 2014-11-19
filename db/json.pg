@@ -1,5 +1,9 @@
 create or replace function safe_cast_to_json(text) returns json as $$
 begin
+    if $1 is null or substring($1, 0, 2) != '{' then
+        return '{}'::json;
+    end if;
+
     return cast($1 as json);
 exception
     when invalid_text_representation then

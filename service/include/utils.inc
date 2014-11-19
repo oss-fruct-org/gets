@@ -242,30 +242,6 @@ function get_categories($token = null) {
     return $ret;
 }
 
-/**
-    Checks if channel for category_id exists and creates it otherwise
-    Params:
-        $auth_token - if not null channel will be private
-        $category_id - id of category
-    
-    Returns:
-        name of channel
-  */
-function ensure_category_channel($auth_token, $category_id) {
-    $xmlrpc_request = xmlrpc_encode_request('getCategoryChannel',
-        array('gets_token' => $auth_token,
-              'category_id' => $category_id));
-
-    $xmlrpc_response =  process_request(GETS_SCRIPTS_URL, $xmlrpc_request, 'Content-Type: text/xml');
-    $xmlrpc = xmlrpc_decode($xmlrpc_response);
-
-    if (is_array($xmlrpc) && xmlrpc_is_fault($xmlrpc)) {
-        return null;
-    }
-
-    $channel_name = $xmlrpc;
-    return $channel_name;
-}
 
 function get_channel_info($channel_name, $token) {
     $request = xmlrpc_encode_request('getChannelDescription', array('channel' => $channel_name, 'gets_token' => $token));
@@ -319,6 +295,42 @@ function unicode_callback(&$item, $key) {
     if (is_string($item)) {
         $item = mb_encode_numericentity($item, array(0x80, 0xffff, 0, 0xffff), 'UTF-8');
     }
+}
+
+/**
+    Checks if channel for category_id exists and creates it otherwise
+    Params:
+        $auth_token - if not null channel will be private
+        $category_id - id of category
+    
+    Returns:
+        id of channel
+  */
+function ensure_category_channel($dbconn, $auth_token, $category_id) {
+    $user_id = auth_get_db_id($dbconn);
+    $channel_name = "ch+${category_id}+${user_id}";
+    $channel_name_escaped = pg_escape_string($dbconn, $channel_name);
+
+    $select_request = "SELECT channel.id FROM channel WHERE channel.name='${channel_name_escaped}';";
+    $select_resp = pg_query($dbconn, $select_request);
+    error_log($select_request);
+
+    if (pg_num_rows($select_resp) == 0) {
+        $desc_array = array('description' => "Private channel for category ${category_name} user ${user_name}",
+                'category_id' => "${category_id}");
+        $description = pg_escape_string($dbconn, json_encode($desc_array));
+
+        $insert_request = "INSERT INTO channel (name, description, url, owner_id) VALUES ('${channel_name_escaped}', '${description}', '{}', ${user_id}) RETURNING channel.id;";
+        $insert_resp = pg_query($dbconn, $insert_request);
+
+        $tmp_row = pg_fetch_row($insert_resp);
+        $channel_id = $tmp_row[0];
+
+        $insert_subscribe_request = "INSERT INTO subscribe VALUES (${channel_id}, ${user_id});";
+        pg_query($dbconn, $insert_subscribe_request);
+    }
+
+    return $channel_name;
 }
 
 /*

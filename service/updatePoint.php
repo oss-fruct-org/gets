@@ -52,34 +52,80 @@ $new_longitude = get_request_argument($dom, 'longitude');
 $new_altitude = get_request_argument($dom, 'altitude');
 $new_latitude = get_request_argument($dom, 'latitude');
 
-$xmlrpc_array = array('gets_token' => $auth_token);
-if ($point_name)
-    $xmlrpc_array['name'] = $point_name;
-if ($point_category)
-    $xmlrpc_array['category_name'] = $point_category;
-if ($channel_name)
-    $xmlrpc_array['channel'] = $channel_name;
-if ($uuid)
-    $xmlrpc_array['uuid'] = $uuid;
+$dbconn = pg_connect(GEO2TAG_DB_STRING);
+auth_set_token($auth_token);
 
-if ($new_label !== null) $xmlrpc_array['label'] = $new_label;
-if ($new_url !== null) $xmlrpc_array['url'] = $new_url;
-if ($new_description !== null) $xmlrpc_array['description'] = $new_description;
-if ($new_latitude !== null) $xmlrpc_array['latitude'] = $new_latitude;
-if ($new_longitude !== null) $xmlrpc_array['longitude'] = $new_longitude;
-if ($new_altitude !== null) $xmlrpc_array['altitude'] = $new_altitude;
-
-
-$xmlrpc_request = xmlrpc_encode_request('updateTag', $xmlrpc_array);
-
-$xmlrpc_response =  process_request(GETS_SCRIPTS_URL, $xmlrpc_request, 'Content-Type: text/xml');
-$xmlrpc = xmlrpc_decode($xmlrpc_response);
-
-if (is_array($xmlrpc) && xmlrpc_is_fault($xmlrpc)) {
-    send_error(1, 'Error: internal error: can\'t update point');
+try {
+    $email = auth_get_google_email();
+} catch (Exception $e) {
+    send_error(1, $e->getMessage());
     die();
 }
 
-send_result(0, "Tag successfully updated", $xmlrpc);
+$where_arr = array('TRUE');
+
+// Point name condition
+if ($point_name) {
+    $point_name_escaped = pg_escape_string($dbconn, $point_name);
+    $where_arr[] = "tag.label='${point_name}'";
+}
+
+// Point category condition
+if ($point_category) {
+    $point_category_escaped = pg_escape_string($dbconn, $point_category);
+    $where_arr[] = "safe_cast_to_json(tag.description)->>'category_id'='${point_category_escaped}'";
+}
+
+// UUID condition
+if ($uuid) {
+    $uuid_escaped = pg_escape_string($dbconn, $uuid);
+    $where_arr[] = "safe_cast_to_json(tag.description)->>'uuid'='${uuid_escaped}'";
+}
+
+// Channel name condition
+if ($channel_name) {
+    $channe_name_escaped = pg_escape_string($dbconn, $channel_name);
+    $where_arr[] = "channel.name='${channe_name_escaped}'";
+}
+
+// User account condition
+$email_escaped = pg_escape_string($dbconn, $email);
+$where_arr[] = "users.email='${email_escaped}'";
+$select_where = implode(' AND ', $where_arr);
+
+$select_query = "SELECT tag.id FROM tag 
+    INNER JOIN channel ON tag.channel_id=channel.id 
+    INNER JOIN users ON channel.owner_id=users.id 
+    WHERE ${select_where}";
+
+function add_set_string($field, $value, &$out_arr) {
+    global $dbconn;
+    if ($value) {
+        $key = $field;
+        $value = pg_escape_string($dbconn, $value);
+
+        $out_arr[] = "{$key}='{$value}'";
+    }
+}
+
+$set_array = array();
+add_set_string('label', $new_label, $set_array);
+add_set_string('url', $new_url, $set_array);
+add_set_string('description', $new_description, $set_array);
+add_set_string('latitude', $new_latitude, $set_array);
+add_set_string('longitude', $new_longitude, $set_array);
+add_set_string('altitude', $new_altitude, $set_array);
+$set_string = implode($set_array, ',');
+
+if (count($set_array) == 0) {
+    send_error(1, "No new values given");
+    die();
+}
+
+$base_query = "UPDATE tag SET {$set_string} WHERE tag.id IN ($select_query) RETURNING tag.id;";
+$res = pg_query($dbconn, $base_query);
+$count = pg_num_rows($res);
+
+send_result(0, "Tag successfully updated", "$count");
 
 ?>

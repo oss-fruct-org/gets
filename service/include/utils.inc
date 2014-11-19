@@ -313,7 +313,6 @@ function ensure_category_channel($dbconn, $auth_token, $category_id) {
 
     $select_request = "SELECT channel.id FROM channel WHERE channel.name='${channel_name_escaped}';";
     $select_resp = pg_query($dbconn, $select_request);
-    error_log($select_request);
 
     if (pg_num_rows($select_resp) == 0) {
         $desc_array = array('description' => "Private channel for category ${category_name} user ${user_name}",

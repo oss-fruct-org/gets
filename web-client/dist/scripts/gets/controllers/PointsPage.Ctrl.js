@@ -108,21 +108,11 @@ PointsPage.prototype.initPage = function() {
     //Init first page
     this.currentView = this._pointsMain;
     this.changeForm();
-
+    
     // Init Points main
     this._pointsMain.toggleOverlay();
     this._pointsMain.setLatitude(this._mapCtrl.getMapCenter().lat);
     this._pointsMain.setLongitude(this._mapCtrl.getMapCenter().lng);
-    var formDataInit = $(this.document).find('#point-main-form').serializeArray();
-    this._points.downLoadPoints(formDataInit, function () {
-        self._pointsMain.placePointsInPointList(self._points.getPointList());
-        self._mapCtrl.removePointsFromMap();
-        self._mapCtrl.placePointsOnMap(self._points.getPointList(), {
-            url: '#form=' + PointsPage.POINT_INFO + '&point_uuid=',
-            text: $(self._pointInfo.getView()).data('putpoint')
-        });
-        self._pointsMain.toggleOverlay();
-    });
     
 
     // Hash change handler
@@ -239,18 +229,9 @@ PointsPage.prototype.initPage = function() {
 
     // 
     $(this.document).on('submit', '#point-main-form', function(e) {
-        e.preventDefault();               
-        var formData = $(this).serializeArray();
-        Logger.debug(formData);
-        self._points.downLoadPoints(formData, function () {
-            self._pointsMain.placePointsInPointList(self._points.getPointList(false));
-            self._mapCtrl.removePointsFromMap();
-            self._mapCtrl.placePointsOnMap(self._points.getPointList(), {
-                url: '#form=' + PointsPage.POINT_INFO + '&point_uuid=',
-                text: $(self._pointInfo.getView()).data('putpoint')
-            });
-            self._pointsMain.toggleOverlay();
-        });
+        e.preventDefault();  
+        
+        self.downloadPointsHandler();       
     });
     
     //dragend
@@ -265,16 +246,7 @@ PointsPage.prototype.initPage = function() {
             self._pointsMain.getRadius() * 1000
         );
         
-        var formDataInit = $(self.document).find('#point-main-form').serializeArray();
-        self._points.downLoadPoints(formDataInit, function () {
-            self._pointsMain.placePointsInPointList(self._points.getPointList());
-            self._mapCtrl.removePointsFromMap();
-            self._mapCtrl.placePointsOnMap(self._points.getPointList(), {
-                url: '#form=' + PointsPage.POINT_INFO + '&point_uuid=',
-                text: $(self._pointInfo.getView()).data('putpoint')
-            });
-            self._pointsMain.toggleOverlay();
-        });
+        self.downloadPointsHandler();
     });
     
     // upload picture show/hide handler
@@ -393,6 +365,7 @@ PointsPage.prototype.initPage = function() {
         $(self.document).find('#edit-point-audio-input-url').removeAttr('disabled');
     });
     
+    this.downloadPointsHandler();
     // get user's coordinates
     if (this.window.navigator.geolocation) {
         this.window.navigator.geolocation.getCurrentPosition(function(position) {           
@@ -401,16 +374,9 @@ PointsPage.prototype.initPage = function() {
             self._mapCtrl.setMapCenter(position.coords.latitude, position.coords.longitude);
             self._pointsMain.setLatitude(Math.floor(position.coords.latitude * 10000) / 10000);
             self._pointsMain.setLongitude(Math.floor(position.coords.longitude * 10000) / 10000);
-            var formDataInit = $(self.document).find('#point-main-form').serializeArray();
-            self._points.downLoadPoints(formDataInit, function () {
-                self._pointsMain.placePointsInPointList(self._points.getPointList());
-                self._mapCtrl.removePointsFromMap();
-                self._mapCtrl.placePointsOnMap(self._points.getPointList(), {
-                    url: '#form=' + PointsPage.POINT_INFO + '&point_uuid=',
-                    text: $(self._pointInfo.getView()).data('putpoint')
-                });
-                self._pointsMain.toggleOverlay();
-            });
+            
+            self.downloadPointsHandler();
+            
         }, this.handleGeoLocationError);
     } else {
        Logger.debug('geolocation is not supported by this browser');
@@ -530,7 +496,7 @@ PointsPage.prototype.addPointHandler = function(formData) {
 PointsPage.prototype.downloadPointsHandler = function() {
     var that = this;
     try {
-        this._pointsMain.toggleOverlay();
+        this._pointsMain.showOverlay();
         var formData = $(this.document).find('#point-main-form').serializeArray();
 
         this._points.downLoadPoints(formData, function () {
@@ -538,10 +504,10 @@ PointsPage.prototype.downloadPointsHandler = function() {
             that._mapCtrl.removePointsFromMap();
             that._pointsMain.placePointsInPointList(pointList);
             that._mapCtrl.placePointsOnMap(pointList, {
-                url: '#form=' + PointsPage.POINT_INFO + '&point_name=',
+                url: '#form=' + PointsPage.POINT_INFO + '&point_uuid=',
                 text: $(that._pointInfo.getView()).data('putpoint')
             });
-            that._pointsMain.toggleOverlay();
+            that._pointsMain.hideOverlay();
         });
     } catch (Exception) {
         MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);

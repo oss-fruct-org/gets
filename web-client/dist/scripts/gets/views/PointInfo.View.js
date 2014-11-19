@@ -24,14 +24,15 @@ function PointInfo(document, pointInfo) {
  */
 PointInfo.prototype.placePointInPointInfo = function(point, isAuth) {
     // Get all elements
-    var nameElement = $('#point-info-name');
-    var coordsElementLat = $('#point-info-coords-lat');
-    var coordsElementLon = $('#point-info-coords-lon');
-    var coordsElementAlt = $('#point-info-coords-alt');
-    var descElement = $('#point-info-description');
-    var urlElement = $('#point-info-url a');
-    var audioElement = $('#point-info-audio');
-    var photoElement = $('#point-info-image img');
+    var nameElement = $(this.pointInfo).find('#point-info-name');
+    var coordsElementLat = $(this.pointInfo).find('#point-info-coords-lat');
+    var coordsElementLon = $(this.pointInfo).find('#point-info-coords-lon');
+    var coordsElementAlt = $(this.pointInfo).find('#point-info-coords-alt');
+    var descElement = $(this.pointInfo).find('#point-info-description');
+    var urlElement = $(this.pointInfo).find('#point-info-url a');
+    var audioElement = $(this.pointInfo).find('#point-info-audio');
+    var photoElement = $(this.pointInfo).find('#point-info-image img');
+    var extendedDataElement = $(this.pointInfo).find('#point-info-extended-data');
 
     // Clear value of all elements
     $(nameElement).text('');
@@ -42,6 +43,7 @@ PointInfo.prototype.placePointInPointInfo = function(point, isAuth) {
     $(urlElement).attr('href', '').text('');
     $(audioElement).empty();
     $(photoElement).attr('src', '');
+    $(extendedDataElement).html('');
 
     // Then fill elemnts with new values 
     $(nameElement).text(point.name).attr('title', point.name);
@@ -53,8 +55,10 @@ PointInfo.prototype.placePointInPointInfo = function(point, isAuth) {
     
     if (point.descriptionExt !== '') {
         $(descElement).html(point.descriptionExt);
-    } else {      
-        var json = null;
+    } else {
+        $(descElement).html(point.description);
+    }
+        /*var json = null;
         var descriptionText = '';
         try {          
             json = JSON.parse(point.description);
@@ -62,13 +66,14 @@ PointInfo.prototype.placePointInPointInfo = function(point, isAuth) {
         
         if (json) {
             $.each(json, function (key, val) {
-                descriptionText += '<div class="emulate-tab"><label>' + key + ': &nbsp;</label><div class="inline">' + val + '</div></div>';
+                
             });
             $(descElement).html(descriptionText);
         } else {
-            $(descElement).html(point.description);
-        }       
-    }
+            
+        }*/
+    
+
 
     
     if (point.url !== '') {
@@ -88,6 +93,12 @@ PointInfo.prototype.placePointInPointInfo = function(point, isAuth) {
     if (point.photo !== '') {
         $(photoElement).attr('src', point.photo);
     }
+    
+    var extendedDataText = '';
+    for (var i = 0, len = point.extendedData.length; i < len; i++) {
+        extendedDataText += '<div class="emulate-tab"><label>' + point.extendedData[i].name + ': &nbsp;</label><div class="inline">' + point.extendedData[i].value + '</div></div>';
+    }
+    $(extendedDataElement).html(extendedDataText);
 
     var pointsInfoEdit = $('#point-info-edit');
     var pointsInfoRemove = $('#point-info-remove');

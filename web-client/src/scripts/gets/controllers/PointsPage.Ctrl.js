@@ -365,6 +365,41 @@ PointsPage.prototype.initPage = function() {
         $(self.document).find('#edit-point-audio-input-url').removeAttr('disabled');
     });
     
+    // Add field handler
+    $(this.document).on('click', '#edit-point-add-field-open', function(e) {
+        e.preventDefault();
+        if (!$(self.document).find('#edit-point-add-field-open-button').hasClass('hidden')) {
+            $(self.document).find('#edit-point-add-field-open-button').addClass('hidden');
+            $(self.document).find('#edit-point-add-field-input-box').removeClass('hidden').addClass('show');
+            $(self.document).find('#edit-point-add-field-control-buttons').removeClass('hidden').addClass('show');
+            
+            $(self.document).find('#edit-point-page .action-menu-inner-content').animate({
+                scrollTop: $('#edit-point-add-field-input-box').offset().top
+            }, 2000);
+        }
+    });
+    
+    $(this.document).on('click', '#edit-point-add-field-save', function(e) {
+        e.preventDefault();//edit-point-add-field-save  class="form-group" 
+        var extendedData = $(self.document).find('#edit-point-extended-data');
+        var extendedDataHTML = $(extendedData).html();
+        var fieldName = $(self.document).find('#edit-point-add-field-input').val();
+        extendedDataHTML += '<div class="form-group"><label for="' + fieldName + '" class="block">' + fieldName + '</label><input name="' + fieldName + '" class="form-control" type="text" /></div>';
+        $(extendedData).html(extendedDataHTML);
+        
+        // close
+        $(self.document).find('#edit-point-add-field-cancel').click();
+    });
+    
+    // Close add field handler
+    $(this.document).on('click', '#edit-point-add-field-cancel', function(e) {
+        e.preventDefault();
+        $(self.document).find('#edit-point-add-field-input').val('');
+        $(self.document).find('#edit-point-add-field-open-button').removeClass('hidden').addClass('show');
+        $(self.document).find('#edit-point-add-field-input-box').removeClass('show').addClass('hidden');
+        $(self.document).find('#edit-point-add-field-control-buttons').removeClass('show').addClass('hidden');
+    });
+    
     this.downloadPointsHandler();
     // get user's coordinates
     if (this.window.navigator.geolocation) {
@@ -441,6 +476,7 @@ PointsPage.prototype.showAddPoint = function() {
     try {
         this._headerView.changeOption($(this._pointAdd.getView()).data('pagetitleAdd'), 'glyphicon-chevron-left', '#form=main');
         this._utils.clearAllInputFields(this._pointAdd.getView());
+        this._pointAdd.removeCustomFields();
         
         this._pointAdd.placeCategoriesInPointAdd(this._categories.getCategories());
         
@@ -457,7 +493,8 @@ PointsPage.prototype.showEditPoint = function() {
     try {
         var point = this._points.getPoint();
         this._headerView.changeOption($(this._pointEdit.getView()).data('pagetitleEdit'), 'glyphicon-chevron-left', '#form=point_info&point_uuid=' + point.uuid);
-        this._pointEdit.placePointInPointEdit(point);
+        this._pointEdit.removeCustomFields();
+        this._pointEdit.placePointInPointEdit(point);      
         
         this.currentView.hideView();
         this.currentView = this._pointEdit;
@@ -479,7 +516,9 @@ PointsPage.prototype.addPointHandler = function(formData) {
             this._pointAdd.toggleOverlay();
 
             var paramsObj = $(formData).serializeArray();
-            paramsObj.push({name: 'time', value: this._utils.getDateTime()});
+            Logger.debug(paramsObj);
+            //paramsObj.push({name: 'time', value: this._utils.getDateTime()});
+            paramsObj.push({name: 'uuid', value: this._utils.guid()()});
             this._points.addPoint(paramsObj, function () {
                 that.window.location.replace('#form=' + PointsPage.MAIN);
                 MessageBox.showMessage($(that._pointAdd.getView()).data('messagesuccessAdd'), MessageBox.SUCCESS_MESSAGE);

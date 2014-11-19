@@ -15,14 +15,14 @@ echo    '<div id="edit-point-page" class="action-menu-container hidden" data-pag
                 <div class="action-menu-inner-content">
                     <div class="form-group">
                         <label for="edit-point-name-input">' . getString('name','Name') . ' *</label>
-                        <input id="edit-point-name-input" class="form-control" name="title" type="text" required/>            
+                        <input id="edit-point-name-input" class="form-control" name="title" type="text" required />            
                     </div>
                     <div class="form-group">
                         <label for="edit-point-desc-input">' . getString('description','Description') . '</label>
                         <div>
-                            <div><label><input id="edit-point-desc-input-raw-check" type="checkbox" /> Raw JSON</label><label><input id="edit-point-desc-input-keyvalue-check" type="checkbox" /> Key-Value input</label></div>
+                            <!--<div><label><input id="edit-point-desc-input-raw-check" type="checkbox" /> Raw JSON</label><label><input id="edit-point-desc-input-keyvalue-check" type="checkbox" /> Key-Value input</label></div>-->
                             <textarea id="edit-point-desc-input" class="form-control" name="description"></textarea>
-                            <div id="edit-point-desc-input-keyvalue"></div>
+                            <!--<div id="edit-point-desc-input-keyvalue"></div>-->
                         </div>    
                     </div>
                     <div class="form-group">
@@ -51,11 +51,11 @@ echo    '<div id="edit-point-page" class="action-menu-container hidden" data-pag
                             <div class="form-group row">
                                 <div class="col-md-6">
                                     <label for="edit-point-lat-input" class="control-label">' . getString('latitude','Latitude') . '</label>                                               
-                                    <input id="edit-point-lat-input" name="latitude" type="text" class="form-control" value="0.0" required">
+                                    <input id="edit-point-lat-input" name="latitude" type="text" class="form-control" value="0.0" required />
                                 </div>
                                 <div class="col-md-6">
                                     <label for="edit-point-lon-input" class="control-label">' . getString('longitude','Longitude') . '</label>                                               
-                                    <input id="edit-point-lon-input" name="longitude" type="text" class="form-control" value="0.0" required">
+                                    <input id="edit-point-lon-input" name="longitude" type="text" class="form-control" value="0.0" required />
                                 </div>
                                 <input id="edit-point-alt-input" name="altitude" type="hidden" value="0.0" required>
                             </div>
@@ -68,14 +68,14 @@ echo    '<div id="edit-point-page" class="action-menu-container hidden" data-pag
                                 <input id="edit-point-radius-default" type="checkbox" data-default-value="63"> ' . getString('use-default-value','Use default value') . '
                             </label>
                         </div>
-                        <input id="edit-point-active-radius-input" name="radius" type="text" class="form-control" value="63" required">                       
+                        <input id="edit-point-active-radius-input" name="radius" type="text" class="form-control" value="63" required />                       
                     </div>
                     <div class="form-group">
                         <label for="edit-point-picture-input">' . getString('picture','Picture') . '<br>' . getString('paste-url-or','Paste URL or') . ' <a id="edit-point-picture-toggle-upload" href="#">' . getString('upload-file','upload file') . '</a></label>
                         <button type="button" class="btn btn-default btn-xs" data-toggle="popover" title="Data upload" data-content="ddddd" data-container="#edit-point-page" data-placement="right" data-trigger="focus">
                             <span class="glyphicon glyphicon-question-sign"></span>
                         </button>
-                        <input id="edit-point-picture-input-url" name="picture-url" type="url" class="form-control">
+                        <input id="edit-point-picture-input-url" name="photo" type="url" class="form-control">
                         <br>
                         <div id="edit-point-picture-upload" class="hidden">
                             <input id="edit-point-picture-input-file" class="form-control" type="file" accept="image/*" /> 
@@ -100,7 +100,7 @@ echo    '<div id="edit-point-page" class="action-menu-container hidden" data-pag
                     </div>
                     <div class="form-group">
                         <label for="edit-point-audio-input">' . getString('audio-track','Audio track') . '<br>' . getString('paste-url-or','Paste URL or') . ' <a id="edit-point-audio-toggle-upload" href="#">' . getString('upload-file','upload file') . '</a></label>
-                        <input id="edit-point-audio-input-url" name="audio-url" type="url" class="form-control">
+                        <input id="edit-point-audio-input-url" name="audio" type="url" class="form-control">
                         <br>
                         <div id="edit-point-audio-upload" class="hidden">
                             <input id="edit-point-audio-input-file" class="form-control" type="file" accept="audio/*" /> 
@@ -123,6 +123,33 @@ echo    '<div id="edit-point-page" class="action-menu-container hidden" data-pag
                             </div>
                         </div>
                     </div>
+                    <div id="edit-point-extended-data">
+                    </div>
+                    <div class="form-group">
+                        <div id="edit-point-add-field-open-button" class="btn-group btn-group-justified">
+                            <div class="btn-group">
+                                <button id="edit-point-add-field-open" type="button" class="btn btn-default">
+                                    <span class="glyphicon glyphicon-plus-sign"></span> ' . getString('add-field','Add field') . '
+                                </button>
+                            </div>
+                        </div>
+                        <div id="edit-point-add-field-input-box" class="hidden">
+                            <label for="edit-point-add-field-input">' . getString('name','Name') . '</label>
+                            <input id="edit-point-add-field-input" class="form-control" type="text" placeholder="' . getString('enter-name','') . '"/>
+                        </div>
+                        <div id="edit-point-add-field-control-buttons" class="btn-group btn-group-justified hidden">
+                            <div class="btn-group">
+                                <button id="edit-point-add-field-save" type="button" class="btn btn-default">
+                                    <span class="glyphicon glyphicon-plus-sign"></span> ' . getString('add','Add') . '
+                                </button>
+                            </div>
+                            <div class="btn-group">
+                                <button id="edit-point-add-field-cancel" type="button" class="btn btn-default">
+                                    <span class="glyphicon glyphicon-remove-sign"></span> ' . getString('cancel','Cancel') . '
+                                </button>
+                            </div>
+                        </div>
+                    </div>    
                     <p>* - ' . getString('required-fields','Required fields') . '</p>
                 </div>              
             </form>           

@@ -75,6 +75,10 @@ $translations = array(
     'upload' => 'Загрузить', 
     'clear' => 'Очистить', 
     'close' => 'Закрыть', 
+    'add-field' => 'Добавить поле',
+    'add' => 'Добавить',
+    'enter-name' => 'Введите сюда имя нового поля',
+    'cancel' => 'Отменить',
     'point-add-success' => 'Точка была успешно добавлена', 
     
     // Edit Point widget strings

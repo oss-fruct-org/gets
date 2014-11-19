@@ -655,6 +655,7 @@ TracksPage.prototype.addPointHandler = function (form) {
             paramsObj.push({name: 'channel', value: trackName});
             paramsObj.push({name: 'time', value: this._utils.getDateTime()});
             paramsObj.push({name: 'index', value: this._tracks.getTrack(trackName, true).points.length + 1});
+            paramsObj.push({name: 'uuid', value: this._utils.guid()()});
             var that = this;
             this._points.addPoint(paramsObj, function () {
                 var track = that._tracks.getTrack(trackName, false);

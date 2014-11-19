@@ -32,33 +32,45 @@ if (!$dom->schemaValidate('schemes/getCategories.xsd')) {
     die();
 }
 
-$auth_token_element = $dom->getElementsByTagName('auth_token');
-
-$data = '<methodCall><methodName>getCategories</methodName><params><param><struct><member><name>projectName</name><value>'.GEO2TAG_USER.'</value></member></struct></param></params></methodCall>';
-$response =  process_request(GETS_SCRIPTS_URL, $data, 'Content-Type: text/xml');
-if (!$response) {
-	send_error(1, 'Error: problem with request to geo2tag.');
-	die();
+$auth_token = get_request_argument($dom, 'auth_token');
+$dbconn = pg_connect(GEO2TAG_DB_STRING);
+// Token unused but still check if supplied
+try {
+    if ($auth_token) {
+        auth_set_token($auth_token);
+        $private_email = auth_get_google_email();
+        $private_email_escaped = pg_escape_string($dbconn, $private_email);
+        session_commit();
+    }
+} catch (GetsAuthException $ex) {
+    send_error(1, $ex->getMessage());
+    die();
 }
 
-$content = '<categories>';
+$public_login_escaped = pg_escape_string(GEO2TAG_USER);
+$query = "SELECT category.id, category.name, category.description, category.url FROM category JOIN users ON category.owner_id=users.id
+    WHERE users.login='${public_login_escaped}';";
+$result = pg_query($dbconn, $query);
 
-$dom_response = new DOMDocument();
-$dom_response->loadXML($response);
+$xml = '<categories>';
 
-$categories = $dom_response->getElementsByTagName('struct');
-foreach ($categories as $category) {
-	$members = $category->getElementsByTagName('member');
-	$content .= '<category>';
-	foreach ($members as $member) {
-		$tag_name = $member->getElementsByTagName('name')->item(0)->nodeValue;
-		$content .= '<' . $tag_name . '>';
-		$content .= $member->getElementsByTagName('value')->item(0)->getElementsByTagName('string')->item(0)->nodeValue;
-		$content .= '</' . $tag_name . '>';
-	}
-	$content .= '</category>';
+while ($row = pg_fetch_row($result)) {
+    $xml .= '<category>';
+
+    $xml_id = htmlspecialchars($row[0]);
+    $xml_name = htmlspecialchars($row[1]);
+    $xml_description = htmlspecialchars($row[2]);
+    $xml_url = htmlspecialchars($row[3]);
+
+    $xml .= "<id>${xml_id}</id>";
+    $xml .= "<name>${xml_name}</name>";
+    $xml .= "<description>${xml_description}</description>";
+    $xml .= "<url>${xml_url}</url>";
+
+    $xml .= '</category>';
 }
-$content .= '</categories>';
 
-send_result(0, 'success', $content);
+$xml .= '</categories>';
+
+send_result(0, 'success', $xml);
 ?>

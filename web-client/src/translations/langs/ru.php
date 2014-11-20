@@ -53,6 +53,7 @@ $translations = array(
     'edit-point' => 'Редактировать точку', 
     'remove-point' => 'Удалить точку', 
     'no-image' => 'Нет изображения', 
+    'extended-data' => 'Дополнительные данные',
     'point-remove-text' => 'Вы уверены что хотите удалить эту точку? (Действие не может быть отменено)', 
     'point-remove-success' => 'Точка была успешно удалена', 
     
@@ -74,6 +75,10 @@ $translations = array(
     'upload' => 'Загрузить', 
     'clear' => 'Очистить', 
     'close' => 'Закрыть', 
+    'add-field' => 'Добавить поле',
+    'add' => 'Добавить',
+    'enter-name' => 'Введите сюда имя нового поля',
+    'cancel' => 'Отменить',
     'point-add-success' => 'Точка была успешно добавлена', 
     
     // Edit Point widget strings

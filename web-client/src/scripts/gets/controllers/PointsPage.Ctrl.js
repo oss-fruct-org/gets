@@ -108,21 +108,11 @@ PointsPage.prototype.initPage = function() {
     //Init first page
     this.currentView = this._pointsMain;
     this.changeForm();
-
+    
     // Init Points main
     this._pointsMain.toggleOverlay();
     this._pointsMain.setLatitude(this._mapCtrl.getMapCenter().lat);
     this._pointsMain.setLongitude(this._mapCtrl.getMapCenter().lng);
-    var formDataInit = $(this.document).find('#point-main-form').serializeArray();
-    this._points.downLoadPoints(formDataInit, function () {
-        self._pointsMain.placePointsInPointList(self._points.getPointList());
-        self._mapCtrl.removePointsFromMap();
-        self._mapCtrl.placePointsOnMap(self._points.getPointList(), {
-            url: '#form=' + PointsPage.POINT_INFO + '&point_uuid=',
-            text: $(self._pointInfo.getView()).data('putpoint')
-        });
-        self._pointsMain.toggleOverlay();
-    });
     
 
     // Hash change handler
@@ -239,18 +229,9 @@ PointsPage.prototype.initPage = function() {
 
     // 
     $(this.document).on('submit', '#point-main-form', function(e) {
-        e.preventDefault();               
-        var formData = $(this).serializeArray();
-        Logger.debug(formData);
-        self._points.downLoadPoints(formData, function () {
-            self._pointsMain.placePointsInPointList(self._points.getPointList(false));
-            self._mapCtrl.removePointsFromMap();
-            self._mapCtrl.placePointsOnMap(self._points.getPointList(), {
-                url: '#form=' + PointsPage.POINT_INFO + '&point_uuid=',
-                text: $(self._pointInfo.getView()).data('putpoint')
-            });
-            self._pointsMain.toggleOverlay();
-        });
+        e.preventDefault();  
+        
+        self.downloadPointsHandler();       
     });
     
     //dragend
@@ -265,16 +246,7 @@ PointsPage.prototype.initPage = function() {
             self._pointsMain.getRadius() * 1000
         );
         
-        var formDataInit = $(self.document).find('#point-main-form').serializeArray();
-        self._points.downLoadPoints(formDataInit, function () {
-            self._pointsMain.placePointsInPointList(self._points.getPointList());
-            self._mapCtrl.removePointsFromMap();
-            self._mapCtrl.placePointsOnMap(self._points.getPointList(), {
-                url: '#form=' + PointsPage.POINT_INFO + '&point_uuid=',
-                text: $(self._pointInfo.getView()).data('putpoint')
-            });
-            self._pointsMain.toggleOverlay();
-        });
+        self.downloadPointsHandler();
     });
     
     // upload picture show/hide handler
@@ -393,6 +365,42 @@ PointsPage.prototype.initPage = function() {
         $(self.document).find('#edit-point-audio-input-url').removeAttr('disabled');
     });
     
+    // Add field handler
+    $(this.document).on('click', '#edit-point-add-field-open', function(e) {
+        e.preventDefault();
+        if (!$(self.document).find('#edit-point-add-field-open-button').hasClass('hidden')) {
+            $(self.document).find('#edit-point-add-field-open-button').addClass('hidden');
+            $(self.document).find('#edit-point-add-field-input-box').removeClass('hidden').addClass('show');
+            $(self.document).find('#edit-point-add-field-control-buttons').removeClass('hidden').addClass('show');
+            
+            $(self.document).find('#edit-point-page .action-menu-inner-content').animate({
+                scrollTop: $('#edit-point-add-field-input-box').offset().top
+            }, 2000);
+        }
+    });
+    
+    $(this.document).on('click', '#edit-point-add-field-save', function(e) {
+        e.preventDefault();//edit-point-add-field-save  class="form-group" 
+        var extendedData = $(self.document).find('#edit-point-extended-data');
+        var extendedDataHTML = $(extendedData).html();
+        var fieldName = $(self.document).find('#edit-point-add-field-input').val();
+        extendedDataHTML += '<div class="form-group"><label for="' + fieldName + '" class="block">' + fieldName + '</label><input name="' + fieldName + '" class="form-control" type="text" /></div>';
+        $(extendedData).html(extendedDataHTML);
+        
+        // close
+        $(self.document).find('#edit-point-add-field-cancel').click();
+    });
+    
+    // Close add field handler
+    $(this.document).on('click', '#edit-point-add-field-cancel', function(e) {
+        e.preventDefault();
+        $(self.document).find('#edit-point-add-field-input').val('');
+        $(self.document).find('#edit-point-add-field-open-button').removeClass('hidden').addClass('show');
+        $(self.document).find('#edit-point-add-field-input-box').removeClass('show').addClass('hidden');
+        $(self.document).find('#edit-point-add-field-control-buttons').removeClass('show').addClass('hidden');
+    });
+    
+    this.downloadPointsHandler();
     // get user's coordinates
     if (this.window.navigator.geolocation) {
         this.window.navigator.geolocation.getCurrentPosition(function(position) {           
@@ -401,16 +409,9 @@ PointsPage.prototype.initPage = function() {
             self._mapCtrl.setMapCenter(position.coords.latitude, position.coords.longitude);
             self._pointsMain.setLatitude(Math.floor(position.coords.latitude * 10000) / 10000);
             self._pointsMain.setLongitude(Math.floor(position.coords.longitude * 10000) / 10000);
-            var formDataInit = $(self.document).find('#point-main-form').serializeArray();
-            self._points.downLoadPoints(formDataInit, function () {
-                self._pointsMain.placePointsInPointList(self._points.getPointList());
-                self._mapCtrl.removePointsFromMap();
-                self._mapCtrl.placePointsOnMap(self._points.getPointList(), {
-                    url: '#form=' + PointsPage.POINT_INFO + '&point_uuid=',
-                    text: $(self._pointInfo.getView()).data('putpoint')
-                });
-                self._pointsMain.toggleOverlay();
-            });
+            
+            self.downloadPointsHandler();
+            
         }, this.handleGeoLocationError);
     } else {
        Logger.debug('geolocation is not supported by this browser');
@@ -475,6 +476,7 @@ PointsPage.prototype.showAddPoint = function() {
     try {
         this._headerView.changeOption($(this._pointAdd.getView()).data('pagetitleAdd'), 'glyphicon-chevron-left', '#form=main');
         this._utils.clearAllInputFields(this._pointAdd.getView());
+        this._pointAdd.removeCustomFields();
         
         this._pointAdd.placeCategoriesInPointAdd(this._categories.getCategories());
         
@@ -491,7 +493,8 @@ PointsPage.prototype.showEditPoint = function() {
     try {
         var point = this._points.getPoint();
         this._headerView.changeOption($(this._pointEdit.getView()).data('pagetitleEdit'), 'glyphicon-chevron-left', '#form=point_info&point_uuid=' + point.uuid);
-        this._pointEdit.placePointInPointEdit(point);
+        this._pointEdit.removeCustomFields();
+        this._pointEdit.placePointInPointEdit(point);      
         
         this.currentView.hideView();
         this.currentView = this._pointEdit;
@@ -513,7 +516,9 @@ PointsPage.prototype.addPointHandler = function(formData) {
             this._pointAdd.toggleOverlay();
 
             var paramsObj = $(formData).serializeArray();
-            paramsObj.push({name: 'time', value: this._utils.getDateTime()});
+            Logger.debug(paramsObj);
+            //paramsObj.push({name: 'time', value: this._utils.getDateTime()});
+            paramsObj.push({name: 'uuid', value: this._utils.guid()()});
             this._points.addPoint(paramsObj, function () {
                 that.window.location.replace('#form=' + PointsPage.MAIN);
                 MessageBox.showMessage($(that._pointAdd.getView()).data('messagesuccessAdd'), MessageBox.SUCCESS_MESSAGE);
@@ -530,7 +535,7 @@ PointsPage.prototype.addPointHandler = function(formData) {
 PointsPage.prototype.downloadPointsHandler = function() {
     var that = this;
     try {
-        this._pointsMain.toggleOverlay();
+        this._pointsMain.showOverlay();
         var formData = $(this.document).find('#point-main-form').serializeArray();
 
         this._points.downLoadPoints(formData, function () {
@@ -538,10 +543,10 @@ PointsPage.prototype.downloadPointsHandler = function() {
             that._mapCtrl.removePointsFromMap();
             that._pointsMain.placePointsInPointList(pointList);
             that._mapCtrl.placePointsOnMap(pointList, {
-                url: '#form=' + PointsPage.POINT_INFO + '&point_name=',
+                url: '#form=' + PointsPage.POINT_INFO + '&point_uuid=',
                 text: $(that._pointInfo.getView()).data('putpoint')
             });
-            that._pointsMain.toggleOverlay();
+            that._pointsMain.hideOverlay();
         });
     } catch (Exception) {
         MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);

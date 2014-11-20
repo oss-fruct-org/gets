@@ -26,20 +26,7 @@ PointEdit.prototype.placePointInPointEdit = function(point) {
     if (point.descriptionExt !== '') {
         $(this.editPoint).find('#edit-point-desc-input').val(point.descriptionExt);
     } else {
-        $(this.editPoint).find('#edit-point-desc-input').val(point.description);
-        
-        var json = null;
-        var descriptionText = '';
-        try {          
-            json = JSON.parse(point.description);
-        } catch (Exception) {} 
-        
-        if (json) {
-            $.each(json, function (key, val) {
-                descriptionText += '<div class="emulate-tab"><label>' + key + ': &nbsp;</label><input class="inline" type="text" value="' + val + '"/></div>';
-            });
-            $(this.editPoint).find('#edit-point-desc-input-keyvalue').html(descriptionText);
-        }        
+        $(this.editPoint).find('#edit-point-desc-input').val(point.description);              
     }
     
     $(this.editPoint).find('#edit-point-url-input').val(point.url);
@@ -50,6 +37,12 @@ PointEdit.prototype.placePointInPointEdit = function(point) {
     var coords = point.coordinates.split(',');
     $(this.editPoint).find('#edit-point-lat-input').val(coords[1]);
     $(this.editPoint).find('#edit-point-lon-input').val(coords[0]);
+    
+    var extendedDataText = '';
+    for (var i = 0, len = point.extendedData.length; i < len; i++) {
+        extendedDataText += '<div class="form-group"><label>' + point.extendedData[i].name + '</label><input class="form-control" type="text" name="' + point.extendedData[i].name + '" value="' + point.extendedData[i].value + '" /></div>';
+    }
+    $(this.editPoint).find('#edit-point-extended-data').html(extendedDataText);
 };
 
 /**
@@ -88,5 +81,9 @@ PointEdit.prototype.onEnterPressed = function() {
 PointEdit.prototype.setLatLng = function(lat, lng) {
     $(this.editPoint).find('#edit-point-lat-input').val(lat);
     $(this.editPoint).find('#edit-point-lon-input').val(lng);
+};
+
+PointEdit.prototype.removeCustomFields = function () {
+    $(this.addPoint).find('#edit-point-extended-data').html('');   
 };
 

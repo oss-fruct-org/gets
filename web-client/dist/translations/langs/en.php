@@ -52,6 +52,7 @@ $translations = array(
     'edit-point' => 'Edit point', 
     'remove-point' => 'Remove point', 
     'no-image' => 'No image', 
+    'extended-data' => 'Extended data',
     'point-remove-text' => 'Are you sure you want to remove this point? (This action cannot be cancelled.)', 
     'point-remove-success' => 'Point was successfully removed', 
     'put-point-in-point-info' => 'Put point into the «Point Info» window',
@@ -73,6 +74,10 @@ $translations = array(
     'upload' => 'Upload', 
     'clear' => 'Clear', 
     'close' => 'Close', 
+    'add-field' => 'Add field',
+    'add' => 'Add',
+    'enter-name' => 'Enter name of the new field here',
+    'cancel' => 'Cancel',
     'point-add-success' => 'Point was successfully added', 
     
     // Edit Point widget strings

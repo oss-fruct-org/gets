@@ -122,25 +122,29 @@ PointsClass.prototype.downLoadPoints = function(paramsObj, callback) {
             throw new GetsWebClientException('Points Error', 'getPointsRequest: ' + $(jqXHR.responseText).find('message').text());
         }
         
-        Logger.debug(jqXHR.responseText);
+        //Logger.debug(jqXHR.responseText);
         var pointListItems = $($.parseXML(jqXHR.responseText)).find('Placemark');
         var pointsArray = [];
-        $(pointListItems).each(function(index, value) {
+        for (var i = 0, len = pointListItems.length; i < len; i++) {          
             var pointObj = {};
-            pointObj.index = $(value).find("[name='idx']").length ? $(value).find("[name='idx']").text() : '';
-            pointObj.uuid = $(value).find("[name='uuid']").length ? $(value).find("[name='uuid']").text() : '';
-            pointObj.name = $(value).find('name').length ? $(value).find('name').text() : '';
-            pointObj.description = $(value).find('description').length ? $(value).find('description').text() : '';
-            pointObj.url = $(value).find("[name='url']").length ? $(value).find("[name='url']").text() : '';
-            pointObj.descriptionExt = $(value).find("[name='description']").length ? $(value).find("[name='description']").text() : '';
-            pointObj.audio = $(value).find("[name='audio']").length ? $(value).find("[name='audio']").text() : '';
-            pointObj.photo = $(value).find("[name='photo']").length ? $(value).find("[name='photo']").text() : '';
-            pointObj.coordinates = $(value).find('coordinates').length ? $(value).find('coordinates').text() : '';
-            pointObj.access = $(value).find("[name='access']").length ? $(value).find("[name='access']").text() : '';
-            pointObj.categoryId = $(value).find("[name='category_id']").length ? $(value).find("[name='category_id']").text() : '';
+            var pointExtendedData = [];
+            
+            pointObj.name = $(pointListItems[i]).find('name').length ? $(pointListItems[i]).find('name').text() : '';
+            pointObj.description = $(pointListItems[i]).find('description').length ? $(pointListItems[i]).find('description').text() : '';
+            pointObj.uuid = $(pointListItems[i]).find("[name='uuid']").length ? $(pointListItems[i]).find("[name='uuid']").text() : '';
+            pointObj.access = $(pointListItems[i]).find("[name='access']").length ? $(pointListItems[i]).find("[name='access']").text() : '';
+            pointObj.photo = $(pointListItems[i]).find("[name='photo']").length ? $(pointListItems[i]).find("[name='photo']").text() : '';
+            pointObj.audio = $(pointListItems[i]).find("[name='audio']").length ? $(pointListItems[i]).find("[name='audio']").text() : '';
+            pointObj.url = $(pointListItems[i]).find("[name='url']").length ? $(pointListItems[i]).find("[name='url']").text() : '';
+            pointObj.coordinates = $(pointListItems[i]).find('coordinates').length ? $(pointListItems[i]).find('coordinates').text() : '';
+            
+            $(pointListItems[i]).find('Data').each(function(index, newValue) {
+                pointExtendedData.push({name: $(newValue).attr('name'), value: $(newValue).text()});
+            });                                    
+            pointObj.extendedData = pointExtendedData;
 
             pointsArray.push(pointObj);
-        });
+        }
 
         //Logger.debug(pointsArray);
         self.pointList = pointsArray;
@@ -179,7 +183,7 @@ PointsClass.prototype.addPoint = function (paramsObj, callback) {
     var newParamsObj = {};
     
     var title = '';
-    var descriptionText = '';
+    var description= '';
     var url = '';
     var lat = 0.0;
     var lng = 0.0;
@@ -192,51 +196,36 @@ PointsClass.prototype.addPoint = function (paramsObj, callback) {
     var index = null;
     var radius = null;
       
+    newParamsObj.extended_data = {};
     $(paramsObj).each(function (idx, value) {
+        Logger.debug(idx, value);
         if (value.name === 'title') {
-            title = value.value;
+            newParamsObj.title = value.value;
         } else if (value.name === 'description') {
-            descriptionText = value.value;
-        } else if (value.name === 'url') {
-            url = value.value;
-        } else if (value.name === 'latitude') {
-            lat = value.value;
-        } else if (value.name === 'longitude') {
-            lng = value.value;
-        } else if (value.name === 'picture-url') {
-            imageURL = value.value;
-        } else if (value.name === 'audio-url') {
-            audioURL = value.value;
-        } else if (value.name === 'channel') {
-            channel = value.value;
+            newParamsObj.description = value.value;
         } else if (value.name === 'category') {
             category = value.value;
-        } else if (value.name === 'time') {
-            time = value.value;
-        } else if (value.name === 'index') {
-            index = value.value;
-        } else if (value.name === 'radius') {
-            radius = value.value;
+        } else if (value.name === 'channel') {
+            channel = value.value;
+        } else if (value.name === 'url') {
+            newParamsObj.link = value.value;
+        } else if (value.name === 'latitude') {
+            newParamsObj.latitude = value.value;
+        } else if (value.name === 'longitude') {
+            newParamsObj.longitude = value.value;
+        } else if (value.name === 'altitude') {
+            newParamsObj.altitude = value.value;
+        } else {
+            newParamsObj.extended_data[value.name] = value.value;
         }
     });
-     
-    var extendedData = this.createDescription(audioURL, imageURL, index, radius);
-   
+    
     if (channel) {
         newParamsObj.channel = channel;
     } else {
         newParamsObj.category_id = category;
     }
-    
-    newParamsObj.title = title;
-    newParamsObj.description = descriptionText;
-    newParamsObj.link = url;
-    newParamsObj.latitude = lat;
-    newParamsObj.longitude = lng;
-    newParamsObj.altitude = alt;
-    newParamsObj.time = time;
-    newParamsObj.extended_data = extendedData;
-    
+               
     Logger.debug(newParamsObj); 
     
     var addPointRequest = $.ajax({

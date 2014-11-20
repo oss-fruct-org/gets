@@ -49,6 +49,11 @@ echo    '<div id="point-info-page" class="action-menu-container hidden" data-pag
                         </audio>-->                
                     </div>
                 </div>
+                <div class="main-block">
+                    <label for="point-info-audio">' . getString('extended-data', 'Extended data') . '</label>
+                    <div id="point-info-extended-data">               
+                    </div>
+                </div>
             </div>            
         </div>';
 

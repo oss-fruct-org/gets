@@ -44,16 +44,11 @@ PointsMain.prototype.placePointsInPointList = function (pointList) {
        throw new GetsWebClientException('PointsMain View Error', 'placePointsInPointList, pointList undefined or null');
     }
     
-    var self = this;
-    $(pointList).each(function(index, value) {
-        var pointElement = $(self.document.createElement('li'));
-        $(pointElement).addClass('list-group-item');
-        var pointLinkElement = $(self.document.createElement('a'));
-        $(pointLinkElement).attr('href', '#form=point_info&point_uuid=' + value.uuid);
-        $(pointLinkElement).text(value.name);
-        $(pointLinkElement).appendTo(pointElement);
-        $(pointElement).appendTo(pointListElement);
-    });          
+    var pointListHTML = '';
+    for (var i = 0, len = pointList.length; i < len; i++) {
+        pointListHTML += '<li class="list-group-item"><a href="#form=point_info&point_uuid=' + pointList[i].uuid + '">' + pointList[i].name + '</a></li>';
+    }
+    $(pointListElement).html(pointListHTML);
 };
 
 /**
@@ -127,4 +122,17 @@ PointsMain.prototype.toggleOverlay = function() {
     $(this.mainPoints).find('#points-main-overlay').toggleClass('busy-overlay-visible');
 };
 
+/**
+ * Add overlay
+ */
+PointsMain.prototype.showOverlay = function() {
+    $(this.mainPoints).find('#points-main-overlay').addClass('busy-overlay-visible');
+};
+
+/**
+ * Remove overlay
+ */
+PointsMain.prototype.hideOverlay = function() {
+    $(this.mainPoints).find('#points-main-overlay').removeClass('busy-overlay-visible');
+};
 

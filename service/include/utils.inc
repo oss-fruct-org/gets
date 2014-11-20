@@ -178,7 +178,7 @@ function send_result($code, $message, $content) {
         default_value (optional) - return value if argument not specified
 
     Returns:
-        argument as string or null if argument not specified  
+        argument as string or null if argument not specified
 
  */
 function get_request_argument($dom, $field, $default_value = null) {
@@ -315,7 +315,7 @@ function ensure_category_channel($dbconn, $auth_token, $category_id) {
     $select_resp = pg_query($dbconn, $select_request);
 
     if (pg_num_rows($select_resp) == 0) {
-        $desc_array = array('description' => "Private channel for category ${category_name} user ${user_name}",
+        $desc_array = array('description' => "Private channel for category ${$category_id} user ${$user_id}",
                 'category_id' => "${category_id}");
         $description = pg_escape_string($dbconn, json_encode($desc_array));
 

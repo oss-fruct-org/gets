@@ -48,7 +48,8 @@ try {
 }
 
 $public_login_escaped = pg_escape_string(GEO2TAG_USER);
-$query = "SELECT category.id, category.name, category.description, category.url FROM category JOIN users ON category.owner_id=users.id
+$query = "SELECT category.id, category.name, category.description, category.url
+    FROM category JOIN users ON category.owner_id=users.id
     WHERE users.login='${public_login_escaped}';";
 $result = pg_query($dbconn, $query);
 

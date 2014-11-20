@@ -54,18 +54,14 @@ $dbconn = pg_connect(GEO2TAG_DB_STRING);
 try {
     $user_id = auth_get_db_id($dbconn);
     $email = auth_get_google_email($dbconn);
+    $admin_id = require_user_admin($dbconn);
 } catch (Exception $e) {
     send_error(1, $e->getMessage());
     die();
 }
 
-if ($email !== GEO2TAG_EMAIL) {
-    send_error(1, 'Only admin user can create categories');
-    die();
-}
-
-$result = pg_query_params('INSERT INTO category VALUES ($1, $2, $3, $4) RETURNING category.id',
-    array($category_name, $category_description, $category_url, $user_id));
+$result = pg_query_params($dbconn, 'INSERT INTO category (name, description, url, owner_id) VALUES ($1, $2, $3, $4) RETURNING category.id',
+    array($category_name, $category_description, $category_url, $admin_id));
 $row = pg_fetch_row($result);
 $id = $row[0];
 

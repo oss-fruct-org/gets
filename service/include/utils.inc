@@ -348,6 +348,39 @@ function require_category($dbconn, $category_id) {
     }
 }
 
+/**
+ * Check current user is admin
+ * @param $dbconn resource
+ */
+function require_user_admin($dbconn) {
+    $user_login = auth_get_db_login($dbconn);
+
+    if ($user_login === GEO2TAG_USER) {
+        $response = pg_query_params($dbconn,
+            'SELECT users.id FROM users WHERE users.login=$1;', array($user_login));
+    } else {
+        $response = pg_query_params($dbconn,
+            'WITH owner_ids AS (SELECT users.id as owner_id
+                FROM users
+                WHERE users.login=$1)
+
+            SELECT "adminUsers".owner_id
+                FROM users
+                INNER JOIN "adminUsers" ON users.id = "adminUsers".admin_id
+                INNER JOIN owner_ids ON owner_ids.owner_id = "adminUsers".owner_id
+                WHERE users.login=$2;', array(GEO2TAG_USER, $user_login));
+
+        error_log($user_login);
+    }
+
+    $row = pg_fetch_row($response);
+    if (!$row) {
+        throw new Exception("Only admin users can create categories");
+    }
+
+    return $row[0];
+}
+
 /*
  * Check that user with $auth_token subscribed to channel $channel_name
  * Null $auth_token means public token

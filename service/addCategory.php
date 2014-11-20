@@ -53,7 +53,6 @@ $dbconn = pg_connect(GEO2TAG_DB_STRING);
 
 try {
     $user_id = auth_get_db_id($dbconn);
-    $email = auth_get_google_email($dbconn);
     $admin_id = require_user_admin($dbconn);
 } catch (Exception $e) {
     send_error(1, $e->getMessage());

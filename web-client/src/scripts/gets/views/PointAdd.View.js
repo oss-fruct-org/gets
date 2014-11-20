@@ -82,3 +82,6 @@ PointAdd.prototype.placeCategoriesInPointAdd = function (categories) {
     });
 };
 
+PointAdd.prototype.removeCustomFields = function () {
+    $(this.addPoint).find('#edit-point-extended-data').html('');   
+};

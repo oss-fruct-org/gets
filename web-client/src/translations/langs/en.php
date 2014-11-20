@@ -74,6 +74,10 @@ $translations = array(
     'upload' => 'Upload', 
     'clear' => 'Clear', 
     'close' => 'Close', 
+    'add-field' => 'Add field',
+    'add' => 'Add',
+    'enter-name' => 'Enter name of the new field here',
+    'cancel' => 'Cancel',
     'point-add-success' => 'Point was successfully added', 
     
     // Edit Point widget strings

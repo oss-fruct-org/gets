@@ -332,6 +332,22 @@ function ensure_category_channel($dbconn, $auth_token, $category_id) {
     return $channel_name;
 }
 
+/**
+ * Check if category with given id exists or throw
+ * @param $dbconn resource
+ * @param $category_id integer
+ * @throws Exception if category doesn't exist
+ */
+function require_category($dbconn, $category_id) {
+    $response = pg_query_params($dbconn, 'SELECT category.id FROM category
+      INNER JOIN users ON category.owner_id=users.id
+      WHERE users.email=$1 AND category.id=$2;', array(GEO2TAG_EMAIL, $category_id));
+
+    if (pg_num_rows($response) === 0) {
+        throw new Exception("Category $category_id doesn't exist");
+    }
+}
+
 /*
  * Check that user with $auth_token subscribed to channel $channel_name
  * Null $auth_token means public token

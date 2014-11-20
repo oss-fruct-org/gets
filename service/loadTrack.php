@@ -37,7 +37,7 @@ $auth_token = get_request_argument($dom, 'auth_token');
 $channel_name = get_request_argument($dom, 'name');
 
 if ($auth_token) {
-    set_auth_token($auth_token);
+    auth_set_token($auth_token);
 }
 
 $dbconn = pg_connect(GEO2TAG_DB_STRING);

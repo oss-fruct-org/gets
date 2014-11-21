@@ -7,7 +7,7 @@ define('UPLOAD_URL', 'http://oss.fruct.org/projects/gets/service/files/postFile.
 define('GEO2TAG_USER', 'gets2');
 define('GEO2TAG_PASSWORD', 'getsPWD');
 define('GEO2TAG_EMAIL', 'manager@cs.karelia.ru');
-define('GEO2TAG_DB_STRING', 'host=localhost dbname=geo2tag user=geo2tag');
+define('GEO2TAG_DB_STRING', 'host=geo2tag.cs.prv dbname=geo2tag user=geo2tag');
 
 define('ALL_USERS_TRUSTED', false);
 

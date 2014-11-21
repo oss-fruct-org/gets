@@ -152,7 +152,7 @@ while ($row = pg_fetch_row($result)) {
         $xml .= '<description></description>';
 
     $xml .= '<ExtendedData>';
-    $xml .= '<Data name="url"><value>' . htmlspecialchars($url) . '</value></Data>';
+    $xml .= '<Data name="link"><value>' . htmlspecialchars($url) . '</value></Data>';
     $xml .= '<Data name="time"><value>' . htmlspecialchars($datetime) . '</value></Data>';
     $xml .= '<Data name="access"><value>' . $access . '</value></Data>';
 

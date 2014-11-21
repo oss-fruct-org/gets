@@ -88,7 +88,7 @@ while ($row = pg_fetch_row($result_tag)) {
         $xml .= '<description></description>';
 
     $xml .= '<ExtendedData>';
-    $xml .= '<Data name="url"><value>' . htmlspecialchars($url) . '</value></Data>';
+    $xml .= '<Data name="link"><value>' . htmlspecialchars($url) . '</value></Data>';
     $xml .= '<Data name="time"><value>' . htmlspecialchars($datetime) . '</value></Data>';
 
     if ($description_json) {

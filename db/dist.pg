@@ -1,0 +1,21 @@
+CREATE OR REPLACE FUNCTION gets_geo_distance(double precision,double precision,double precision,double precision) returns double precision as $$
+DECLARE
+    lat1 ALIAS FOR $1;
+    lon1 ALIAS FOR $2;
+    lat2 ALIAS FOR $3;
+    lon2 ALIAS FOR $4;
+
+    theta double precision;
+    dist double precision;
+BEGIN
+    theta := lon1 - lon2;
+    dist := sin(radians(lat1)) * sin(radians(lat2)) + cos(radians(lat1)) * cos(radians(lat2)) * cos(radians(theta));
+    dist := acos(dist);
+    dist := degrees(dist);
+    dist := dist * 60 * 1.1515;
+    dist := dist * 1.609344;
+    return dist;
+END;
+$$ language plpgsql immutable;
+
+

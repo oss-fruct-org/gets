@@ -96,7 +96,7 @@ if (!$category_id_defined) {
 
     try {
         require_category($dbconn, $category_id);
-        $channel_name = ensure_category_channel($dbconn, $auth_token, $category_id);
+        $channel_name = ensure_category_channel($dbconn, $category_id);
     } catch (Exception $e) {
         send_error(1, $e->getMessage());
         die();

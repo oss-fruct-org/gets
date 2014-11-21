@@ -37,7 +37,7 @@ $auth_token = get_request_argument($dom, 'auth_token');
 $channel_name = get_request_argument($dom, 'name');
 
 if ($auth_token) {
-    set_auth_token($auth_token);
+    auth_set_token($auth_token);
 }
 
 $dbconn = pg_connect(GEO2TAG_DB_STRING);
@@ -60,7 +60,7 @@ $xml .= '<Style id="styleDocument"><LabelStyle><color>ff0000cc</color></LabelSty
 
 // Output points
 while ($row = pg_fetch_row($result_tag)) {
-    $datetime = $row[0];
+    $datetime = date_postgres_to_gets($row[0]);
     $label = $row[1];
     $latitude = $row[2];
     $longitude = $row[3];
@@ -88,7 +88,7 @@ while ($row = pg_fetch_row($result_tag)) {
         $xml .= '<description></description>';
 
     $xml .= '<ExtendedData>';
-    $xml .= '<Data name="url"><value>' . htmlspecialchars($url) . '</value></Data>';
+    $xml .= '<Data name="link"><value>' . htmlspecialchars($url) . '</value></Data>';
     $xml .= '<Data name="time"><value>' . htmlspecialchars($datetime) . '</value></Data>';
 
     if ($description_json) {

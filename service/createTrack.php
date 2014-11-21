@@ -82,6 +82,10 @@ $data_array['url'] = $url;
 $data_array['name'] = $track_id;
 
 try {
+    if ($category_id > 0) {
+        require_category($dbconn, $category_id);
+    }
+
     $user_id = auth_get_db_id($dbconn);
     $existing_channel_id = get_channel_id($dbconn, $track_id);
 } catch (Exception $e) {

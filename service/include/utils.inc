@@ -52,12 +52,12 @@ function process_json_request($method, $array, $gets_token = null, $allow_token_
 
     $response_json = process_request($method, $request_json, 'Content-Type:application/json');
     if (!$response_json) {
-        throw new Exception('Error: problem with request to geo2tag.');
+        throw new Exception('Error: problem with request to geo2tag.', 1);
     }
 
     $response_array = json_decode($response_json, true);
     if (!$response_array) {
-        throw new Exception('Error: can\'t decode data from geo2tag.');
+        throw new Exception('Error: can\'t decode data from geo2tag.', 1);
     }
 
     $response_code = $response_array['errno'];
@@ -178,7 +178,7 @@ function send_result($code, $message, $content) {
         default_value (optional) - return value if argument not specified
 
     Returns:
-        argument as string or null if argument not specified  
+        argument as string or null if argument not specified
 
  */
 function get_request_argument($dom, $field, $default_value = null) {
@@ -215,13 +215,13 @@ function get_categories($token = null) {
                                     'Content-Type: text/xml');
 
     if (!$categories_response)
-        throw new Exception('Cannot request categories from geo2tag');
+        throw new Exception('Cannot request categories from geo2tag', 1);
 
 
     $categories_response_dom = new DOMDocument();
     $categories_response_dom->loadXML($categories_response);
     if (!$categories_response_dom) 
-        throw new Exception('Categories response not XML file');
+        throw new Exception('Categories response not XML file', 1);
 
 
     $idx = 0;
@@ -298,15 +298,13 @@ function unicode_callback(&$item, $key) {
 }
 
 /**
-    Checks if channel for category_id exists and creates it otherwise
-    Params:
-        $auth_token - if not null channel will be private
-        $category_id - id of category
-    
-    Returns:
-        id of channel
-  */
-function ensure_category_channel($dbconn, $auth_token, $category_id) {
+ * Checks if channel for category_id exists and creates it otherwise
+ *
+ * @param $dbconn resource PostgreSQL connection
+ * @param $category_id integer id of category
+ * @return string name if channel
+ */
+function ensure_category_channel($dbconn, $category_id) {
     $user_id = auth_get_db_id($dbconn);
     $channel_name = "ch+${category_id}+${user_id}";
     $channel_name_escaped = pg_escape_string($dbconn, $channel_name);
@@ -315,7 +313,7 @@ function ensure_category_channel($dbconn, $auth_token, $category_id) {
     $select_resp = pg_query($dbconn, $select_request);
 
     if (pg_num_rows($select_resp) == 0) {
-        $desc_array = array('description' => "Private channel for category ${category_name} user ${user_name}",
+        $desc_array = array('description' => "Private channel for category ${$category_id} user ${$user_id}",
                 'category_id' => "${category_id}");
         $description = pg_escape_string($dbconn, json_encode($desc_array));
 
@@ -330,6 +328,84 @@ function ensure_category_channel($dbconn, $auth_token, $category_id) {
     }
 
     return $channel_name;
+}
+
+/**
+ * Check if category with given id exists or throw
+ * @param $dbconn resource
+ * @param $category_id integer
+ * @throws Exception if category doesn't exist
+ */
+function require_category($dbconn, $category_id) {
+    $response = pg_query_params($dbconn, 'SELECT category.id FROM category
+      INNER JOIN users ON category.owner_id=users.id
+      WHERE users.email=$1 AND category.id=$2;', array(GEO2TAG_EMAIL, $category_id));
+
+    if (pg_num_rows($response) === 0) {
+        throw new Exception("Category $category_id doesn't exist", 1);
+    }
+}
+
+/**
+ * Check if current user is admin
+ * @param $dbconn resource
+ * @throws Exception if user not admin
+ * @return integer owner id of current project
+ */
+function require_user_admin($dbconn) {
+    $user_login = auth_get_db_login($dbconn);
+
+    if ($user_login === GEO2TAG_USER) {
+        $response = pg_query_params($dbconn,
+            'SELECT users.id FROM users WHERE users.login=$1;', array($user_login));
+    } else {
+        $response = pg_query_params($dbconn,
+            'WITH owner_ids AS (SELECT users.id as owner_id
+                FROM users
+                WHERE users.login=$1)
+
+            SELECT "adminUsers".owner_id
+                FROM users
+                INNER JOIN "adminUsers" ON users.id = "adminUsers".admin_id
+                INNER JOIN owner_ids ON owner_ids.owner_id = "adminUsers".owner_id
+                WHERE users.login=$2;', array(GEO2TAG_USER, $user_login));
+    }
+
+    $row = pg_fetch_row($response);
+    if (!$row) {
+        throw new Exception("User required to be admin", 1);
+    }
+
+    return $row[0];
+}
+
+function require_user_trusted($dbconn) {
+    $user_login = auth_get_db_login($dbconn);
+
+    if ((defined("ALL_USERS_TRUSTED") && ALL_USERS_TRUSTED == 'true')
+        || $user_login === GEO2TAG_USER) {
+        $response = pg_query_params($dbconn,
+            'SELECT users.id FROM users WHERE users.login=$1;', array(GEO2TAG_USER));
+    } else {
+        $response = pg_query_params($dbconn,
+            'WITH owner_ids AS (SELECT users.id as owner_id
+                   FROM users
+                   WHERE users.login=$1)
+            SELECT COALESCE("trustedUsers".owner_id, "adminUsers".owner_id) as owner_id
+                FROM users
+                LEFT JOIN "adminUsers" ON users.id = "adminUsers".admin_id
+                LEFT JOIN "trustedUsers" ON users.id = "trustedUsers".user_id
+                WHERE (("adminUsers".owner_id IN (SELECT owner_id FROM owner_ids))
+                        OR ("trustedUsers".owner_id IN (SELECT owner_id FROM owner_ids)))
+                    AND users.login=$2;', array(GEO2TAG_USER, $user_login));
+    }
+
+    $row = pg_fetch_row($response);
+    if (!$row) {
+        throw new Exception("User required to be trusted", 1);
+    }
+
+    return $row[0];
 }
 
 /*
@@ -350,7 +426,7 @@ function require_channel_subscribed($dbconn, $channel_name, $is_public) {
             WHERE users.email=$1 AND channel.name=$2;', array($email, $channel_name));
 
     if (!($result_check_row = pg_fetch_row($result_check))) {
-        throw new Exception('Channel not subscribed');
+        throw new Exception('Channel not subscribed', 1);
     }
 
     return $result_check_row;
@@ -367,7 +443,7 @@ function require_channel_owned($dbconn, $channel_name) {
             WHERE users.email=$1 AND channel.name=$2;', array($email, $channel_name));
 
     if (!($result_check_row = pg_fetch_row($result_check))) {
-        throw new Exception('Channel not subscribed');
+        throw new Exception("Channel ${channel_name} not owned", 1);
     }
 
     return $result_check_row;
@@ -386,6 +462,11 @@ function get_channel_id($dbconn, $channel_name) {
 function date_gets_to_postgres($gets_date) {
     $date_parsed = date_create_from_format('d m Y H:i:s.u', $gets_date);
     return date_format($date_parsed, 'Y-m-d H:i:s.u');
+}
+
+function date_postgres_to_gets($gets_date) {
+    $date_parsed = date_create_from_format('Y-m-d H:i:s.u', $gets_date);
+    return date_format($date_parsed, 'd m Y H:i:s.u');
 }
 
 ?>

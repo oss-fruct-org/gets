@@ -40,50 +40,43 @@ $lang_element = $dom->getElementsByTagName('lang');
 $category_id_element = $dom->getElementsByTagName('category_id');
 $active_radius_element = $dom->getElementsByTagName('active_radius');
 
-$description_data = '{"description":"' . $description_element->item(0)->nodeValue . 
-                    '", "category_id":"' . $category_id_element->item(0)->nodeValue . 
-                    '", "lang":"' . $lang_element->item(0)->nodeValue . '"}';
+$description_array = array();
+$description_array['description'] = $description_element->item(0)->nodeValue;
+$description_array['category_id'] = $category_id_element->item(0)->nodeValue;
+$description_array['lang'] = $lang_element->item(0)->nodeValue;
+
+$description_data = json_encode($description_array);
 
 $auth_token = $auth_token_element->item(0)->nodeValue;
+$channel_name = $name_element->item(0)->nodeValue;
+
+auth_set_token($auth_token);
+$dbconn = pg_connect(GEO2TAG_DB_STRING);
+
 try {
-    auth_set_token($auth_token);
-    $auth_token = auth_get_geo2tag_token();
-} catch (GetsAuthException $e) {
-    send_error(1, $e->getMessage());
+    $existing_channel = get_channel_id($dbconn, $channel_name);
+    $user_id = auth_get_db_id($dbconn);
+} catch (Exception $ex) {
+    send_error(1, $ex->getMessage());
+    die();
+}
+
+if ($existing_channel) {
+    send_error(1, 'Channel already exist error');
     die();
 }
 
 $data_array = array();
-$data_array['auth_token'] = $auth_token;
 $data_array['name'] = $name_element->item(0)->nodeValue;
 $data_array['description'] = $description_data;
 $data_array['url'] = $url_element->item(0)->nodeValue;
-$data_array['activeRadius'] = $active_radius_element->item(0)->nodeValue;
+$data_array['owner_id'] = (int) $user_id;
 
-$data_json = json_encode($data_array);
-if (!$data_json) {
-    send_error(1, 'Error: can\'t convert data to json.');
-    die();
+if (!pg_insert($dbconn, 'channel', $data_array)) {
+    send_error(1, 'Can\'t perform database query');
+} else {
+    send_result(0, 'success', '');
 }
 
-$response_json =  process_request(ADD_CHANNEL_METHOD_URL, $data_json, 'Content-Type:application/json');
-if (!$response_json) {
-    send_error(1, 'Error: problem with request to geo2tag.');
-    die();
-}
-
-$response_array = json_decode($response_json, true);
-if (!$response_array) {
-    send_error(1, 'Error: can\'t decode data from geo2tag.');
-    die();
-}
-
-$response_code = check_errors($response_array['errno']);
-if ($response_code != 'Ok') {
-    send_error(1, $response_code);
-    die();
-}
-
-send_result(0, 'success', '');
 ?>
 

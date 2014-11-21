@@ -90,10 +90,13 @@ $channel_name = null;
 if (!$category_id_defined) {
     $channel_name = $channel_name_element->item(0)->nodeValue;
 } else {
-    $extended_data_array["category_id"] = $category_id_element->item(0)->nodeValue;
+    $category_id = $category_id_element->item(0)->nodeValue;
+
+    $extended_data_array["category_id"] = $category_id;
 
     try {
-        $channel_name = ensure_category_channel($dbconn, $auth_token, $category_id_element->item(0)->nodeValue);
+        require_category($dbconn, $category_id);
+        $channel_name = ensure_category_channel($dbconn, $category_id);
     } catch (Exception $e) {
         send_error(1, $e->getMessage());
         die();

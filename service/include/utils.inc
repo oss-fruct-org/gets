@@ -464,4 +464,9 @@ function date_gets_to_postgres($gets_date) {
     return date_format($date_parsed, 'Y-m-d H:i:s.u');
 }
 
+function date_postgres_to_gets($gets_date) {
+    $date_parsed = date_create_from_format('Y-m-d H:i:s.u', $gets_date);
+    return date_format($date_parsed, 'd m Y H:i:s.u');
+}
+
 ?>

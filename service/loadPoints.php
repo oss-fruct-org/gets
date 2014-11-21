@@ -122,7 +122,7 @@ $xml .= '<Style id="styleDocument"><LabelStyle><color>ff0000cc</color></LabelSty
 
 // Output points
 while ($row = pg_fetch_row($result)) {
-    $datetime = $row[0];
+    $datetime = date_postgres_to_gets($row[0]);
     $label = $row[1];
     $latitude = $row[2];
     $longitude = $row[3];

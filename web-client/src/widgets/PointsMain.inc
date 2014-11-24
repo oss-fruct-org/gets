@@ -30,11 +30,11 @@ echo   '<div id="points-main-page" class="action-menu-container hidden">
                                             <div class="form-group row">
                                                 <div class="col-md-6">
                                                     <label for="points-main-latitude-input" class="control-label">' . getString('latitude','Latitude') . '</label>                                               
-                                                    <input id="points-main-latitude-input" name="latitude" type="text" class="form-control" value="0.0"/>
+                                                    <input id="points-main-latitude-input" name="latitude" type="text" class="form-control" value="0.0" />
                                                 </div>
                                                 <div class="col-md-6">
                                                     <label for="points-main-longitude-input" class="control-label">' . getString('longitude','Longitude') . '</label>                                               
-                                                    <input id="points-main-longitude-input" name="longitude" type="text" class="form-control" value="0.0"/>
+                                                    <input id="points-main-longitude-input" name="longitude" type="text" class="form-control" value="0.0" />
                                                 </div>
                                             </div>
                                         </div>

@@ -38,37 +38,62 @@ $auth_token = get_request_argument($dom, 'auth_token');
 $channel_name = get_request_argument($dom, 'track_name');
 $category_id = get_request_argument($dom, 'category_id');
 
-$requested_fields = array('uuid', 'name', 'latitude', 'longitude', 'time', 'description');
+$requested_fields = array('name', 'latitude', 'longitude', 'time');
+$requested_json_fields = array('uuid', 'description');
 
-$xmlrpc_array = array('gets_token' => $auth_token);
+$dbconn = pg_connect(GEO2TAG_DB_STRING);
+auth_set_token($auth_token);
 
 // One of track_name or category_id must already be no-null after schema validation
-if (!$channel_name) {
-    $channel_name = ensure_category_channel($auth_token, $category_id);
-    if (!$channel_name) {
-        send_error(1, "Request of category's channel failed");
-        die();
-    }
+if ($channel_name) {
+    $channel_name_escaped = pg_escape_string($dbconn, $channel_name);
+    $channel_where = "channel.name='${channel_name_escaped}'";
+} else {
+    $category_id_escaped = pg_escape_string($dbconn, $category_id);
+    $channel_where = "safe_cast_to_json(tag.description)->>'category_id'='${category_id_escaped}'";
 }
 
-$xmlrpc_array['channel'] = $channel_name;
-foreach ($requested_fields as $field) {
-    $value = get_request_argument($dom, $field);
-    if ($value) {
-        $xmlrpc_array[$field] = $value;
-    }
-}
-
-$xmlrpc_request = xmlrpc_encode_request('deleteTag2', $xmlrpc_array);
-
-$xmlrpc_response =  process_request(GETS_SCRIPTS_URL, $xmlrpc_request, 'Content-Type: text/xml');
-$xmlrpc = xmlrpc_decode($xmlrpc_response);
-
-if (is_array($xmlrpc) && xmlrpc_is_fault($xmlrpc)) {
-    send_error(1, 'Error: internal error: can\'t delete tag');
+// e-mail
+try {
+    $email = auth_get_google_email();
+    $email_escaped = pg_escape_string($dbconn, $email);
+} catch (Exception $e) {
+    send_error(1, $e->getMessage());
     die();
 }
 
-send_result(0, "Tag successfully removed", $xmlrpc);
+// Conditions
+$condition_where_array = array('TRUE');
+foreach ($requested_fields as $field) {
+    $value = get_request_argument($dom, $field);
+    if ($value) {
+        if ($field === 'name')
+            $field = 'label';
+        $value_escaped = pg_escape_string($dbconn, $value);
+        $condition_where_array[$field] = "${field}='${value_escaped}'";
+    }
+}
+
+foreach ($requested_json_fields as $field) {
+    $value = get_request_argument($dom, $field);
+    if ($value) {
+        $value_escaped = pg_escape_string($dbconn, $value);
+        $condition_where_array[$field] = "safe_cast_to_json(tag.description)->>'${field}'='${value_escaped}'";
+    }
+}
+
+$condition_where = implode(' AND ', $condition_where_array);
+
+$query = "DELETE FROM tag WHERE tag.id IN 
+    (SELECT tag.id FROM tag 
+    INNER JOIN users ON users.id = tag.user_id 
+    LEFT JOIN channel ON tag.channel_id = channel.id 
+    WHERE ${channel_where} AND users.email='${email_escaped}' AND ${condition_where});";
+
+if (!pg_query($dbconn, $query)) {
+    send_error(1, "DB access error");
+} else {
+    send_result(0, "Tag successfully removed", "success");
+}
 
 ?>

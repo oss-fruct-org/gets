@@ -1,0 +1,6 @@
+start = Request
+Request = element request { Params }
+Params = element params {
+    element auth_token { text },
+    (element track_name { text} | element category_id { xsd:integer })
+}

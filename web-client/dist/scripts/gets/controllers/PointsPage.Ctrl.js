@@ -147,7 +147,12 @@ PointsPage.prototype.initPage = function() {
     // Add Point Handler
     $(this.document).on('submit', '#edit-point-form', function(e) {
         e.preventDefault();
-        self.addPointHandler(this);
+        var form = self._utils.getHashVar('form');
+        if (form === PointsPage.ADD_POINT) {
+            self.addPointHandler(this, false);
+        } else if (form === PointsPage.EDIT_POINT) {
+            self.addPointHandler(this, true);
+        }       
     });
     
     /*$('.dropdown').hover(
@@ -229,11 +234,10 @@ PointsPage.prototype.initPage = function() {
 
     // 
     $(this.document).on('submit', '#point-main-form', function(e) {
-        e.preventDefault();  
-        
+        e.preventDefault();         
         self.downloadPointsHandler();       
     });
-    
+       
     //dragend
     this._mapCtrl.setMapCallback('dragend', function(e){       
         var center = self._mapCtrl.getMapCenter();
@@ -245,8 +249,11 @@ PointsPage.prototype.initPage = function() {
             self._pointsMain.getLongitude(), 
             self._pointsMain.getRadius() * 1000
         );
-        
-        self.downloadPointsHandler();
+
+        var size = self._mapCtrl.getMapSize();
+        if (size.x / 4 < e.distance || size.y / 4 < e.distance) {
+            self.downloadPointsHandler();
+        }      
     });
     
     // upload picture show/hide handler
@@ -383,8 +390,9 @@ PointsPage.prototype.initPage = function() {
         e.preventDefault();//edit-point-add-field-save  class="form-group" 
         var extendedData = $(self.document).find('#edit-point-extended-data');
         var extendedDataHTML = $(extendedData).html();
-        var fieldName = $(self.document).find('#edit-point-add-field-input').val();
-        extendedDataHTML += '<div class="form-group"><label for="' + fieldName + '" class="block">' + fieldName + '</label><input name="' + fieldName + '" class="form-control" type="text" /></div>';
+        var fieldName = $(self.document).find('#edit-point-add-field-input-name').val();
+        var fieldValue = $(self.document).find('#edit-point-add-field-input-value').val();
+        extendedDataHTML += '<div class="form-group"><label for="' + fieldName + '" class="block">' + fieldName + '</label><input name="' + fieldName + '" class="form-control" type="text" value="' + fieldValue + '" /></div>';
         $(extendedData).html(extendedDataHTML);
         
         // close
@@ -505,7 +513,7 @@ PointsPage.prototype.showEditPoint = function() {
     }
 };
 
-PointsPage.prototype.addPointHandler = function(formData) {
+PointsPage.prototype.addPointHandler = function(formData, update) {
     var that = this;
     try {         
         if (this._utils.checkCoordsInput(
@@ -519,7 +527,7 @@ PointsPage.prototype.addPointHandler = function(formData) {
             Logger.debug(paramsObj);
             //paramsObj.push({name: 'time', value: this._utils.getDateTime()});
             paramsObj.push({name: 'uuid', value: this._utils.guid()()});
-            this._points.addPoint(paramsObj, function () {
+            this._points.addPoint(paramsObj, update, function () {
                 that.window.location.replace('#form=' + PointsPage.MAIN);
                 MessageBox.showMessage($(that._pointAdd.getView()).data('messagesuccessAdd'), MessageBox.SUCCESS_MESSAGE);
             });

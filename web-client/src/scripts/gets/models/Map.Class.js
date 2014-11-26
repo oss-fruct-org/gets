@@ -291,11 +291,11 @@ MapClass.prototype.placePointsOnMap = function(pointList, markerBaseLink) {
         throw new GetsWebClientException('Map Error', 'placePointsOnMap, pointList undefined or null.');
     }
     this.pointsLayer = new L.MarkerClusterGroup();
-  
+     
     for (var i = 0; i < pointList.length; i++) {
         var coords = pointList[i].coordinates.split(',');
-           
-        var marker = L.marker([coords[1], coords[0]], {title: pointList[i].name}); 
+                  
+        var marker = L.marker([coords[1], coords[0]], {title: pointList[i].name}); //{icon: myIcon}
         this.pointsLayer.addLayer(marker);
         
         var popup = L.popup()
@@ -401,6 +401,10 @@ MapClass.prototype.setCenter = function(latitude, longitude) {
  */
 MapClass.prototype.getCenter = function() {
     return this.map.getCenter();
+};
+
+MapClass.prototype.getSize = function() {
+    return this.map.getSize();
 };
 
 /**

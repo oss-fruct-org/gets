@@ -53,6 +53,10 @@ MapController.prototype.getMapCenter = function() {
     return this._map.getCenter();
 };
 
+MapController.prototype.getMapSize = function() {
+    return this._map.getSize();
+};
+
 MapController.prototype.addTrack = function(track) {
     if (!this._map.checkTrack(track)) {
         this._map.placeTrackInMap(track);

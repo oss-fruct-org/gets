@@ -77,6 +77,8 @@ $translations = array(
     'add-field' => 'Add field',
     'add' => 'Add',
     'enter-name' => 'Enter name of the new field here',
+    'value' => 'Value',
+    'enter-value' => 'Enter value (optional)',
     'cancel' => 'Cancel',
     'point-add-success' => 'Point was successfully added', 
     

@@ -133,20 +133,28 @@ echo    '<div id="edit-point-page" class="action-menu-container hidden" data-pag
                                 </button>
                             </div>
                         </div>
-                        <div id="edit-point-add-field-input-box" class="hidden">
-                            <label for="edit-point-add-field-input">' . getString('name','Name') . '</label>
-                            <input id="edit-point-add-field-input" class="form-control" type="text" placeholder="' . getString('enter-name','') . '"/>
-                        </div>
-                        <div id="edit-point-add-field-control-buttons" class="btn-group btn-group-justified hidden">
-                            <div class="btn-group">
-                                <button id="edit-point-add-field-save" type="button" class="btn btn-default">
-                                    <span class="glyphicon glyphicon-plus-sign"></span> ' . getString('add','Add') . '
-                                </button>
+                        <div class="bordered-element">
+                            <div id="edit-point-add-field-input-box" class="hidden">
+                                <div class="form-group">
+                                    <label for="edit-point-add-field-input-name">' . getString('name','Name') . '</label>
+                                    <input id="edit-point-add-field-input-name" class="form-control" type="text" placeholder="' . getString('enter-name','') . '"/>
+                                </div>
+                                <div class="form-group">        
+                                    <label for="edit-point-add-field-input-value">' . getString('value','Value') . '</label>
+                                    <input id="edit-point-add-field-input-value" class="form-control" type="text" placeholder="' . getString('enter-value','') . '"/> 
+                                </div>        
                             </div>
-                            <div class="btn-group">
-                                <button id="edit-point-add-field-cancel" type="button" class="btn btn-default">
-                                    <span class="glyphicon glyphicon-remove-sign"></span> ' . getString('cancel','Cancel') . '
-                                </button>
+                            <div id="edit-point-add-field-control-buttons" class="btn-group btn-group-justified hidden">
+                                <div class="btn-group">
+                                    <button id="edit-point-add-field-save" type="button" class="btn btn-default">
+                                        <span class="glyphicon glyphicon-plus-sign"></span> ' . getString('add','Add') . '
+                                    </button>
+                                </div>
+                                <div class="btn-group">
+                                    <button id="edit-point-add-field-cancel" type="button" class="btn btn-default">
+                                        <span class="glyphicon glyphicon-remove-sign"></span> ' . getString('cancel','Cancel') . '
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>    

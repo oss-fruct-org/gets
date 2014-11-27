@@ -83,6 +83,31 @@ if (!array_key_exists("uuid", $extended_data_array)) {
     $extended_data_array["uuid"] = uuidv4();
 }
 
+auth_set_token($auth_token);
+$dbconn = pg_connect(GEO2TAG_DB_STRING);
+
+$channel_name = null;
+if (!$category_id_defined) {
+    $channel_name = $channel_name_element->item(0)->nodeValue;
+} else {
+    $category_id = $category_id_element->item(0)->nodeValue;
+
+    $extended_data_array["category_id"] = $category_id;
+
+    try {
+        require_category($dbconn, $category_id);
+        $channel_name = ensure_category_channel($dbconn, $category_id);
+    } catch (Exception $e) {
+        send_error(1, $e->getMessage());
+        die();
+    }
+
+    if (!$channel_name) {
+        send_error(1, "Request of category's channel failed");
+        die();
+    }
+}
+
 # Description always contains json encoded data
 if (function_exists('unicode_json_encode')) {
     $description = unicode_json_encode($extended_data_array);
@@ -90,34 +115,21 @@ if (function_exists('unicode_json_encode')) {
     $description = json_encode($extended_data_array, JSON_UNESCAPED_UNICODE);
 }
 
-
-$channel_name = null;
-if (!$category_id_defined) {
-    $channel_name = $channel_name_element->item(0)->nodeValue;
-} else {
-    $channel_name = ensure_category_channel($auth_token, $category_id_element->item(0)->nodeValue);
-    if (!$channel_name) {
-        send_error(1, "Request of category's channel failed");
-        die();
-    }
-}
-
 // if time not defined then set now
 if ($time_element->length > 0) {
-    $time = $time_element->item(0)->nodeValue;
+    $time = date_gets_to_postgres($time_element->item(0)->nodeValue);
 } else {
-    $time = date("d m Y H:i:s.000");
+    $time = date("d-m-Y H:i:s.000");
 }
 
 $data_array = array();
-$data_array['channel'] = $channel_name;
-$data_array['title'] = $title_element->item(0)->nodeValue;
+$data_array['label'] = $title_element->item(0)->nodeValue;
 $data_array['description'] = $description;
 
 if ($link_element->length > 0 && strlen($link_element->item(0)->nodeValue) > 0) {
-    $data_array['link'] = $link_element->item(0)->nodeValue;
+    $data_array['url'] = $link_element->item(0)->nodeValue;
 } else {
-    $data_array['link'] = "{}";
+    $data_array['url'] = "{}";
 }
 
 $data_array['latitude'] = /*(float)*/ $latitude_element->item(0)->nodeValue;
@@ -125,13 +137,22 @@ $data_array['longitude'] = /*(float)*/ $longitude_element->item(0)->nodeValue;
 $data_array['altitude'] = /*(float)*/ ($altitude_element->item(0)->nodeValue == null ? "0.0" : $altitude_element->item(0)->nodeValue);
 $data_array['time'] = $time;
 
+# Check permission
 try {
-    $response_array = process_json_request(WRITE_TAG_METHOD_URL, $data_array, $auth_token);
-} catch (Exception $e) {
-    send_error(1, $e->getMessage());
+    list($user_id, $channel_id) = require_channel_owned($dbconn, $channel_name);
+} catch (Exception $ex) {
+    send_error(1, $ex->getMessage());
     die();
 }
 
-send_result(0, 'success', '');
+$data_array['channel_id'] = $channel_id;
+$data_array['user_id'] = $user_id;
+
+if (!pg_insert($dbconn, 'tag', $data_array)) {
+    send_error(1, 'Can\'t insert point to database');
+} else {
+    send_result(0, 'success', '');
+}
+
 ?>
 

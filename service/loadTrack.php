@@ -36,38 +36,37 @@ if (!$dom->schemaValidate('schemes/loadTrack.xsd')) {
 $auth_token = get_request_argument($dom, 'auth_token');
 $channel_name = get_request_argument($dom, 'name');
 
-$public_token = get_public_token();
-if (!$public_token) {
-    send_error(1, 'Error: can\'t receive new token');
-    die();
+if ($auth_token) {
+    auth_set_token($auth_token);
 }
+
+$dbconn = pg_connect(GEO2TAG_DB_STRING);
 
 try {
-    if ($auth_token) {
-        try {
-            $response_array = process_json_request(FILTER_CHANNEL_METHOD_URL, Array('channel' => $channel_name, 'amount' => 100), $auth_token);
-        } catch (ChannelNotSubscribedException $e) {
-            $response_array = process_json_request(FILTER_CHANNEL_METHOD_URL, Array('channel' => $channel_name, 'amount' => 100), $public_token);
-        }
-    } else {
-        $response_array = process_json_request(FILTER_CHANNEL_METHOD_URL, Array('channel' => $channel_name, 'amount' => 100), $public_token);
-    }
-
-} catch (Exception $e) {
-    send_error(1, $e->getMessage());
+    list($user_id, $channel_id) = require_channel_subscribed($dbconn, $channel_name, $auth_token == null);
+} catch (Exception $ex) {
+    send_error(1, $ex->getMessage());
     die();
 }
 
+$result_tag = pg_query_params($dbconn, 'SELECT time, label, latitude, longitude, altitude, description, url FROM tag WHERE tag.channel_id=$1 ORDER BY time;',
+        array($channel_id));
 
 $xml = '<kml xmlns="http://www.opengis.net/kml/2.2">';
 $xml .= '<Document>';
-$xml .= '<name>' . $response_array['channel']['name'] . '.kml</name>';
+$xml .= '<name>' . $channel_name . '.kml</name>';
 $xml .= '<open>1</open>';
 $xml .= '<Style id="styleDocument"><LabelStyle><color>ff0000cc</color></LabelStyle></Style>';
 
 // Output points
-foreach ($response_array['channel']['items'] as $item) {
-    $description = $item['description'];
+while ($row = pg_fetch_row($result_tag)) {
+    $datetime = date_postgres_to_gets($row[0]);
+    $label = $row[1];
+    $latitude = $row[2];
+    $longitude = $row[3];
+    $altitude = $row[4];
+    $description = $row[5];
+    $url = $row[6];
 
     // Try parse description json
     $description_json = json_decode($description, true);
@@ -79,18 +78,18 @@ foreach ($response_array['channel']['items'] as $item) {
     }
 
     $xml .= '<Placemark>';
-    $xml .= '<name>' . htmlspecialchars($item['title']) . '</name>';
+    $xml .= '<name>' . htmlspecialchars($label) . '</name>';
 
     if (!$description_json)
-        $xml .= '<description>' . '<![CDATA[' .  $item['description'] . ']]>' . '</description>';
+        $xml .= '<description>' . '<![CDATA[' .  $description . ']]>' . '</description>';
     else if ($inner_description)
         $xml .= '<description>' . '<![CDATA[' .  $inner_description . ']]>' . '</description>';
     else
         $xml .= '<description></description>';
 
     $xml .= '<ExtendedData>';
-    $xml .= '<Data name="url"><value>' . htmlspecialchars($item['link']) . '</value></Data>';
-    $xml .= '<Data name="time"><value>' . htmlspecialchars($item['pubDate']) . '</value></Data>';
+    $xml .= '<Data name="link"><value>' . htmlspecialchars($url) . '</value></Data>';
+    $xml .= '<Data name="time"><value>' . htmlspecialchars($datetime) . '</value></Data>';
 
     if ($description_json) {
         foreach ($description_json as $key => $value) {
@@ -103,7 +102,7 @@ foreach ($response_array['channel']['items'] as $item) {
 
     $xml .= '</ExtendedData>';
 
-    $xml .= '<Point><coordinates>' . $item['longitude'] . ',' . $item['latitude'] . ',0.0' . '</coordinates></Point>';
+    $xml .= '<Point><coordinates>' . $longitude . ',' . $latitude . ',0.0' . '</coordinates></Point>';
     $xml .= '</Placemark>';
 }
 

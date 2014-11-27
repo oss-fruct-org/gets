@@ -40,7 +40,7 @@ function auth_set_initial_token($access_token, $email) {
     $token_array = json_decode($access_token, true);
 
     if (!isset($token_array['refresh_token'])) {
-        throw new GetsAuthException('Google access_token doesn\'t contain refresh_token element');
+        throw new GetsAuthException('Google access_token doesn\'t contain refresh_token element', 1);
     }
 
     $gets_token = 'g:' . $token_array['refresh_token'];
@@ -95,6 +95,22 @@ function auth_get_google_email() {
     return $_SESSION['email'];
 }
 
+function auth_get_db_login($dbconn) {
+    if (!isset($_SESSION['db_login'])) {
+        auth_refresh_db_access($dbconn);
+    }
+
+    return $_SESSION['db_login'];
+}
+
+function auth_get_db_id($dbconn) {
+    if (!isset($_SESSION['db_id'])) {
+        auth_refresh_db_access($dbconn);
+    }
+
+    return $_SESSION['db_id'];
+}
+
 function auth_get_geo2tag_token() {
     if (!isset($_SESSION['geo2tag_token'])) {
         auth_refresh_geo2tag_access();
@@ -111,9 +127,25 @@ function auth_get_geo2tag_login() {
     return $_SESSION['geo2tag_login'];
 }
 
+function auth_refresh_db_access($dbconn) {
+    $email = auth_get_google_email();
+    $result = pg_query_params($dbconn, 'SELECT id, login FROM users WHERE email=$1;', array($email));
+    $row = pg_fetch_row($result);
+
+    if (!$row) {
+        // Create new user
+        $result = pg_query_params($dbconn, 'INSERT INTO users VALUES ($1, $2, $3) RETURNING users.id, users.login', $email, $email, $email);
+        $row = pg_fetch_row($result);
+    }
+
+    list($id, $login) = $row; 
+    $_SESSION['db_id'] = $id;
+    $_SESSION['db_login'] = $login;
+}
+
 function auth_refresh_geo2tag_access() {
     if (!isset($_SESSION['gets_token'])) {
-        throw new GetsAuthException('gets_token not set');
+        throw new GetsAuthException('gets_token not set', 1);
     }
 
     $gets_token = $_SESSION['gets_token'];
@@ -131,18 +163,18 @@ function auth_refresh_geo2tag_access() {
         $response_json = process_request(LOGIN_METHOD_URL, $request_json, 'Content-Type:application/json');
 
         if (!$response_json) {
-            throw new GetsAuthException('Error with request to geo2tag');
+            throw new GetsAuthException('Error with request to geo2tag', 1);
         }
 
         $response = json_decode($response_json, true);
         if (!$response) {
-            throw new GetsAuthException('Error: can\'t decode data from geo2tag');
+            throw new GetsAuthException('Error: can\'t decode data from geo2tag', 1);
         }
 
         $response_code = $response['errno'];
 
         if ($response_code === INCORRECT_CREDENTIALS_ERROR) {
-            throw new GetsAuthException('Error: GeTS account credentials obsolete');
+            throw new GetsAuthException('Error: GeTS account credentials obsolete', 1);
         }
 
         $geo2tag_token = $response['auth_token'];
@@ -168,7 +200,7 @@ function auth_refresh_geo2tag_access() {
         }
 
         if (!$login && !$password) {
-            throw new GetsAuthException('Can\'t check account in geo2tag');
+            throw new GetsAuthException('Can\'t check account in geo2tag', 1);
         }
 
         $login_array = array('login' => $login, 'password' => $password);
@@ -178,7 +210,7 @@ function auth_refresh_geo2tag_access() {
         $response_array = json_decode($response_json, true);
 
         if (!$response_array || $response_array['errno'] !== SUCCESS) {
-            throw new GetsAuthException('Can\'t login in geo2tag');
+            throw new GetsAuthException('Can\'t login in geo2tag', 1);
         }
 
         $geo2tag_token = $response_array['auth_token'];
@@ -202,7 +234,7 @@ function auth_refresh_google_access() {
     } catch (Google_AuthException $e) {
         session_unset();
         session_destroy();
-        throw new GetsAuthException('Can\'t refresh google token');
+        throw new GetsAuthException('Can\'t refresh google token', 1);
     }
 
     $service = new Google_PlusService($client);

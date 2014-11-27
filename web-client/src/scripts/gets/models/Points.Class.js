@@ -130,12 +130,12 @@ PointsClass.prototype.downLoadPoints = function(paramsObj, callback) {
             var pointExtendedData = [];
             
             pointObj.name = $(pointListItems[i]).find('name').length ? $(pointListItems[i]).find('name').text() : '';
-            pointObj.description = $(pointListItems[i]).find('description').length ? $(pointListItems[i]).find('description').text() : '';
+            pointObj.description = $(pointListItems[i]).find("[name='description']").length ? $(pointListItems[i]).find("[name='description']").text() : '';
             pointObj.uuid = $(pointListItems[i]).find("[name='uuid']").length ? $(pointListItems[i]).find("[name='uuid']").text() : '';
             pointObj.access = $(pointListItems[i]).find("[name='access']").length ? $(pointListItems[i]).find("[name='access']").text() : '';
             pointObj.photo = $(pointListItems[i]).find("[name='photo']").length ? $(pointListItems[i]).find("[name='photo']").text() : '';
             pointObj.audio = $(pointListItems[i]).find("[name='audio']").length ? $(pointListItems[i]).find("[name='audio']").text() : '';
-            pointObj.url = $(pointListItems[i]).find("[name='url']").length ? $(pointListItems[i]).find("[name='url']").text() : '';
+            pointObj.url = $(pointListItems[i]).find("[name='link']").length ? $(pointListItems[i]).find("[name='link']").text() : '';
             pointObj.coordinates = $(pointListItems[i]).find('coordinates').length ? $(pointListItems[i]).find('coordinates').text() : '';
             
             $(pointListItems[i]).find('Data').each(function(index, newValue) {
@@ -170,31 +170,20 @@ PointsClass.prototype.downLoadPoints = function(paramsObj, callback) {
  * @param {String} paramsObj[i].name="channel" Track in which point need to be uploaded (value stored in paramsObj[i].value)
  * @param {String} paramsObj[i].name="time" Time when point was created (value stored in paramsObj[i].value)
  * @param {Positive Integer} paramsObj[i].name="index" Position of a point in a track (optional) (value stored in paramsObj[i].value)
+ * @param {Boolean} update Set true if point should be updated
  * 
  * @throws {GetsWebClientException}
  */
-PointsClass.prototype.addPoint = function (paramsObj, callback) {
+PointsClass.prototype.addPoint = function (paramsObj, update, callback) {
     if (!paramsObj) {
         throw new GetsWebClientException('Points Error', 'addPoint, paramsObj is undefined or null');
     }
     
     Logger.debug(paramsObj);
       
-    var newParamsObj = {};
-    
-    var title = '';
-    var description= '';
-    var url = '';
-    var lat = 0.0;
-    var lng = 0.0;
-    var alt = 0.0;
-    var imageURL = null;
-    var audioURL = null;
+    var newParamsObj = {};  
     var channel = null;
     var category = null;
-    var time = '';
-    var index = null;
-    var radius = null;
       
     newParamsObj.extended_data = {};
     $(paramsObj).each(function (idx, value) {
@@ -229,7 +218,7 @@ PointsClass.prototype.addPoint = function (paramsObj, callback) {
     Logger.debug(newParamsObj); 
     
     var addPointRequest = $.ajax({
-        url: ADD_POINT_ACTION,
+        url: update ? UPDATE_POINT_ACTION : ADD_POINT_ACTION,
         type: 'POST',
         async: false, 
         contentType: 'application/json', 

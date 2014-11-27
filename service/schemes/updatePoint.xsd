@@ -10,7 +10,7 @@
                 <xs:element type="xs:string" name="uuid" minOccurs="0"/>
                 <xs:element type="xs:string" name="channel" minOccurs="0"/>
                 <xs:element type="xs:string" name="name" minOccurs="0"/>
-                <xs:element type="xs:string" name="category_id" minOccurs="0"/>
+                <xs:element type="xs:integer" name="category_id" minOccurs="0"/>
 
                 <xs:element type="xs:string" name="title" minOccurs="0"/>
                 <xs:element type="xs:string" name="link" minOccurs="0"/>

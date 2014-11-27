@@ -37,18 +37,28 @@ if (!$dom->schemaValidate('schemes/deleteTrack.xsd')) {
 $auth_token = get_request_argument($dom, 'auth_token');
 $track_name = get_request_argument($dom, 'name');
 
-$xmlrpc_request = xmlrpc_encode_request('deleteChannel', 
-    array('gets_token' => $auth_token,
-          'channel' => $track_name));
+$dbconn = pg_connect(GEO2TAG_DB_STRING);
+auth_set_token($auth_token);
 
-$xmlrpc_response =  process_request(GETS_SCRIPTS_URL, $xmlrpc_request, 'Content-Type: text/xml');
-$xmlrpc = xmlrpc_decode($xmlrpc_response);
-
-if (is_array($xmlrpc) && xmlrpc_is_fault($xmlrpc)) {
-    send_error(1, 'Error: internal error: can\'t delete channeld');
+try {
+    $email = auth_get_google_email();
+} catch (Exception $e) {
+    send_error(1, $e->getMessage());
     die();
 }
 
-send_result(0, "Channel successfully removed", $xmlrpc);
+$query = "DELETE FROM channel WHERE channel.id IN
+    (SELECT channel.id FROM channel
+    INNER JOIN users ON channel.owner_id = users.id 
+    WHERE users.email=$1 AND channel.name=$2) RETURNING channel.id;";
+
+$res = pg_query_params($dbconn, $query, array($email, $track_name));
+$count = pg_num_rows($res);
+
+if ($count == 0) {
+    send_error(1, "Channel not found");
+} else {
+    send_result(0, "Channel successfully removed", $count);
+}
 
 ?>

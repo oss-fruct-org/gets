@@ -75,7 +75,6 @@ class TestCreateTrack(unittest.TestCase):
     def test_create_check_2(self):
         name = gt.make_name_2()
         resp = self.create_track(name=name)
-        
         self.assertTrue(self.check_track_exists(self.get_track_id(resp)))
 
     def test_create_check_desc(self):
@@ -109,6 +108,17 @@ class TestCreateTrack(unittest.TestCase):
         resp = gt.do_request('deleteTrack.php', req)
         self.assertEqual(0, gt.get_code(resp))
         self.assertFalse(self.check_track_exists(name))
+
+    def test_keep_old_tracks(self):
+        name = gt.make_name()
+        self.create_track(name=name)
+        
+        name2 = gt.make_name()
+        self.create_track(name=name2, update='true')
+        self.create_track(name=name2, update='true')
+
+        self.assertTrue(self.check_track_exists(name))
+        self.assertTrue(self.check_track_exists(name2))
 
 if __name__ == "__main__":
     unittest.main()

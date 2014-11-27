@@ -37,38 +37,32 @@ $category_name = $dom->getElementsByTagName('name')->item(0)->nodeValue;
 $category_description_element = $dom->getElementsByTagName('description');
 if ($category_description_element->length > 0) {
     $category_description = $category_description_element->item(0)->nodeValue;
+} else {
+    $category_description = '{}';
 }
+
 $category_url_element = $dom->getElementsByTagName('url');
 if ($category_url_element->length > 0) {
     $category_url = $category_url_element->item(0)->nodeValue;
+} else {
+    $category_url = '{}';
 }
 
-$data = '<methodCall><methodName>addCategory</methodName><params><param><struct><member><name>projectName</name><value>'.GEO2TAG_USER.
-	'</value></member><member><name>name</name><value>'. $category_name . '</value></member>'.
-	'<member><name>token</name><value>'.$auth_token.'</value></member>'.
-	(isset($category_description) ? '<member><name>description</name><value>'.$category_description.'</value></member>' : '').
-	(isset($category_url) ? '<member><name>url</name><value>'.$category_url.'</value></member>' : '').'</struct></param></params></methodCall>';
-$response =  process_request(GETS_SCRIPTS_URL, $data, 'Content-Type: text/xml');
-if (!$response) {
-	send_error(1, 'Error: problem with request to geo2tag.');
-	die();
+auth_set_token($auth_token);
+$dbconn = pg_connect(GEO2TAG_DB_STRING);
+
+try {
+    $user_id = auth_get_db_id($dbconn);
+    $admin_id = require_user_admin($dbconn);
+} catch (Exception $e) {
+    send_error(1, $e->getMessage());
+    die();
 }
 
-$dom_response = new DOMDocument();
-$dom_response->loadXML($response);
-$xpath = new DOMXPath($dom_response);
-
-$success_element = $dom_response->getElementsByTagName('methodResponse');
-if ($success_element->length == 0) {
-	$xpath_query = "//member[name='faultString']/value/string";
-	$errorNode = $xpath->query($xpath_query);
-	send_error(1, 'Error: can\'t add new Category: '.$errorNode->item(0)->nodeValue);
-	die();
-}
-
-$xpath_query = '//methodResponse/params/param/value/string';
-$id_element = $xpath->query($xpath_query);
-$id = $id_element->item(0)->nodeValue;
+$result = pg_query_params($dbconn, 'INSERT INTO category (name, description, url, owner_id) VALUES ($1, $2, $3, $4) RETURNING category.id',
+    array($category_name, $category_description, $category_url, $admin_id));
+$row = pg_fetch_row($result);
+$id = $row[0];
 
 $content = '<category>';
 $content .= '<id>'.$id.'</id>';
@@ -76,5 +70,7 @@ $content .= '<name>'.$category_name.'</name>';
 $content .= (isset($category_description) ? '<description>'.$category_description.'</description>' : '');
 $content .= (isset($category_url) ? '<url>'.$category_url.'</url>' : '');
 $content .= '</category>';
+
 send_result(0, 'success', $content);
+
 ?>

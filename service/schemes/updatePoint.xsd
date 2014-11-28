@@ -18,6 +18,13 @@
                 <xs:element type="xs:double" name="latitude" minOccurs="0"/>
                 <xs:element type="xs:double" name="longitude" minOccurs="0"/>
                 <xs:element type="xs:double" name="altitude" minOccurs="0"/>
+                <xs:element name="extended_data" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:any minOccurs="1" maxOccurs="unbounded" processContents="lax"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
             </xs:all>
           </xs:complexType>
         </xs:element>

@@ -49,39 +49,9 @@ $time_element = $dom->getElementsByTagName('time');
 
 $auth_token = $auth_token_element->item(0)->nodeValue;
 
-if ($description_element->length > 0) {
-    $description = $description_element->item(0)->nodeValue;
-
-    # If caller pass extended data in description, process it correctly
-    $extended_data_array = json_decode($description, true);
-    if (!$extended_data_array) {
-        $extended_data_array = array();
-    } else {
-        $description = null;
-    }
-} else {
-    $description = null;
-    $extended_data_array = array();
-}
-
 $extended_data_element = $dom->getElementsByTagName('extended_data');
 
-if ($extended_data_element->length > 0) {
-    foreach ($extended_data_element->item(0)->childNodes as $node) {
-        $key = $node->nodeName;
-        $value = $node->nodeValue;
-        $extended_data_array[$key] = $value;
-    }
-}
-
-# Description in extended data overrides main description
-if (!array_key_exists("description", $extended_data_array) && $description) {
-    $extended_data_array["description"] = $description;
-}
-
-if (!array_key_exists("uuid", $extended_data_array)) {
-    $extended_data_array["uuid"] = uuidv4();
-}
+$extended_data_array = parse_extended_data($description_element, $extended_data_element);
 
 auth_set_token($auth_token);
 $dbconn = pg_connect(GEO2TAG_DB_STRING);

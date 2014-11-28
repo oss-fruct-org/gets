@@ -297,6 +297,41 @@ function unicode_callback(&$item, $key) {
     }
 }
 
+function parse_extended_data(DOMNodeList $description_element, DOMNodeList $extended_data_element) {
+    if ($description_element->length > 0) {
+        $description = $description_element->item(0)->nodeValue;
+
+        # If caller pass extended data in description, process it correctly
+        $extended_data_array = json_decode($description, true);
+        if (!$extended_data_array) {
+            $extended_data_array = array();
+        } else {
+            $description = null;
+        }
+    } else {
+        $extended_data_array = array();
+        $description = null;
+    }
+
+    if ($extended_data_element->length > 0) {
+        foreach ($extended_data_element->item(0)->childNodes as $node) {
+            $key = $node->nodeName;
+            $value = $node->nodeValue;
+            $extended_data_array[$key] = $value;
+        }
+    }
+
+    if (!array_key_exists("description", $extended_data_array) && $description) {
+        $extended_data_array["description"] = $description;
+    }
+
+    if (!array_key_exists("uuid", $extended_data_array)) {
+        $extended_data_array["uuid"] = uuidv4();
+    }
+
+    return $extended_data_array;
+}
+
 /**
  * Checks if channel for category_id exists and creates it otherwise
  *
@@ -313,7 +348,7 @@ function ensure_category_channel($dbconn, $category_id) {
     $select_resp = pg_query($dbconn, $select_request);
 
     if (pg_num_rows($select_resp) == 0) {
-        $desc_array = array('description' => "Private channel for category ${$category_id} user ${$user_id}",
+        $desc_array = array('description' => "Private channel for category ${category_id} user ${user_id}",
                 'category_id' => "${category_id}");
         $description = pg_escape_string($dbconn, json_encode($desc_array));
 

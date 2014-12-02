@@ -407,6 +407,20 @@ PointsPage.prototype.initPage = function() {
         $(self.document).find('#edit-point-add-field-input-box').removeClass('show').addClass('hidden');
         $(self.document).find('#edit-point-add-field-control-buttons').removeClass('show').addClass('hidden');
     });
+       
+    // Remove point handler
+    $(this.document).on('click', '#point-info-remove', function(e) {
+        e.preventDefault();
+        if (confirm($(self._pointInfo.getView()).find('#point-info-remove').data('removetext'))) {
+            try {
+                self._points.removePoint();                              
+                self.window.location.replace('#form=' + PointsPage.MAIN);
+                MessageBox.showMessage($(self._pointInfo.getView()).data('messagesuccessRemove'), MessageBox.SUCCESS_MESSAGE);
+            } catch (Exception) {
+                MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
+            }
+        }
+    });
     
     this.downloadPointsHandler();
     // get user's coordinates
@@ -525,8 +539,6 @@ PointsPage.prototype.addPointHandler = function(formData, update) {
 
             var paramsObj = $(formData).serializeArray();
             Logger.debug(paramsObj);
-            //paramsObj.push({name: 'time', value: this._utils.getDateTime()});
-            paramsObj.push({name: 'uuid', value: this._utils.guid()()});
             this._points.addPoint(paramsObj, update, function () {
                 that.window.location.replace('#form=' + PointsPage.MAIN);
                 MessageBox.showMessage($(that._pointAdd.getView()).data('messagesuccessAdd'), MessageBox.SUCCESS_MESSAGE);

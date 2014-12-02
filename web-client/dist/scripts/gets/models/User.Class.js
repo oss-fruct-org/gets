@@ -87,7 +87,8 @@ UserClass.prototype.logout = function() {
         contentType: 'text/xml',
         dataType: 'xml',
         data: ''
-    });  
+    });
+    this.windowObj.location.reload(true);
 };
 
 /**

@@ -43,7 +43,7 @@ if ($auth_token) {
 $dbconn = pg_connect(GEO2TAG_DB_STRING);
 
 try {
-    list($user_id, $channel_id) = require_channel_subscribed($dbconn, $channel_name, $auth_token == null);
+    list($user_id, $channel_id) = require_channel_accessible($dbconn, $channel_name, $auth_token == null);
 } catch (Exception $ex) {
     send_error(1, $ex->getMessage());
     die();

@@ -444,11 +444,11 @@ function require_user_trusted($dbconn) {
 }
 
 /*
- * Check that user with $auth_token subscribed to channel $channel_name
+ * Check that user with $auth_token or public user subscribed to channel $channel_name
  * Null $auth_token means public token
  * Returns: array (user_id, channel_id)
  */
-function require_channel_subscribed($dbconn, $channel_name, $is_public) {
+function require_channel_accessible($dbconn, $channel_name, $is_public) {
     if (!$is_public) {
         $email = auth_get_google_email();
     } else {
@@ -458,7 +458,8 @@ function require_channel_subscribed($dbconn, $channel_name, $is_public) {
     $result_check = pg_query_params($dbconn, 'SELECT users.id, channel.id FROM channel 
             INNER JOIN subscribe ON channel.id = subscribe.channel_id 
             INNER JOIN users ON users.id = subscribe.user_id 
-            WHERE users.email=$1 AND channel.name=$2;', array($email, $channel_name));
+            WHERE (users.email=$1 OR users.login=$2) AND channel.name=$3;',
+        array($email, GEO2TAG_USER, $channel_name));
 
     if (!($result_check_row = pg_fetch_row($result_check))) {
         throw new Exception('Channel not subscribed', 1);

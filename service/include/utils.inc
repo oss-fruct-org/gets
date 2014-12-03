@@ -197,6 +197,18 @@ function get_array_element($array, $field, $default_value = null) {
         return $default_value;
 }
 
+function safe_merge_arrays($array1, $array2) {
+    if (!$array1 && !$array2) {
+        return null;
+    } else if (!$array1) {
+        return $array2;
+    } else if (!$array2) {
+        return $array1;
+    } else {
+        return array_merge($array2, $array1);
+    }
+}
+
 /**
     Returns all available categories as array
     Params:

@@ -138,16 +138,18 @@ PointsClass.prototype.downLoadPoints = function(paramsObj, callback) {
             pointObj.url = $(pointListItems[i]).find("[name='link']").length ? $(pointListItems[i]).find("[name='link']").text() : '';
             pointObj.coordinates = $(pointListItems[i]).find('coordinates').length ? $(pointListItems[i]).find('coordinates').text() : '';
             
-            $(pointListItems[i]).find('Data').each(function(index, newValue) {
-                pointExtendedData.push({name: $(newValue).attr('name'), value: $(newValue).text()});
+            $(pointListItems[i]).find('Data').each(function(index, newValue) {               
+                pointExtendedData.push({name: $(newValue).attr('name'), value: $(newValue).text()});               
             });                                    
             pointObj.extendedData = pointExtendedData;
 
+            Logger.debug(pointObj);
             pointsArray.push(pointObj);
         }
 
         //Logger.debug(pointsArray);
         self.pointList = pointsArray;
+        Logger.debug(JSON.stringify(self.pointList));
         if (callback) {
             callback();
         }
@@ -185,7 +187,7 @@ PointsClass.prototype.addPoint = function (paramsObj, update, callback) {
     var channel = null;
     var category = null;
       
-    newParamsObj.extended_data = {};
+    
     $(paramsObj).each(function (idx, value) {
         Logger.debug(idx, value);
         if (value.name === 'title') {
@@ -205,7 +207,10 @@ PointsClass.prototype.addPoint = function (paramsObj, update, callback) {
         } else if (value.name === 'altitude') {
             newParamsObj.altitude = value.value;
         } else {
-            newParamsObj.extended_data[value.name] = value.value;
+            if (value.value !== '') {
+                newParamsObj.extended_data = newParamsObj.extended_data || {};
+                newParamsObj.extended_data[value.name] = value.value;
+            }
         }
     });
     
@@ -287,16 +292,27 @@ PointsClass.prototype.removePoint = function (callback) {
         throw new GetsWebClientException('Points Error', 'removePoint, "point" is read only');
     }
     
+    var request = {};
+    
+    // Check if it's point from track or from category
+    if (point.hasOwnProperty('track')) {
+        request.track_name = point.track;
+    }
+    for (var i = 0, len = point.extendedData.length; i < len; i++) {
+        if (point.extendedData[i].name === 'category_id') {
+            request.category_id = point.extendedData[i].value;
+        }
+    }
+    
+    request.uuid = point.uuid;
+  
     var removePointRequest = $.ajax({
         url: REMOVE_POINT_ACTION,
         type: 'POST',
         async: false,
         contentType: 'application/json',
         dataType: 'xml',
-        data: JSON.stringify({
-            track_name: point.track,
-            name: point.name
-        })
+        data: JSON.stringify(request)
     });
     
     removePointRequest.fail(function(jqXHR, textStatus) {

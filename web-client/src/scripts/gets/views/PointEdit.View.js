@@ -23,12 +23,8 @@ PointEdit.prototype.getView = function() {
 PointEdit.prototype.placePointInPointEdit = function(point) {
     $(this.editPoint).find('#edit-point-name-input').val(point.name);
     
-    if (point.descriptionExt !== '') {
-        $(this.editPoint).find('#edit-point-desc-input').val(point.descriptionExt);
-    } else {
-        $(this.editPoint).find('#edit-point-desc-input').val(point.description);              
-    }
-    
+    $(this.editPoint).find('#edit-point-desc-input').val(point.description);              
+  
     $(this.editPoint).find('#edit-point-url-input').val(point.url);
     $(this.editPoint).find('#edit-point-active-radius-input').val(point.radius);
     $(this.editPoint).find('#edit-point-picture-input-url').val(point.photo);
@@ -40,7 +36,11 @@ PointEdit.prototype.placePointInPointEdit = function(point) {
     
     var extendedDataText = '';
     for (var i = 0, len = point.extendedData.length; i < len; i++) {
-        extendedDataText += '<div class="form-group"><label>' + point.extendedData[i].name + '</label><input class="form-control" type="text" name="' + point.extendedData[i].name + '" value="' + point.extendedData[i].value + '" /></div>';
+        if (point.extendedData[i].name !== 'uuid' && point.extendedData[i].name !== 'access' && 
+            point.extendedData[i].name !== 'link' && point.extendedData[i].name !== 'description' && 
+            point.extendedData[i].name !== 'time' && point.extendedData[i].name !== 'description') {
+            extendedDataText += '<div class="form-group"><label>' + point.extendedData[i].name + '</label><input class="form-control" type="text" name="' + point.extendedData[i].name + '" value="' + point.extendedData[i].value + '" /></div>';
+        }
     }
     $(this.editPoint).find('#edit-point-extended-data').html(extendedDataText);
 };

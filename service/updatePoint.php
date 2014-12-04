@@ -40,6 +40,9 @@ $channel_name = get_request_argument($dom, 'channel');
 $point_name = get_request_argument($dom, 'name');
 $point_category = get_request_argument($dom, 'category_id');
 
+$extended_data_element = $dom->getElementsByTagName('extended_data');
+$description_element = $dom->getElementsByTagName('description');
+
 if (!$uuid && !$channel_name && !$point_name && !$point_category) {
     send_error(1, 'No filter criteria specified');
     die();
@@ -51,6 +54,8 @@ $new_description = get_request_argument($dom, 'description');
 $new_longitude = get_request_argument($dom, 'longitude');
 $new_altitude = get_request_argument($dom, 'altitude');
 $new_latitude = get_request_argument($dom, 'latitude');
+
+$extended_data_array = parse_extended_data($description_element, $extended_data_element);
 
 $dbconn = pg_connect(GEO2TAG_DB_STRING);
 auth_set_token($auth_token);
@@ -84,8 +89,8 @@ if ($uuid) {
 
 // Channel name condition
 if ($channel_name) {
-    $channe_name_escaped = pg_escape_string($dbconn, $channel_name);
-    $where_arr[] = "channel.name='${channe_name_escaped}'";
+    $channel_name_escaped = pg_escape_string($dbconn, $channel_name);
+    $where_arr[] = "channel.name='${channel_name_escaped}'";
 }
 
 // User account condition
@@ -93,7 +98,7 @@ $email_escaped = pg_escape_string($dbconn, $email);
 $where_arr[] = "users.email='${email_escaped}'";
 $select_where = implode(' AND ', $where_arr);
 
-$select_query = "SELECT tag.id FROM tag 
+$select_query = "SELECT tag.id, tag.description FROM tag
     INNER JOIN channel ON tag.channel_id=channel.id 
     INNER JOIN users ON channel.owner_id=users.id 
     WHERE ${select_where}";
@@ -111,20 +116,38 @@ function add_set_string($field, $value, &$out_arr) {
 $set_array = array();
 add_set_string('label', $new_label, $set_array);
 add_set_string('url', $new_url, $set_array);
-add_set_string('description', $new_description, $set_array);
 add_set_string('latitude', $new_latitude, $set_array);
 add_set_string('longitude', $new_longitude, $set_array);
 add_set_string('altitude', $new_altitude, $set_array);
-$set_string = implode($set_array, ',');
 
-if (count($set_array) == 0) {
-    send_error(1, "No new values given");
-    die();
+$count = 0;
+$select_res = pg_query($dbconn, $select_query);
+while ($row = pg_fetch_row($select_res)) {
+    $existing_id = $row[0];
+
+    $existing_description = $row[1];
+    $description_array = json_decode($existing_description, true);
+    if (!$description_array) {
+        $description_array = $extended_data_array;
+    } else {
+        foreach ($extended_data_array as $key => $value) {
+            $description_array[$key] = $value;
+        }
+    }
+
+    $description = json_encode($description_array);
+    $set_array[] = "description='" . pg_escape_string($dbconn, $description) . "'";
+
+    $set_string = implode($set_array, ',');
+    $base_query = "UPDATE tag SET ${set_string} WHERE tag.id = ${existing_id} RETURNING tag.id;";
+    $res = pg_query($dbconn, $base_query);
+    if (!$res) {
+        send_error(1, "Database error");
+        die();
+    }
+
+    $count += 1;
 }
-
-$base_query = "UPDATE tag SET {$set_string} WHERE tag.id IN ($select_query) RETURNING tag.id;";
-$res = pg_query($dbconn, $base_query);
-$count = pg_num_rows($res);
 
 send_result(0, "Tag successfully updated", "$count");
 

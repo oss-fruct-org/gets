@@ -31,7 +31,6 @@ session_start();
         <script src="scripts/readmore.min.js"></script>
         <script src="scripts/bootstrap-slider.min.js"></script>
         <script src="scripts/leaflet.contextmenu.js"></script>
-        <script type="text/javascript" src="https://raw.github.com/meetselva/attrchange/master/attrchange.js"></script>
         <script src="scripts/gets/models/Categories.Class.js"></script>
         <script src="scripts/gets/models/Points.Class.js"></script>
         <script src="scripts/gets/models/Tracks.Class.js"></script>

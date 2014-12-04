@@ -197,6 +197,18 @@ function get_array_element($array, $field, $default_value = null) {
         return $default_value;
 }
 
+function safe_merge_arrays($array1, $array2) {
+    if (!$array1 && !$array2) {
+        return null;
+    } else if (!$array1) {
+        return $array2;
+    } else if (!$array2) {
+        return $array1;
+    } else {
+        return array_merge($array2, $array1);
+    }
+}
+
 /**
     Returns all available categories as array
     Params:
@@ -297,6 +309,41 @@ function unicode_callback(&$item, $key) {
     }
 }
 
+function parse_extended_data(DOMNodeList $description_element, DOMNodeList $extended_data_element) {
+    if ($description_element->length > 0) {
+        $description = $description_element->item(0)->nodeValue;
+
+        # If caller pass extended data in description, process it correctly
+        $extended_data_array = json_decode($description, true);
+        if (!$extended_data_array) {
+            $extended_data_array = array();
+        } else {
+            $description = null;
+        }
+    } else {
+        $extended_data_array = array();
+        $description = null;
+    }
+
+    if ($extended_data_element->length > 0) {
+        foreach ($extended_data_element->item(0)->childNodes as $node) {
+            $key = $node->nodeName;
+            $value = $node->nodeValue;
+            $extended_data_array[$key] = $value;
+        }
+    }
+
+    if (!array_key_exists("description", $extended_data_array) && $description) {
+        $extended_data_array["description"] = $description;
+    }
+
+    if (!array_key_exists("uuid", $extended_data_array)) {
+        $extended_data_array["uuid"] = uuidv4();
+    }
+
+    return $extended_data_array;
+}
+
 /**
  * Checks if channel for category_id exists and creates it otherwise
  *
@@ -313,7 +360,7 @@ function ensure_category_channel($dbconn, $category_id) {
     $select_resp = pg_query($dbconn, $select_request);
 
     if (pg_num_rows($select_resp) == 0) {
-        $desc_array = array('description' => "Private channel for category ${$category_id} user ${$user_id}",
+        $desc_array = array('description' => "Private channel for category ${category_id} user ${user_id}",
                 'category_id' => "${category_id}");
         $description = pg_escape_string($dbconn, json_encode($desc_array));
 
@@ -409,11 +456,11 @@ function require_user_trusted($dbconn) {
 }
 
 /*
- * Check that user with $auth_token subscribed to channel $channel_name
+ * Check that user with $auth_token or public user subscribed to channel $channel_name
  * Null $auth_token means public token
  * Returns: array (user_id, channel_id)
  */
-function require_channel_subscribed($dbconn, $channel_name, $is_public) {
+function require_channel_accessible($dbconn, $channel_name, $is_public) {
     if (!$is_public) {
         $email = auth_get_google_email();
     } else {
@@ -423,7 +470,8 @@ function require_channel_subscribed($dbconn, $channel_name, $is_public) {
     $result_check = pg_query_params($dbconn, 'SELECT users.id, channel.id FROM channel 
             INNER JOIN subscribe ON channel.id = subscribe.channel_id 
             INNER JOIN users ON users.id = subscribe.user_id 
-            WHERE users.email=$1 AND channel.name=$2;', array($email, $channel_name));
+            WHERE (users.email=$1 OR users.login=$2) AND channel.name=$3;',
+        array($email, GEO2TAG_USER, $channel_name));
 
     if (!($result_check_row = pg_fetch_row($result_check))) {
         throw new Exception('Channel not subscribed', 1);

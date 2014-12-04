@@ -53,29 +53,8 @@ PointInfo.prototype.placePointInPointInfo = function(point, isAuth) {
     $(coordsElementLon).text(coords[0]);
     $(coordsElementAlt).text(coords[2]);
     
-    if (point.descriptionExt !== '') {
-        $(descElement).html(point.descriptionExt);
-    } else {
-        $(descElement).html(point.description);
-    }
-        /*var json = null;
-        var descriptionText = '';
-        try {          
-            json = JSON.parse(point.description);
-        } catch (Exception) {} 
-        
-        if (json) {
-            $.each(json, function (key, val) {
-                
-            });
-            $(descElement).html(descriptionText);
-        } else {
-            
-        }*/
-    
-
-
-    
+    $(descElement).html(point.description);
+          
     if (point.url !== '') {
         $(urlElement).attr('href', point.url).text(point.url);
     }
@@ -110,12 +89,10 @@ PointInfo.prototype.placePointInPointInfo = function(point, isAuth) {
             e.preventDefault();
         });
         $(pointsInfoEdit).addClass('disabled');
-
         $(pointsInfoRemove).addClass('disabled');
     } else {
         $(pointsInfoEdit).off('click');        
         $(pointsInfoEdit).removeClass('disabled');
-
         $(pointsInfoRemove).removeClass('disabled');
     }
 };

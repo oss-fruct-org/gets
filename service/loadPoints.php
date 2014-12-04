@@ -132,47 +132,7 @@ while ($row = pg_fetch_row($result)) {
     $category_id = $row[8];
     $access = $row[9] == 'f' ? 'r' : 'rw';;
 
-    // Try parse description json
-    $description_json = json_decode($description, true);
-
-    //Get inner description
-    $inner_description = null;
-    if ($description_json && array_key_exists('description', $description_json)) {
-        $inner_description = $description_json['description'];
-    }
-
-    $xml .= '<Placemark>';
-    $xml .= '<name>' . htmlspecialchars($label) . '</name>';
-
-    if (!$description_json)
-        $xml .= '<description>' . '<![CDATA[' .  $description . ']]>' . '</description>';
-    else if ($inner_description)
-        $xml .= '<description>' . '<![CDATA[' .  $inner_description . ']]>' . '</description>';
-    else
-        $xml .= '<description></description>';
-
-    $xml .= '<ExtendedData>';
-    $xml .= '<Data name="link"><value>' . htmlspecialchars($url) . '</value></Data>';
-    $xml .= '<Data name="time"><value>' . htmlspecialchars($datetime) . '</value></Data>';
-    $xml .= '<Data name="access"><value>' . $access . '</value></Data>';
-
-    if (!$description_json || !array_key_exists("category_id", $description_json)) {
-        $xml .= '<Data name="category_id"><value>' . htmlspecialchars($category_id) . '</value></Data>';
-    }
-
-    if ($description_json) {
-        foreach ($description_json as $key => $value) {
-            $field = $key;
-            $value = htmlspecialchars($value);
-
-            $xml .= "<Data name=\"$field\"><value>$value</value></Data>";
-        }
-    }
-
-    $xml .= '</ExtendedData>';
-
-    $xml .= '<Point><coordinates>' . $longitude . ',' . $latitude . ',0.0' . '</coordinates></Point>';
-    $xml .= '</Placemark>';
+    add_place_mark($xml, $label, $description, $url, $datetime, $latitude, $longitude, $access, $category_id);
 }
 
 $xml .= '</Document></kml>';

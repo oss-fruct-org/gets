@@ -170,6 +170,66 @@ function send_result($code, $message, $content) {
 	echo $xml_response;
 }
 
+function add_place_mark(&$xml, $label, $description, $url, $datetime, $latitude, $longitude, $access = null, $category_id = null) {
+    // Try parse description json
+    $description_json = json_decode($description, true);
+    $url_json = json_decode($url, true);
+
+    //Get inner description
+    $inner_description = null;
+    if ($description_json && array_key_exists('description', $description_json)) {
+        $inner_description = $description_json['description'];
+    }
+
+    $xml .= '<Placemark>';
+    $xml .= '<name>' . htmlspecialchars($label) . '</name>';
+
+    if (!$description_json)
+        $xml .= '<description>' . '<![CDATA[' . $description . ']]>' . '</description>';
+    else if ($inner_description)
+        $xml .= '<description>' . '<![CDATA[' . $inner_description . ']]>' . '</description>';
+    else
+        $xml .= '<description></description>';
+
+    $xml .= '<ExtendedData xmlns:gets="http://gets.cs.petrsu.ru/">';
+    $xml .= '<Data name="link"><value>' . htmlspecialchars($url) . '</value></Data>';
+    $xml .= '<Data name="time"><value>' . htmlspecialchars($datetime) . '</value></Data>';
+
+    if ($access != null) {
+        $xml .= '<Data name="access"><value>' . $access . '</value></Data>';
+    }
+
+    if ($category_id && (!$description_json || !array_key_exists("category_id", $description_json))) {
+        $xml .= '<Data name="category_id"><value>' . htmlspecialchars($category_id) . '</value></Data>';
+    }
+
+    $description_json = safe_merge_arrays($description_json, $url_json);
+
+    if ($description_json) {
+        foreach ($description_json as $key => $value) {
+            if (is_scalar($value)) {
+                $value = htmlspecialchars($value);
+                $xml .= "<Data name=\"$key\"><value>$value</value></Data>";
+            }
+        }
+
+        // Custom elements must be after 'Data'
+        foreach ($description_json as $key => $value) {
+            if (is_array($value) && $key == 'photoUrl') {
+                foreach ($value as $sub_value) {
+                    $xml .= "<gets:photoUrl>$sub_value</gets:photoUrl>";
+                }
+            }
+        }
+    }
+
+    $xml .= '</ExtendedData>';
+
+    $xml .= '<Point><coordinates>' . $longitude . ',' . $latitude . ',0.0' . '</coordinates></Point>';
+    $xml .= '</Placemark>';
+}
+
+
 /**
     Function finds and returns named argument from request DOM
     Params:

@@ -215,9 +215,9 @@ function add_place_mark(&$xml, $label, $description, $url, $datetime, $latitude,
 
         // Custom elements must be after 'Data'
         foreach ($description_json as $key => $value) {
-            if (is_array($value) && $key == 'photoUrl') {
+            if (is_array($value) && $key == 'photo') {
                 foreach ($value as $sub_value) {
-                    $xml .= "<gets:photoUrl>$sub_value</gets:photoUrl>";
+                    $xml .= "<gets:photo>$sub_value</gets:photo>";
                 }
             }
         }

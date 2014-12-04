@@ -142,7 +142,7 @@ while ($row = pg_fetch_row($result)) {
         $channel_category_id = get_array_element($extra_arr, 'category_id');
         $channel_lang = get_array_element($extra_arr, 'lang');
         $channel_hname = get_array_element($extra_arr, 'hname');
-        $channel_photo_url = get_array_element($extra_arr, "photoUrl");
+        $channel_photo_url = get_array_element($extra_arr, "photo");
     }
 
     $resp .= '<track>';

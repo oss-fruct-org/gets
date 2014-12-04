@@ -88,8 +88,6 @@ if (function_exists('unicode_json_encode')) {
 // if time not defined then set now
 if ($time_element->length > 0) {
     $time = date_gets_to_postgres($time_element->item(0)->nodeValue);
-} else {
-    $time = date("d-m-Y H:i:s.000");
 }
 
 $data_array = array();
@@ -105,7 +103,10 @@ if ($link_element->length > 0 && strlen($link_element->item(0)->nodeValue) > 0) 
 $data_array['latitude'] = /*(float)*/ $latitude_element->item(0)->nodeValue;
 $data_array['longitude'] = /*(float)*/ $longitude_element->item(0)->nodeValue;
 $data_array['altitude'] = /*(float)*/ ($altitude_element->item(0)->nodeValue == null ? "0.0" : $altitude_element->item(0)->nodeValue);
-$data_array['time'] = $time;
+
+if (isset($time)) {
+  $data_array['time'] = $time;
+}
 
 # Check permission
 try {

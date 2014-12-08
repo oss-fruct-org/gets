@@ -95,5 +95,3 @@ if (!pg_query($dbconn, $query)) {
 } else {
     send_result(0, "Tag successfully removed", "success");
 }
-
-?>

@@ -49,7 +49,7 @@ try {
     die();
 }
 
-$result_tag = pg_query_params($dbconn, 'SELECT time, label, latitude, longitude, altitude, description, url FROM tag WHERE tag.channel_id=$1 ORDER BY time;',
+$result_tag = pg_query_params($dbconn, 'SELECT time, label, latitude, longitude, altitude, description, url, id FROM tag WHERE tag.channel_id=$1 ORDER BY time;',
         array($channel_id));
 
 $xml = '<kml xmlns="http://www.opengis.net/kml/2.2">';
@@ -67,49 +67,12 @@ while ($row = pg_fetch_row($result_tag)) {
     $altitude = $row[4];
     $description = $row[5];
     $url = $row[6];
+    $id = $row[7];
 
-    // Try parse description json
-    $description_json = json_decode($description, true);
-
-    //Get inner description
-    $inner_description = null;
-    if ($description_json) {
-        $inner_description = $description_json['description'];
-    }
-
-    $xml .= '<Placemark>';
-    $xml .= '<name>' . htmlspecialchars($label) . '</name>';
-
-    if (!$description_json)
-        $xml .= '<description>' . '<![CDATA[' .  $description . ']]>' . '</description>';
-    else if ($inner_description)
-        $xml .= '<description>' . '<![CDATA[' .  $inner_description . ']]>' . '</description>';
-    else
-        $xml .= '<description></description>';
-
-    $xml .= '<ExtendedData>';
-    $xml .= '<Data name="link"><value>' . htmlspecialchars($url) . '</value></Data>';
-    $xml .= '<Data name="time"><value>' . htmlspecialchars($datetime) . '</value></Data>';
-
-    if ($description_json) {
-        foreach ($description_json as $key => $value) {
-            $field = $key;
-            $value = htmlspecialchars($value);
-
-            $xml .= "<Data name=\"$field\"><value>$value</value></Data>";
-        }
-    }
-
-    $xml .= '</ExtendedData>';
-
-    $xml .= '<Point><coordinates>' . $longitude . ',' . $latitude . ',0.0' . '</coordinates></Point>';
-    $xml .= '</Placemark>';
+    add_place_mark($xml, $label, $description, $url, $datetime, $latitude, $longitude, $id);
 }
 
 $xml .= '</Document>';
 $xml .= '</kml>';
 
 send_result(0, 'success', $xml);
-
-?>
-

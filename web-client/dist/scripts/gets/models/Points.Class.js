@@ -139,7 +139,7 @@ PointsClass.prototype.downLoadPoints = function(paramsObj, callback) {
             pointObj.coordinates = $(pointListItems[i]).find('coordinates').length ? $(pointListItems[i]).find('coordinates').text() : '';
             
             $(pointListItems[i]).find('Data').each(function(index, newValue) {               
-                pointExtendedData.push({name: $(newValue).attr('name'), value: $(newValue).text()});               
+                pointExtendedData.push({name: $(newValue).attr('name').replace(/_/g, ' '), value: $(newValue).text()});               
             });                                    
             pointObj.extendedData = pointExtendedData;
 
@@ -209,7 +209,7 @@ PointsClass.prototype.addPoint = function (paramsObj, update, callback) {
         } else {
             if (value.value !== '') {
                 newParamsObj.extended_data = newParamsObj.extended_data || {};
-                newParamsObj.extended_data[value.name] = value.value;
+                newParamsObj.extended_data[value.name.replace(/ /g, '_')] = value.value;
             }
         }
     });

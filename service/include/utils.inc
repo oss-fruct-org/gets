@@ -170,6 +170,76 @@ function send_result($code, $message, $content) {
 	echo $xml_response;
 }
 
+function add_place_mark(&$xml, $label, $description, $url, $datetime, $latitude, $longitude, $id, $access = null, $category_id = null) {
+    // Try parse description json
+    $description_json = json_decode($description, true);
+    $url_json = json_decode($url, true);
+
+    //Get inner description
+    $inner_description = null;
+    if ($description_json && array_key_exists('description', $description_json)) {
+        $inner_description = $description_json['description'];
+    }
+
+    $xml .= '<Placemark>';
+    $xml .= '<name>' . htmlspecialchars($label) . '</name>';
+
+    if (!$description_json)
+        $xml .= '<description>' . '<![CDATA[' . $description . ']]>' . '</description>';
+    else if ($inner_description)
+        $xml .= '<description>' . '<![CDATA[' . $inner_description . ']]>' . '</description>';
+    else
+        $xml .= '<description></description>';
+
+    $xml .= '<ExtendedData xmlns:gets="http://gets.cs.petrsu.ru/">';
+    $xml .= '<Data name="link"><value>' . htmlspecialchars($url) . '</value></Data>';
+    $xml .= '<Data name="time"><value>' . htmlspecialchars($datetime) . '</value></Data>';
+
+    if ($access != null) {
+        $xml .= '<Data name="access"><value>' . $access . '</value></Data>';
+    }
+
+    if ($category_id && (!$description_json || !array_key_exists("category_id", $description_json))) {
+        $xml .= '<Data name="category_id"><value>' . htmlspecialchars($category_id) . '</value></Data>';
+    }
+
+    $description_json = safe_merge_arrays($description_json, $url_json);
+
+    $uuid_found = false;
+
+    if ($description_json) {
+        foreach ($description_json as $key => $value) {
+            if (is_scalar($value)) {
+                $value = htmlspecialchars($value);
+                $xml .= "<Data name=\"$key\"><value>$value</value></Data>";
+            }
+
+            if ($key == "uuid") {
+                $uuid_found = true;
+            }
+        }
+
+        // Custom elements must be after 'Data'
+        foreach ($description_json as $key => $value) {
+            if (is_array($value) && $key == 'photo') {
+                foreach ($value as $sub_value) {
+                    $xml .= "<gets:photo>$sub_value</gets:photo>";
+                }
+            }
+        }
+    }
+
+    if (!$uuid_found) {
+        $xml .= "<Data name=\"uuid\"><value>$id</value></Data>";
+    }
+
+    $xml .= '</ExtendedData>';
+
+    $xml .= '<Point><coordinates>' . $longitude . ',' . $latitude . ',0.0' . '</coordinates></Point>';
+    $xml .= '</Placemark>';
+}
+
+
 /**
     Function finds and returns named argument from request DOM
     Params:
@@ -289,6 +359,27 @@ function uuidv4()
     $data[8] = chr(ord($data[8]) & 0x3f | 0x80); // set bits 6-7 to 10
 
     return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+}
+
+/**
+ * pg_insert without backslash escaping issues
+ * @param $dbconn
+ * @param $table
+ * @param $data_array
+ * @return resource query result
+ */
+function safe_pg_insert($dbconn, $table, $data_array) {
+    $values_array = array();
+    $names_array = array();
+
+    foreach ($data_array as $key => $value) {
+        $names_array[] = $key;
+        $values_array[] = "'" . pg_escape_string($dbconn, $value) . "'";
+    }
+
+    $values = implode(",", $values_array);
+    $names = implode(",", $names_array);
+    return pg_query($dbconn, "INSERT INTO $table ($names) VALUES ($values);");
 }
 
 /*

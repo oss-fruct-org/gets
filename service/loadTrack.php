@@ -49,7 +49,7 @@ try {
     die();
 }
 
-$result_tag = pg_query_params($dbconn, 'SELECT time, label, latitude, longitude, altitude, description, url FROM tag WHERE tag.channel_id=$1 ORDER BY time;',
+$result_tag = pg_query_params($dbconn, 'SELECT time, label, latitude, longitude, altitude, description, url, id FROM tag WHERE tag.channel_id=$1 ORDER BY time;',
         array($channel_id));
 
 $xml = '<kml xmlns="http://www.opengis.net/kml/2.2">';
@@ -67,8 +67,9 @@ while ($row = pg_fetch_row($result_tag)) {
     $altitude = $row[4];
     $description = $row[5];
     $url = $row[6];
+    $id = $row[7];
 
-    add_place_mark($xml, $label, $description, $url, $datetime, $latitude, $longitude);
+    add_place_mark($xml, $label, $description, $url, $datetime, $latitude, $longitude, $id);
 }
 
 $xml .= '</Document>';

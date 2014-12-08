@@ -88,7 +88,7 @@ if ($space === SPACE_ALL || $space === SPACE_PUBLIC) {
 }
 
 $query =  "SELECT DISTINCT ON(tag.id) tag.time, tag.label, tag.latitude, tag.longitude, 
-                                      tag.altitude, tag.description, tag.url, tag.id, category.id, ${access_row} FROM tag ";
+                                      tag.altitude, tag.description, tag.url, tag.id, category.id, ${access_row}, tag.id FROM tag ";
 $query .= 'INNER JOIN channel ON tag.channel_id = channel.id ';
 $query .= 'INNER JOIN subscribe ON channel.id = subscribe.channel_id ';
 $query .= 'INNER JOIN users ON subscribe.user_id=users.id ';
@@ -130,13 +130,13 @@ while ($row = pg_fetch_row($result)) {
     $description = $row[5];
     $url = $row[6];
     $category_id = $row[8];
-    $access = $row[9] == 'f' ? 'r' : 'rw';;
+    $access = $row[9] == 'f' ? 'r' : 'rw';
+    $id = $row[10];
 
-    add_place_mark($xml, $label, $description, $url, $datetime, $latitude, $longitude, $access, $category_id);
+    add_place_mark($xml, $label, $description, $url, $datetime, $latitude, $longitude, $id, $access, $category_id);
 }
 
 $xml .= '</Document></kml>';
 
 send_result(0, 'success', $xml);
 
-?>

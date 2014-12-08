@@ -170,7 +170,7 @@ function send_result($code, $message, $content) {
 	echo $xml_response;
 }
 
-function add_place_mark(&$xml, $label, $description, $url, $datetime, $latitude, $longitude, $access = null, $category_id = null) {
+function add_place_mark(&$xml, $label, $description, $url, $datetime, $latitude, $longitude, $id, $access = null, $category_id = null) {
     // Try parse description json
     $description_json = json_decode($description, true);
     $url_json = json_decode($url, true);
@@ -205,11 +205,17 @@ function add_place_mark(&$xml, $label, $description, $url, $datetime, $latitude,
 
     $description_json = safe_merge_arrays($description_json, $url_json);
 
+    $uuid_found = false;
+
     if ($description_json) {
         foreach ($description_json as $key => $value) {
             if (is_scalar($value)) {
                 $value = htmlspecialchars($value);
                 $xml .= "<Data name=\"$key\"><value>$value</value></Data>";
+            }
+
+            if ($key == "uuid") {
+                $uuid_found = true;
             }
         }
 
@@ -221,6 +227,10 @@ function add_place_mark(&$xml, $label, $description, $url, $datetime, $latitude,
                 }
             }
         }
+    }
+
+    if (!$uuid_found) {
+        $xml .= "<Data name=\"uuid\"><value>$id</value></Data>";
     }
 
     $xml .= '</ExtendedData>';

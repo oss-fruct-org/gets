@@ -119,11 +119,9 @@ try {
 $data_array['channel_id'] = $channel_id;
 $data_array['user_id'] = $user_id;
 
-if (!pg_insert($dbconn, 'tag', $data_array)) {
+if (!safe_pg_insert($dbconn, 'tag', $data_array)) {
     send_error(1, 'Can\'t insert point to database');
 } else {
     send_result(0, 'success', '');
 }
-
-?>
 

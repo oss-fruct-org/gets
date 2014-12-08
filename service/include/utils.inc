@@ -351,6 +351,27 @@ function uuidv4()
     return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
 }
 
+/**
+ * pg_insert without backslash escaping issues
+ * @param $dbconn
+ * @param $table
+ * @param $data_array
+ * @return resource query result
+ */
+function safe_pg_insert($dbconn, $table, $data_array) {
+    $values_array = array();
+    $names_array = array();
+
+    foreach ($data_array as $key => $value) {
+        $names_array[] = $key;
+        $values_array[] = "'" . pg_escape_string($dbconn, $value) . "'";
+    }
+
+    $values = implode(",", $values_array);
+    $names = implode(",", $names_array);
+    return pg_query($dbconn, "INSERT INTO $table ($names) VALUES ($values);");
+}
+
 /*
  * Hack for UNICODE strings in json_encode() for PHP 5.3 and below.
  * 

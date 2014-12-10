@@ -516,7 +516,8 @@ PointsPage.prototype.showEditPoint = function() {
         var point = this._points.getPoint();
         this._headerView.changeOption($(this._pointEdit.getView()).data('pagetitleEdit'), 'glyphicon-chevron-left', '#form=point_info&point_uuid=' + point.uuid);
         this._pointEdit.removeCustomFields();
-        this._pointEdit.placePointInPointEdit(point);      
+        this._pointEdit.placePointInPointEdit(point);  
+        this._pointEdit.placeCategoriesInPointAdd(this._categories.getCategories(), point.category_id);
         
         this.currentView.hideView();
         this.currentView = this._pointEdit;
@@ -541,7 +542,8 @@ PointsPage.prototype.addPointHandler = function(formData, update) {
             Logger.debug(paramsObj);
             this._points.addPoint(paramsObj, update, function () {
                 that.window.location.replace('#form=' + PointsPage.MAIN);
-                MessageBox.showMessage($(that._pointAdd.getView()).data('messagesuccessAdd'), MessageBox.SUCCESS_MESSAGE);
+                var message = update ? $(that._pointAdd.getView()).data('messagesuccessEdit') : $(that._pointAdd.getView()).data('messagesuccessAdd'); 
+                MessageBox.showMessage(message, MessageBox.SUCCESS_MESSAGE);
             });
         }      
     } catch (Exception) {

@@ -170,7 +170,7 @@ function send_result($code, $message, $content) {
 	echo $xml_response;
 }
 
-function add_place_mark(&$xml, $label, $description, $url, $datetime, $latitude, $longitude, $access = null, $category_id = null) {
+function add_place_mark(&$xml, $label, $description, $url, $datetime, $latitude, $longitude, $id, $access = null, $category_id = null) {
     // Try parse description json
     $description_json = json_decode($description, true);
     $url_json = json_decode($url, true);
@@ -205,11 +205,17 @@ function add_place_mark(&$xml, $label, $description, $url, $datetime, $latitude,
 
     $description_json = safe_merge_arrays($description_json, $url_json);
 
+    $uuid_found = false;
+
     if ($description_json) {
         foreach ($description_json as $key => $value) {
             if (is_scalar($value)) {
                 $value = htmlspecialchars($value);
                 $xml .= "<Data name=\"$key\"><value>$value</value></Data>";
+            }
+
+            if ($key == "uuid") {
+                $uuid_found = true;
             }
         }
 
@@ -221,6 +227,10 @@ function add_place_mark(&$xml, $label, $description, $url, $datetime, $latitude,
                 }
             }
         }
+    }
+
+    if (!$uuid_found) {
+        $xml .= "<Data name=\"uuid\"><value>$id</value></Data>";
     }
 
     $xml .= '</ExtendedData>';
@@ -349,6 +359,27 @@ function uuidv4()
     $data[8] = chr(ord($data[8]) & 0x3f | 0x80); // set bits 6-7 to 10
 
     return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+}
+
+/**
+ * pg_insert without backslash escaping issues
+ * @param $dbconn
+ * @param $table
+ * @param $data_array
+ * @return resource query result
+ */
+function safe_pg_insert($dbconn, $table, $data_array) {
+    $values_array = array();
+    $names_array = array();
+
+    foreach ($data_array as $key => $value) {
+        $names_array[] = $key;
+        $values_array[] = "'" . pg_escape_string($dbconn, $value) . "'";
+    }
+
+    $values = implode(",", $values_array);
+    $names = implode(",", $names_array);
+    return pg_query($dbconn, "INSERT INTO $table ($names) VALUES ($values);");
 }
 
 /*

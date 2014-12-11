@@ -102,7 +102,7 @@ $where_arr[] = $email_where;
 if ($category_id) {
     $where_arr[] = "category.id=${category_id}";
 } else {
-    $where_arr[] = "project_users.login=" . GEO2TAG_USER;
+    $where_arr[] = "project_users.login='" . pg_escape_string($dbconn, GEO2TAG_USER) . "'";
 }
 
 # Distance where

@@ -56,6 +56,9 @@ $new_altitude = get_request_argument($dom, 'altitude');
 $new_latitude = get_request_argument($dom, 'latitude');
 
 $extended_data_array = parse_extended_data($description_element, $extended_data_element);
+if (array_key_exists('uuid', $extended_data_array)) {
+    unset($extended_data_array['uuid']);
+}
 
 $dbconn = pg_connect(GEO2TAG_DB_STRING);
 auth_set_token($auth_token);
@@ -136,9 +139,11 @@ while ($row = pg_fetch_row($select_res)) {
     }
 
     $description = json_encode($description_array);
-    $set_array[] = "description='" . pg_escape_string($dbconn, $description) . "'";
 
-    $set_string = implode($set_array, ',');
+    $set_array_copy = $set_array;
+    $set_array_copy[] = "description='" . pg_escape_string($dbconn, $description) . "'";
+
+    $set_string = implode($set_array_copy, ',');
     $base_query = "UPDATE tag SET ${set_string} WHERE tag.id = ${existing_id} RETURNING tag.id;";
     $res = pg_query($dbconn, $base_query);
     if (!$res) {
@@ -150,5 +155,3 @@ while ($row = pg_fetch_row($select_res)) {
 }
 
 send_result(0, "Tag successfully updated", "$count");
-
-?>

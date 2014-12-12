@@ -284,11 +284,11 @@ function get_array_element($array, $field, $default_value = null) {
 }
 
 function safe_merge_arrays($array1, $array2) {
-    if (!$array1 && !$array2) {
+    if ($array1 === null && $array2 === null) {
         return null;
-    } else if (!$array1) {
+    } else if ($array1 === null) {
         return $array2;
-    } else if (!$array2) {
+    } else if ($array2 === null) {
         return $array1;
     } else {
         return array_merge($array2, $array1);
@@ -613,7 +613,8 @@ function date_gets_to_postgres($gets_date) {
 
 function date_postgres_to_gets($gets_date) {
     $date_parsed = date_create_from_format('Y-m-d H:i:s.u', $gets_date);
+    if (!$date_parsed) {
+        $date_parsed = date_create_from_format('Y-m-d H:i:s', $gets_date);
+    }
     return date_format($date_parsed, 'd m Y H:i:s.u');
 }
-
-?>

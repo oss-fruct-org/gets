@@ -50,8 +50,9 @@ $time_element = $dom->getElementsByTagName('time');
 $auth_token = $auth_token_element->item(0)->nodeValue;
 
 $extended_data_element = $dom->getElementsByTagName('extended_data');
-$extended_data_array = get_request_array($extended_data_element->item(0));
-$extended_data_array = parse_extended_data($description_element->item(0)->nodeValue, $extended_data_array);
+$extended_data_array = parse_extended_data(
+    $description_element->length !== 0 ? $description_element->item(0)->nodeValue : null,
+    $extended_data_element->length !== 0 ? get_request_array($extended_data_element->item(0)) : null);
 
 auth_set_token($auth_token);
 $dbconn = pg_connect(GEO2TAG_DB_STRING);

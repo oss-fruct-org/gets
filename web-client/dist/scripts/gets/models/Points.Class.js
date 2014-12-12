@@ -137,9 +137,11 @@ PointsClass.prototype.downLoadPoints = function(paramsObj, callback) {
             pointObj.audio = $(pointListItems[i]).find("[name='audio']").length ? $(pointListItems[i]).find("[name='audio']").text() : '';
             pointObj.url = $(pointListItems[i]).find("[name='link']").length ? $(pointListItems[i]).find("[name='link']").text() : '';
             pointObj.coordinates = $(pointListItems[i]).find('coordinates').length ? $(pointListItems[i]).find('coordinates').text() : '';
+            pointObj.category_id = $(pointListItems[i]).find("[name='category_id']").length ? $(pointListItems[i]).find("[name='category_id']").text() : '';
+            pointObj.radius = $(pointListItems[i]).find("[name='radius']").length ? $(pointListItems[i]).find("[name='radius']").text() : '';
             
             $(pointListItems[i]).find('Data').each(function(index, newValue) {               
-                pointExtendedData.push({name: $(newValue).attr('name').replace(/_/g, ' '), value: $(newValue).text()});               
+                pointExtendedData.push({name: $(newValue).attr('name')/*.replace(/_/g, ' ')*/, value: $(newValue).text()});               
             });                                    
             pointObj.extendedData = pointExtendedData;
 
@@ -180,14 +182,20 @@ PointsClass.prototype.addPoint = function (paramsObj, update, callback) {
     if (!paramsObj) {
         throw new GetsWebClientException('Points Error', 'addPoint, paramsObj is undefined or null');
     }
+    if (update && !this.point) {
+        throw new GetsWebClientException('Points Error', 'addPoint, there is no point to update');
+    }
     
     Logger.debug(paramsObj);
       
     var newParamsObj = {};  
     var channel = null;
     var category = null;
-      
     
+    if (update) {
+        newParamsObj.uuid = this.point.uuid;
+    }
+         
     $(paramsObj).each(function (idx, value) {
         Logger.debug(idx, value);
         if (value.name === 'title') {

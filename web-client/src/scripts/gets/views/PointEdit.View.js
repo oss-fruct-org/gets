@@ -20,6 +20,32 @@ PointEdit.prototype.getView = function() {
     return this.editPoint;
 };
 
+/**
+ * Place categories into point pointAdd HTML object.
+ * 
+ * @param {Array} categories Array which contains categories.
+ */
+PointEdit.prototype.placeCategoriesInPointAdd = function (categories, selected) {
+    var pointAddCategories = $(this.editPoint).find('#edit-point-category-input');
+    var pointAddCategoriesParent = $(pointAddCategories).parent();
+    if ($(pointAddCategoriesParent).hasClass('hidden')) {
+        $(pointAddCategoriesParent).removeClass('hidden').addClass('show');
+    }
+    $(pointAddCategories).empty();
+
+    var self = this;
+    $(categories).each(function(index, value) {
+        var categoryItem = $(self.document.createElement('option'));
+        $(categoryItem).attr('value', value.id);
+        $(categoryItem).text(value.name);
+        $(categoryItem).appendTo(pointAddCategories);
+    });
+    
+    if (selected) {
+        $(pointAddCategories).val(selected);
+    }
+};
+
 PointEdit.prototype.placePointInPointEdit = function(point) {
     $(this.editPoint).find('#edit-point-name-input').val(point.name);
     
@@ -29,6 +55,7 @@ PointEdit.prototype.placePointInPointEdit = function(point) {
     $(this.editPoint).find('#edit-point-active-radius-input').val(point.radius);
     $(this.editPoint).find('#edit-point-picture-input-url').val(point.photo);
     $(this.editPoint).find('#edit-point-audio-input-url').val(point.audio);
+    $(this.editPoint).find('#edit-point-active-radius-input').val(point.radius);//
     
     var coords = point.coordinates.split(',');
     $(this.editPoint).find('#edit-point-lat-input').val(coords[1]);
@@ -36,9 +63,14 @@ PointEdit.prototype.placePointInPointEdit = function(point) {
     
     var extendedDataText = '';
     for (var i = 0, len = point.extendedData.length; i < len; i++) {
-        if (point.extendedData[i].name !== 'uuid' && point.extendedData[i].name !== 'access' && 
-            point.extendedData[i].name !== 'link' && point.extendedData[i].name !== 'description' && 
-            point.extendedData[i].name !== 'time' && point.extendedData[i].name !== 'description') {
+        if (point.extendedData[i].name !== 'uuid' && 
+            point.extendedData[i].name !== 'access' && 
+            point.extendedData[i].name !== 'link' && 
+            point.extendedData[i].name !== 'description' && 
+            point.extendedData[i].name !== 'time' && 
+            point.extendedData[i].name !== 'description' &&
+            point.extendedData[i].name !== 'category_id' && 
+            point.extendedData[i].name !== 'radius') {
             extendedDataText += '<div class="form-group"><label>' + point.extendedData[i].name + '</label><input class="form-control" type="text" name="' + point.extendedData[i].name + '" value="' + point.extendedData[i].value + '" /></div>';
         }
     }

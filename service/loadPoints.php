@@ -93,18 +93,17 @@ $query .= 'INNER JOIN channel ON tag.channel_id = channel.id ';
 $query .= 'INNER JOIN subscribe ON channel.id = subscribe.channel_id ';
 $query .= 'INNER JOIN users ON subscribe.user_id=users.id ';
 
-#if ($category_id) {
-    $query .= 'INNER JOIN category ON safe_cast_to_json(channel.description)->>\'category_id\'=category.id::text ';
-#}
+$query .= 'INNER JOIN category ON safe_cast_to_json(channel.description)->>\'category_id\'=category.id::text ';
+$query .= 'INNER JOIN users AS project_users ON category.owner_id = project_users.id ';
 
 $email_where = '(' . implode(' OR ', $email_where_arr) . ')';
 
 $where_arr[] = $email_where;
 if ($category_id) {
     $where_arr[] = "category.id=${category_id}";
+} else {
+    $where_arr[] = "project_users.login='" . pg_escape_string($dbconn, GEO2TAG_USER) . "'";
 }
-
-#$where_arr[] = "(substr(channel.name, 0, 4)='tr+' OR substr(channel.name, 0, 4)='tr_')";
 
 # Distance where
 if ($is_radius_filter) {

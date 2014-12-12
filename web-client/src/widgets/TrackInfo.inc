@@ -24,9 +24,18 @@ echo    '<div id="tracks-info-page" class="action-menu-container hidden" data-pa
             <div class="action-menu-inner-content">
                 <div id="tracks-info-name" class="main-block font-big height-half">                   
                 </div>
-                <button id="tracks-info-map" type="button" class="btn btn-default" title="' . getString('show-on-map','Show on map') . '">
-                    <span class="glyphicon glyphicon-globe"></span> ' . getString('show-on-map','Show on map') . '
-                </button>
+                <div class="btn-group btn-group-justified">
+                    <div class="btn-group">
+                        <button id="tracks-info-map" type="button" class="btn btn-default" title="' . getString('show-on-map','Show on map') . '">
+                            <span class="glyphicon glyphicon-globe"></span> ' . getString('show-on-map','Show on map') . '
+                        </button>
+                    </div>
+                    <div class="btn-group hidden">
+                        <button id="tracks-info-publish" class="btn btn-default" title="' . getString('publish-track','Publish track') . '" type="button">
+                            <span class="glyphicon glyphicon-share-alt"></span> ' . getString('publish-track','Publish track') . ' 
+                        </button>
+                    </div>
+                </div>    
                 <div id="tracks-info-category" class="main-block"></div>
                 <div id="tracks-info-lang" class="main-block"></div>
                 <div id="tracks-info-url" class="main-block"></div>

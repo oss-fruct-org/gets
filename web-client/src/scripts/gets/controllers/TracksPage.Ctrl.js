@@ -540,11 +540,11 @@ TracksPage.prototype.showPointInfo = function() {
         var trackName = decodeURIComponent(this._utils.getHashVar('track_id'));
         this._headerView.changeOption($(this._pointInfo.getView()).data('pagetitle'), 'glyphicon-chevron-left', '#form=track_info&track_id=' + trackName);
         
-        var pointName = decodeURIComponent(this._utils.getHashVar('point_name'));
-        if (!pointName) {
-            throw new GetsWebClientException('Track Page Error', 'showPointInfo, hash parameter pointName undefined');
+        var pointUUID = decodeURIComponent(this._utils.getHashVar('point_uuid'));
+        if (!pointUUID) {
+            throw new GetsWebClientException('Track Page Error', 'showPointInfo, hash parameter pointUUID undefined');
         }
-        this._points.setPoint(this._tracks.findPoint(pointName));
+        this._points.setPoint(this._tracks.findPoint(pointUUID));
         
         this._pointInfo.placePointInPointInfo(this._points.getPoint(), this._user.isLoggedIn());
         

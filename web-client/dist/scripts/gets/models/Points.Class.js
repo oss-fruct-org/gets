@@ -145,13 +145,11 @@ PointsClass.prototype.downLoadPoints = function(paramsObj, callback) {
             });                                    
             pointObj.extendedData = pointExtendedData;
 
-            Logger.debug(pointObj);
             pointsArray.push(pointObj);
         }
 
         //Logger.debug(pointsArray);
         self.pointList = pointsArray;
-        Logger.debug(JSON.stringify(self.pointList));
         if (callback) {
             callback();
         }

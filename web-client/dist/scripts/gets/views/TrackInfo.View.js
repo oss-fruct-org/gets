@@ -40,7 +40,7 @@ TrackInfo.prototype.placeTrackInTrackInfo = function (track, categories, isAuth)
     
     for (var i = 0; i < track.points.length; i++) {       
         var trackPointLinkElement = $(this.document.createElement('a'));
-        $(trackPointLinkElement).attr('href', '#form=point_info&track_id=' + track.name + '&point_name=' + track.points[i].name);
+        $(trackPointLinkElement).attr('href', '#form=point_info&track_id=' + track.name + '&point_uuid=' + track.points[i].uuid);
         $(trackPointLinkElement).attr('title', track.points[i].name);
         $(trackPointLinkElement).addClass('ellipsis-text');
         $(trackPointLinkElement).addClass('list-group-item');

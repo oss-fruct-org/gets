@@ -320,11 +320,11 @@ TracksClass.prototype.removeTrack = function() {
 /**
  * Find point in a track which is stored in internal variable "track".
  * 
- * @param {String} pointName The name of a point.
- * @returns {Object} The first point with matched name, or null if there 
- * is no point with given name.
+ * @param {String} pointUUID The UUID of a point.
+ * @returns {Object} The first point with matched uuid, or null if there 
+ * is no point with given uuid.
  */
-TracksClass.prototype.findPoint = function(pointName) {
+TracksClass.prototype.findPoint = function(pointUUID) {
     if (!this.isTrackDownloaded()) {
         throw new GetsWebClientException('Tracks Error', 'findPoint, track is not loaded');
     }
@@ -332,7 +332,7 @@ TracksClass.prototype.findPoint = function(pointName) {
     var track = this.track;
     var point = null;   
     $(track.points).each(function (index, value) {
-        if (pointName.toLowerCase().trim() === value.name.toLowerCase().trim()) {
+        if (pointUUID.trim() === value.uuid.trim()) {
             point = value;
             point.access = track.access;
             point.track = track.name;

@@ -260,6 +260,22 @@ function get_request_argument($dom, $field, $default_value = null) {
         return $default_value;
 }
 
+/**
+ * @param $dom DOMNode
+ * @return array of first level children
+ */
+function get_request_array($dom) {
+    $ret = array();
+    for ($node = $dom->firstChild; $node !== null; $node = $node->nextSibling) {
+        if ($node->nodeType == XML_ELEMENT_NODE
+                && $node->firstChild !== null
+                && $node->firstChild->nodeType == XML_TEXT_NODE) {
+            $ret[$node->nodeName] = $node->firstChild->nodeValue;
+        }
+    }
+    return $ret;
+}
+
 function get_array_element($array, $field, $default_value = null) {
     if (array_key_exists($field, $array))
         return $array[$field];
@@ -268,11 +284,11 @@ function get_array_element($array, $field, $default_value = null) {
 }
 
 function safe_merge_arrays($array1, $array2) {
-    if (!$array1 && !$array2) {
+    if ($array1 === null && $array2 === null) {
         return null;
-    } else if (!$array1) {
+    } else if ($array1 === null) {
         return $array2;
-    } else if (!$array2) {
+    } else if ($array2 === null) {
         return $array1;
     } else {
         return array_merge($array2, $array1);
@@ -400,10 +416,8 @@ function unicode_callback(&$item, $key) {
     }
 }
 
-function parse_extended_data(DOMNodeList $description_element, DOMNodeList $extended_data_element) {
-    if ($description_element->length > 0) {
-        $description = $description_element->item(0)->nodeValue;
-
+function parse_extended_data($description, $input_extended_data_array) {
+    if ($description) {
         # If caller pass extended data in description, process it correctly
         $extended_data_array = json_decode($description, true);
         if (!$extended_data_array) {
@@ -416,13 +430,7 @@ function parse_extended_data(DOMNodeList $description_element, DOMNodeList $exte
         $description = null;
     }
 
-    if ($extended_data_element->length > 0) {
-        foreach ($extended_data_element->item(0)->childNodes as $node) {
-            $key = $node->nodeName;
-            $value = $node->nodeValue;
-            $extended_data_array[$key] = $value;
-        }
-    }
+    $extended_data_array = safe_merge_arrays($extended_data_array, $input_extended_data_array);
 
     if (!array_key_exists("description", $extended_data_array) && $description) {
         $extended_data_array["description"] = $description;
@@ -605,7 +613,8 @@ function date_gets_to_postgres($gets_date) {
 
 function date_postgres_to_gets($gets_date) {
     $date_parsed = date_create_from_format('Y-m-d H:i:s.u', $gets_date);
+    if (!$date_parsed) {
+        $date_parsed = date_create_from_format('Y-m-d H:i:s', $gets_date);
+    }
     return date_format($date_parsed, 'd m Y H:i:s.u');
 }
-
-?>

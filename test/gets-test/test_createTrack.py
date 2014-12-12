@@ -25,6 +25,7 @@ class TestCreateTrack(unittest.TestCase):
                 ('hname', 'human readable <> name'),
                 ('description', description),
                 ('url', url),
+                ('category_id', '1'),
                 ('update', update))
         
         resp = gt.do_request("createTrack.php", req);

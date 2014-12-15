@@ -63,8 +63,6 @@ if ($space === SPACE_ALL && !$auth_token) {
 
 $dbconn = pg_connect(GEO2TAG_DB_STRING);
 
-$user_is_admin = (is_user_admin($dbconn) > 0: true: false);
-
 // email where query
 $where_arr = array();
 $email_where_arr = array();
@@ -123,6 +121,8 @@ if ($is_radius_filter) {
 
 $query .= 'WHERE ' . implode(' AND ', $where_arr) . ' ORDER BY channel.name ASC, permission DESC;';
 $result = pg_query($dbconn, $query);
+
+$user_is_admin = (is_user_admin($dbconn) > 0 ? true : false);
 
 $resp = '<tracks>';
 while ($row = pg_fetch_row($result)) {

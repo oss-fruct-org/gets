@@ -63,6 +63,8 @@ if ($space === SPACE_ALL && !$auth_token) {
 
 $dbconn = pg_connect(GEO2TAG_DB_STRING);
 
+$user_is_admin = (is_user_admin($dbconn) > 0: true: false);
+
 // email where query
 $where_arr = array();
 $email_where_arr = array();
@@ -127,7 +129,10 @@ while ($row = pg_fetch_row($result)) {
     $channel_name = $row[0];
     $channel_desc = $row[1];
     $channel_url = $row[2];
-    $access = $row[3] == 'f' ? 'r' : 'rw';
+    if (!$user_is_admin)
+	$access = $row[3] == 'f' ? 'r' : 'rw';
+    else
+	$access = 'rw';
 
     $channel_description = null;
     $channel_category_id = null;

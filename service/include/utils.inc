@@ -495,10 +495,9 @@ function require_category($dbconn, $category_id) {
 /**
  * Check if current user is admin
  * @param $dbconn resource
- * @throws Exception if user not admin
- * @return integer owner id of current project
+ * @return integer owner id of current project or zero if user is not admin
  */
-function require_user_admin($dbconn) {
+function is_user_admin($dbconn) {
     $user_login = auth_get_db_login($dbconn);
 
     if ($user_login === GEO2TAG_USER) {
@@ -519,10 +518,26 @@ function require_user_admin($dbconn) {
 
     $row = pg_fetch_row($response);
     if (!$row) {
-        throw new Exception("User required to be admin", 1);
+        return 0;
     }
 
     return $row[0];
+}
+
+/**
+ * Check if current user is admin
+ * @param $dbconn resource
+ * @throws Exception if user not admin
+ * @return integer owner id of current project
+ */
+function require_user_admin($dbconn) {
+    $id = is_user_admin($dbconn);
+
+    if ($id <= 0) {
+        throw new Exception("User required to be admin", 1);
+    }
+
+    return $id;
 }
 
 function require_user_trusted($dbconn) {

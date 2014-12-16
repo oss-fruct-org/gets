@@ -30,7 +30,7 @@ echo    '<div id="tracks-info-page" class="action-menu-container hidden" data-pa
                             <span class="glyphicon glyphicon-globe"></span> ' . getString('show-on-map','Show on map') . '
                         </button>
                     </div>
-                    <div class="btn-group hidden">
+                    <div class="btn-group ' . (isset($_SESSION['core_user']) ? '' : 'hidden') . '">
                         <button id="tracks-info-publish" class="btn btn-default" title="' . getString('publish-track','Publish track') . '" type="button">
                             <span class="glyphicon glyphicon-share-alt"></span> ' . getString('publish-track','Publish track') . ' 
                         </button>

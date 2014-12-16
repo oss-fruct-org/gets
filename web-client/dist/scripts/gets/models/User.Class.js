@@ -13,6 +13,7 @@
  */
 function UserClass(windowObj) {
     this.email = null;
+    this.coreUser = null;
     this.isAuthorized = false;
     if (!windowObj.hasOwnProperty('location')) {
         throw new GetsWebClientException('User Error', 'UserClass, windowObj argument is not a window object');
@@ -115,11 +116,11 @@ UserClass.prototype.fetchAuthorizationStatus = function() {
 };
 
 /**
- * Fetch user's email from the GeTS Server.
+ * Fetch user's info from the GeTS Server.
  * 
  * @throws {GetsWebClientException}
  */
-UserClass.prototype.fetchEmail = function() {
+UserClass.prototype.fetchInfo = function() {
     var getEmailRequest = $.ajax({
         url: GET_USER_INFO_ACTION,
         type: 'GET',
@@ -135,6 +136,7 @@ UserClass.prototype.fetchEmail = function() {
     
     var emailObj = JSON.parse(getEmailRequest.responseText);      
     this.email = emailObj.email;
+    this.coreUser = emailObj.core_user;
 };
 /**
  * Get users geo coordinates.
@@ -191,7 +193,17 @@ UserClass.prototype.isCoordsSet = function() {
  */
 UserClass.prototype.getEmail = function() {
     if (!this.email) {
-        this.fetchEmail();
+        this.fetchInfo();
     }
     return this.email;
+};
+
+/**
+ * Is core user.
+ */
+UserClass.prototype.isCoreUser = function() {
+    if (this.coreUser == null) {
+        this.fetchInfo();
+    }
+    return this.coreUser;
 };

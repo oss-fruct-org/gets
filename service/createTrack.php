@@ -58,7 +58,13 @@ if ($prefix === 'tr_' || $prefix === 'tr+') {
     # Compatibility with old clients that pass track name in format "tr_"
     $track_id = $name;
 } else {
-    $username = auth_get_db_login($dbconn);
+    try {
+        $username = auth_get_db_login($dbconn);
+    } catch (Exception $e) {
+        send_error(1, $e->getMessage());
+        die();
+    }
+
     $track_id = "tr+${username}+${name}+${lang}";
 
     if (!$hname)

@@ -122,7 +122,8 @@ if ($existing_channel_id && $need_update) {
         die();
     }
 
-    $result_inserted_id = pg_fetch_row($result_insert)[0];
+    $row = pg_fetch_row($result_insert);
+    $result_inserted_id = $row[0];
 
     if (!pg_query_params($dbconn, 'INSERT INTO subscribe (channel_id, user_id) VALUES ($1, $2);', 
                 array($result_inserted_id, $user_id))) {

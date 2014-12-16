@@ -122,12 +122,17 @@ if ($is_radius_filter) {
 $query .= 'WHERE ' . implode(' AND ', $where_arr) . ' ORDER BY channel.name ASC, permission DESC;';
 $result = pg_query($dbconn, $query);
 
+$user_is_admin = (is_user_admin($dbconn) > 0 ? true : false);
+
 $resp = '<tracks>';
 while ($row = pg_fetch_row($result)) {
     $channel_name = $row[0];
     $channel_desc = $row[1];
     $channel_url = $row[2];
-    $access = $row[3] == 'f' ? 'r' : 'rw';
+    if (!$user_is_admin)
+	$access = $row[3] == 'f' ? 'r' : 'rw';
+    else
+	$access = 'rw';
 
     $channel_description = null;
     $channel_category_id = null;

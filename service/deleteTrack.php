@@ -47,12 +47,23 @@ try {
     die();
 }
 
-$query = "DELETE FROM channel WHERE channel.id IN
-    (SELECT channel.id FROM channel
-    INNER JOIN users ON channel.owner_id = users.id 
-    WHERE users.email=$1 AND channel.name=$2) RETURNING channel.id;";
+$user_is_admin = (is_user_admin($dbconn) > 0 ? true : false);
 
-$res = pg_query_params($dbconn, $query, array($email, $track_name));
+// admin user not required to check email
+if ($user_is_admin) {
+    $query = "DELETE FROM channel 
+	WHERE channel.name=$1 RETURNING channel.id;";
+
+    $res = pg_query_params($dbconn, $query, array($track_name));
+} else {
+    $query = "DELETE FROM channel WHERE channel.id IN
+	(SELECT channel.id FROM channel
+	INNER JOIN users ON channel.owner_id = users.id 
+	WHERE users.email=$1 AND channel.name=$2) RETURNING channel.id;";
+    
+    $res = pg_query_params($dbconn, $query, array($email, $track_name));
+}
+
 $count = pg_num_rows($res);
 
 if ($count == 0) {

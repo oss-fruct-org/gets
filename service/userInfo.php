@@ -36,10 +36,16 @@ try {
     die();
 }
 
+$user_is_admin = (is_user_admin($dbconn) > 0 ? true : false);
+$user_is_trusted = (is_user_trusted($dbconn) > 0 ? true : false);
+
 $response = '<userInfo>';
 $response .= "<email>{$escaped_email}</email>";
-if (strcmp($email,GEO2TAG_EMAIL) == 0) {
+if (strcmp($email,GEO2TAG_EMAIL) == 0 || $user_is_admin) {
     $response .= "<isCoreUser>true</isCoreUser>";
+}
+if ($user_is_trusted) {
+    $response .= "<isTrustedUser>true</isTrustedUser>";
 }
 $response .= '</userInfo>';
 

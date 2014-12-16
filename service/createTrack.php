@@ -58,7 +58,13 @@ if ($prefix === 'tr_' || $prefix === 'tr+') {
     # Compatibility with old clients that pass track name in format "tr_"
     $track_id = $name;
 } else {
-    $username = auth_get_db_login($dbconn);
+    try {
+        $username = auth_get_db_login($dbconn);
+    } catch (Exception $e) {
+        send_error(1, $e->getMessage());
+        die();
+    }
+
     $track_id = "tr+${username}+${name}+${lang}";
 
     if (!$hname)
@@ -116,7 +122,8 @@ if ($existing_channel_id && $need_update) {
         die();
     }
 
-    $result_inserted_id = pg_fetch_row($result_insert)[0];
+    $row = pg_fetch_row($result_insert);
+    $result_inserted_id = $row[0];
 
     if (!pg_query_params($dbconn, 'INSERT INTO subscribe (channel_id, user_id) VALUES ($1, $2);', 
                 array($result_inserted_id, $user_id))) {

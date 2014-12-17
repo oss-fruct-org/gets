@@ -374,6 +374,52 @@ TracksClass.prototype.setNeedTrackUpdate = function (needTrackUpdate) {
     }
 };
 
+TracksClass.prototype.publishTrack = function () {
+    if (!this.track) {
+        throw new GetsWebClientException('Tracks Error', 'publishTrack, there is no track to publish');
+    }
+    
+    var publishTrackRequest = $.ajax({
+        url: PUBLISH_ACTION,
+        type: 'POST',
+        async: false,
+        contentType: 'application/json',
+        dataType: 'xml',
+        data: JSON.stringify({track_name: this.track.name})
+    });
+    
+    publishTrackRequest.fail(function(jqXHR, textStatus) {
+        throw new GetsWebClientException('Tracks Error', 'publishTrack, publishTrackRequest failed ' + textStatus);
+    });
+
+    if ($(publishTrackRequest.responseText).find('code').text() !== '0') {
+        throw new GetsWebClientException('Tracks Error', 'publishTrack, ' + $(publishTrackRequest.responseText).find('message').text());
+    }
+};
+
+TracksClass.prototype.unPublishTrack = function () {
+    if (!this.track) {
+        throw new GetsWebClientException('Tracks Error', 'unPublishTrack, there is no track to unpublish');
+    }
+    
+    var unPublishTrackRequest = $.ajax({
+        url: UNPUBLISH_ACTION,
+        type: 'POST',
+        async: false,
+        contentType: 'application/json',
+        dataType: 'xml',
+        data: JSON.stringify({track_name: this.track.name})
+    });
+    
+    unPublishTrackRequest.fail(function(jqXHR, textStatus) {
+        throw new GetsWebClientException('Tracks Error', 'unPublishTrack, unPublishTrackRequest failed ' + textStatus);
+    });
+
+    if ($(unPublishTrackRequest.responseText).find('code').text() !== '0') {
+        throw new GetsWebClientException('Tracks Error', 'unPublishTrack, ' + $(unPublishTrackRequest.responseText).find('message').text());
+    }
+};
+
 
 
 

@@ -1,6 +1,6 @@
 <?php
 
-echo    '<div id="tracks-info-page" class="action-menu-container hidden" data-pagetitle="' . getString('track-info-title','Track Info') . '" data-messagesuccess-remove="' . getString('track-remove-success','Track was successfully removed') . '">
+echo    '<div id="tracks-info-page" class="action-menu-container hidden" data-pagetitle="' . getString('track-info-title','Track Info') . '" data-messagesuccess-remove="' . getString('track-remove-success','Track was successfully removed') . '" data-messagesuccess-publish="' . getString('track-publish-success', 'Track was successfully published') . '" data-messagesuccess-unpublish="' . getString('track-unpublish-success', 'Track was successfully unpublished') . '">
             <div id="tracks-info-overlay" class="busy-overlay"></div>
             <div class="action-menu-toolbar-container">
                 <div class="btn-group btn-group-justified">
@@ -30,7 +30,7 @@ echo    '<div id="tracks-info-page" class="action-menu-container hidden" data-pa
                             <span class="glyphicon glyphicon-globe"></span> ' . getString('show-on-map','Show on map') . '
                         </button>
                     </div>
-                    <div class="btn-group ' . (isset($_SESSION['core_user']) ? '' : 'hidden') . '">
+                    <div class="btn-group ' . (isset($_SESSION['trusted_user']) || isset($_SESSION['core_user']) ? '' : 'hidden') . '">
                         <button id="tracks-info-publish" class="btn btn-default" title="' . getString('publish-track','Publish track') . '" type="button">
                             <span class="glyphicon glyphicon-share-alt"></span> ' . getString('publish-track','Publish track') . ' 
                         </button>

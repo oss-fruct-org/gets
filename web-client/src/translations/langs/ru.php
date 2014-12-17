@@ -44,9 +44,13 @@ $translations = array(
     'remove-track' => 'Удалить маршрут', 
     'show-on-map' => 'Показать на карте', 
     'point-list' => 'Список точек', 
+    'publish-track' => 'Опубликовать маршрут',
+    'unpublish-track' => 'Снять маршрут с публикации',
     'track-remove-text' => 'Вы уверены что хотите удалить этот маршрут? (Действие не может быть отменено)', 
     'track-remove-success' => 'Маршрут был успешно удален', 
     'put-point-in-point-info' => 'Поместить точку в окно «Информация о точке»',
+    'track-publish-success' => 'Маршрут был успешно опубликован', 
+    'track-unpublish-success' => 'Маршрут был успешно снят с публикации',
     
     // Point Info widget strings
     'point-info-title' => 'Информация о точке', 

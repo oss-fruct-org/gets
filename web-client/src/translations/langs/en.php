@@ -44,8 +44,12 @@ $translations = array(
     'remove-track' => 'Remove track', 
     'show-on-map' => 'Show on map', 
     'point-list' => 'Point List', 
+    'publish-track' => 'Publish track',
+    'unpublish-track' => 'Unpublish track',
     'track-remove-text' => 'Are you sure you want to remove this track? (This action cannot be cancelled.)', 
     'track-remove-success' => 'Track was successfully removed', 
+    'track-publish-success' => 'Track was successfully published', 
+    'track-unpublish-success' => 'Track was successfully unpublished',
     
     // Point Info widget strings
     'point-info-title' => 'Point Info', 

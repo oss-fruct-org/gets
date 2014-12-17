@@ -210,8 +210,6 @@ PointsClass.prototype.addPoint = function (paramsObj, update, callback) {
             newParamsObj.latitude = value.value;
         } else if (value.name === 'longitude') {
             newParamsObj.longitude = value.value;
-        } else if (value.name === 'altitude') {
-            newParamsObj.altitude = value.value;
         } else {
             if (value.value !== '') {
                 newParamsObj.extended_data = newParamsObj.extended_data || {};
@@ -219,6 +217,9 @@ PointsClass.prototype.addPoint = function (paramsObj, update, callback) {
             }
         }
     });
+    
+    // Temprorary fix for altitude
+    newParamsObj.altitude = 0.0;
     
     if (channel) {
         newParamsObj.channel = channel;

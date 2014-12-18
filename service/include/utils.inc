@@ -494,6 +494,7 @@ function require_category($dbconn, $category_id) {
 
 /**
  * Check if current user is admin
+ * Function requires authentication using auth_set_token
  * @param $dbconn resource
  * @return integer owner id of current project or zero if user is not admin
  */
@@ -526,6 +527,7 @@ function is_user_admin($dbconn) {
 
 /**
  * Check if current user is admin
+ * Function requires authentication using auth_set_token
  * @param $dbconn resource
  * @throws Exception if user not admin
  * @return integer owner id of current project

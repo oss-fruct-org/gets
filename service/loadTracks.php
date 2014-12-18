@@ -71,7 +71,6 @@ if ($space === SPACE_ALL || $space === SPACE_PRIVATE) {
         auth_set_token($auth_token);
         $private_email = auth_get_google_email();
         $private_email_escaped = pg_escape_string($dbconn, $private_email);
-        session_commit();
     } catch (GetsAuthException $ex) {
         send_error(1, $ex->getMessage());
         die();
@@ -122,7 +121,7 @@ if ($is_radius_filter) {
 $query .= 'WHERE ' . implode(' AND ', $where_arr) . ' ORDER BY channel.name ASC, permission DESC;';
 $result = pg_query($dbconn, $query);
 
-$user_is_admin = (is_user_admin($dbconn) > 0 ? true : false);
+$user_is_admin = ($private_email !== null && is_user_admin($dbconn) > 0 ? true : false);
 
 $resp = '<tracks>';
 while ($row = pg_fetch_row($result)) {

@@ -437,8 +437,16 @@ TracksPage.prototype.initPage = function() {
     $(this.document).on('click', '#tracks-info-publish', function (e){
         e.preventDefault();
         try {
-            self._tracks.publishTrack();
-            MessageBox.showMessage($(self._trackInfo.getView()).data('messagesuccessPublish'), MessageBox.SUCCESS_MESSAGE);
+            var trackName = decodeURIComponent(self._utils.getHashVar('track_id'));
+            var track = self._tracks.getTrack(trackName, false);
+            if (track.published) {
+                self._tracks.unPublishTrack();
+                MessageBox.showMessage($(self._trackInfo.getView()).data('messagesuccessUnpublish'), MessageBox.SUCCESS_MESSAGE);
+            } else {
+                self._tracks.publishTrack();
+                MessageBox.showMessage($(self._trackInfo.getView()).data('messagesuccessPublish'), MessageBox.SUCCESS_MESSAGE);
+            }
+            self.showTrackInfo();
         } catch (Exception) {
             MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
         }

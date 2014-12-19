@@ -31,8 +31,8 @@ echo    '<div id="tracks-info-page" class="action-menu-container hidden" data-pa
                         </button>
                     </div>
                     <div class="btn-group ' . (isset($_SESSION['trusted_user']) || isset($_SESSION['core_user']) ? '' : 'hidden') . '">
-                        <button id="tracks-info-publish" class="btn btn-default" title="' . getString('publish-track','Publish track') . '" type="button">
-                            <span class="glyphicon glyphicon-share-alt"></span> ' . getString('publish-track','Publish track') . ' 
+                        <button id="tracks-info-publish" class="btn btn-default" type="button" data-label-publish="' . getString('publish-track','Publish track') . '" data-label-unpublish="' . getString('unpublish-track', 'Unpublish track') . '">
+                            <span class="glyphicon glyphicon-share-alt"></span>  
                         </button>
                     </div>
                 </div>    

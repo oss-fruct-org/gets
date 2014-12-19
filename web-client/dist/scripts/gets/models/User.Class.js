@@ -15,6 +15,7 @@ function UserClass(windowObj) {
     this.email = null;
     this.coreUser = null;
     this.trustedUser = null;
+    this.adminUser = null;
     this.isAuthorized = false;
     if (!windowObj.hasOwnProperty('location')) {
         throw new GetsWebClientException('User Error', 'UserClass, windowObj argument is not a window object');
@@ -139,6 +140,7 @@ UserClass.prototype.fetchInfo = function() {
     this.email = emailObj.email;
     this.coreUser = emailObj.core_user;
     this.trustedUser = emailObj.trusted_user;
+    this.adminUser = emailObj.admin_user;
 };
 /**
  * Get users geo coordinates.
@@ -204,18 +206,28 @@ UserClass.prototype.getEmail = function() {
  * Is core user.
  */
 UserClass.prototype.isCoreUser = function() {
-    if (this.coreUser == null) {
+    if (!this.coreUser) {
         this.fetchInfo();
     }
     return this.coreUser;
 };
 
 /**
- * Is core user.
+ * Is trusted user.
  */
 UserClass.prototype.isTrustedUser = function() {
-    if (this.trustedUser == null) {
+    if (!this.trustedUser) {
         this.fetchInfo();
     }
     return this.trustedUser;
+};
+
+/**
+ * Is admin user.
+ */
+UserClass.prototype.isAdminUser = function() {
+    if (!this.adminUser) {
+        this.fetchInfo();
+    }
+    return this.adminUser;
 };

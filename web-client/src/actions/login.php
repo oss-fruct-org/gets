@@ -39,6 +39,7 @@ if (filter_input(INPUT_SERVER, 'REQUEST_METHOD') == 'POST') {
                     if ($dom_email->getElementsByTagName('isTrustedUser')->length > 0) {
                         $_SESSION['trusted_user'] = $dom_email->getElementsByTagName('isTrustedUser')->item(0)->nodeValue;
                     }
+                    $_SESSION['admin_user'] = false;
                     echo $response_token;
                 }
             }

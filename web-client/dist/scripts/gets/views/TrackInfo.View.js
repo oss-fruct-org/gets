@@ -34,6 +34,14 @@ TrackInfo.prototype.placeTrackInTrackInfo = function (track, categories, isAuth)
     $(this.trackInfo).find('#tracks-info-description').text(track.description);
     var tracksPointList = $(this.trackInfo).find('#tracks-points-list');        
     $(tracksPointList).empty();
+
+    // Publish/Unpublish button label 
+    var tracksInfoPublish = $(this.trackInfo).find('#tracks-info-publish');
+    if (track.published) {
+        $(tracksInfoPublish).html('<span class="glyphicon glyphicon-share-alt"></span> ' + $(tracksInfoPublish).data('labelUnpublish'));
+    } else {      
+        $(tracksInfoPublish).html('<span class="glyphicon glyphicon-share-alt"></span> ' + $(tracksInfoPublish).data('labelPublish'));
+    }
     
     // Add points count
     $(this.trackInfo).find('#tracks-points-list-count-badge').text(track.points.length);

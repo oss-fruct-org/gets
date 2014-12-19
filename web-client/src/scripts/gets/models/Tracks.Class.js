@@ -114,12 +114,14 @@ TracksClass.prototype.downloadTrackList = function (paramsObj, callback) {
         var xml = $.parseXML(jqXHR.responseText);
         var trackListItems = $(xml).find('track');
         $(trackListItems).each(function(index, value) {
+            //Logger.debug(value);
             var trackObj = {};
             trackObj.name = $(value).find('name').length ? $(value).find('name').text() : '';
             trackObj.hname = $(value).find('hname').length ? $(value).find('hname').text() : '';
             trackObj.description = $(value).find('description').length ? $(value).find('description').text() : '';
             trackObj.access = $(value).find('access').length ? $(value).find('access').text() : '';
             trackObj.categoryId = $(value).find('category_id').length ? $(value).find('category_id').text() : '';
+            trackObj.published = $(value).find('published').length ? $(value).find('published').text() : false;
 
             tracksArray.push(trackObj);
         });
@@ -174,7 +176,7 @@ TracksClass.prototype.downloadTrackByName = function(paramsObj) {
     var trackPointArray = new Array();
     //Logger.debug(trackPlacemarkList);
     $(trackPlacemarkList).each(function(index, value) {
-        Logger.debug(value);
+        //Logger.debug(value);
         var pointObj = {};
         var pointExtendedData = [];
         
@@ -202,6 +204,7 @@ TracksClass.prototype.downloadTrackByName = function(paramsObj) {
             newtrack.description = value.description;
             newtrack.access = value.access;
             newtrack.categoryId = value.categoryId;
+            newtrack.published = value.published;
             return false;
         }
     });
@@ -209,7 +212,7 @@ TracksClass.prototype.downloadTrackByName = function(paramsObj) {
     newtrack.name = paramsObj.name;
     newtrack.points = trackPointArray;
 
-    //Logger.debug(newtrack);
+    Logger.debug(newtrack);
     this.track = newtrack;
 };
 

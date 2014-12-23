@@ -57,9 +57,9 @@ MapController.prototype.getMapSize = function() {
     return this._map.getSize();
 };
 
-MapController.prototype.addTrack = function(track) {
+MapController.prototype.addTrack = function(track, mode) {
     if (!this._map.checkTrack(track)) {
-        this._map.placeTrackInMap(track);
+        this._map.placeTrackInMap(track, mode);
     }
 };
 

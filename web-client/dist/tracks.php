@@ -50,6 +50,7 @@ session_start();
         <script src="scripts/gets/controllers/TracksPage.Ctrl.js"></script>
         <script src="scripts/gets/controllers/Map.Ctrl.js"></script> 
         <script src="scripts/gets/controllers/Language.Ctrl.js"></script>
+        <script src="scripts/gets/controllers/Routes.js"></script>
         <script>
             $( document ).ready(function() {
                 Logger.useDefaults();
@@ -61,7 +62,6 @@ session_start();
         <title>GeTS Web Client</title>
     </head>
     <body>
-	<?php include_once('./widgets/googleanalytics.inc');?>
         <div class="main-container">
             <div class="main-header">
                 <?php

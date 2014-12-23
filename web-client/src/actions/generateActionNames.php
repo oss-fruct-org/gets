@@ -19,5 +19,7 @@ $js_file .= 'var UPLOAD_FILE_ACTION = "' . $base_url . 'uploadFile.php";';
 $js_file .= 'var PUBLISH_ACTION = "' . $base_url . 'publish.php";';
 $js_file .= 'var UNPUBLISH_ACTION = "' . $base_url . 'unpublish.php";';
 
+$js_file .= 'var RETRANSLATOR_ACTION = "' . $base_url . 'retranslator.php";';
+
 echo $js_file;
 ?>

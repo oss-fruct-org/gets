@@ -22,6 +22,10 @@ function MapClass() {
     this.pointsLayer = null;
 }
 
+// Forms
+MapClass.MAP_MODE_RAW = '0';
+MapClass.MAP_MODE_ROUTE = '1';
+
 /**
  * Init map with base tile layer.
  */
@@ -217,7 +221,7 @@ MapClass.prototype.addRoute = function(route) {
  * 
  * @throws {GetsWebClientException}
  */
-MapClass.prototype.placeTrackInMap = function(track) {
+MapClass.prototype.placeTrackInMap = function(track, mode) {
     if (!track) {
         throw new GetsWebClientException('Map Error', 'placeTrackInMap, track undefined or null.');
     }
@@ -225,9 +229,24 @@ MapClass.prototype.placeTrackInMap = function(track) {
     if (track.points.length <= 0) {
         throw new GetsWebClientException('Map Error', 'placeTrackInMap, track has no points.');
     }
+       
+    var group = L.layerGroup(); 
     
-    var group = L.layerGroup();  
-    var coordinatesArray = this.getCoordinatesArray(track);
+    //Logger.debug(mode);
+    //Logger.debug(track);
+    //Logger.debug(mode === '1');
+    
+    var coordinatesArray = [];
+    if (mode === '0') {
+        coordinatesArray = this.getCoordinatesArray(track);
+    } else if (mode === '1') {
+        Logger.debug('here');
+        for (var k = 0, len = track.googleRoute.length; k < len; k++) {
+            coordinatesArray.push(new L.LatLng(track.googleRoute[k].lat, track.googleRoute[k].lng));
+        }
+    }
+    var coordinatesArrayPoints = this.getCoordinatesArray(track);
+    Logger.debug(coordinatesArray);
         
     // create a red polyline from an arrays of LatLng points
     var polyline = L.polyline(
@@ -242,7 +261,7 @@ MapClass.prototype.placeTrackInMap = function(track) {
     group.addLayer(polyline);
  
     for (var i = 0; i < track.points.length; i++) {
-        var marker = L.marker(coordinatesArray[i], {
+        var marker = L.marker(coordinatesArrayPoints[i], {
                 title: track.points[i].name + ' Track: ' + track.hname,
                 icon:	new L.NumberedDivIcon({number: i + 1})
             }).bindPopup(

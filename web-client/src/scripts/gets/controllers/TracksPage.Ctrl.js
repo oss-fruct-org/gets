@@ -33,6 +33,8 @@ function TracksPage(document, window) {
     this._pointAdd = null;
     this._pointEdit = null;
     
+    this._routes = null;
+    
     this._headerView = null;
     
     this.currentView = null;
@@ -86,7 +88,6 @@ TracksPage.prototype.initPage = function() {
             this._user = new UserClass(this.window);
             this._user.fetchAuthorizationStatus();
             Logger.debug('is Auth: ' + this._user.isLoggedIn());
-            Logger.debug('is Trusted User: ' + this._user.isTrustedUser());
         }
         if (!this._utils) {
             this._utils = new UtilsClass(this.window);
@@ -117,6 +118,10 @@ TracksPage.prototype.initPage = function() {
         }
         if (!this._headerView) {
             this._headerView = new HeaderView(this.document, $(this.document).find('.navbar'));
+        }
+        
+        if (!this._routes) {
+            this._routes = new Routes();
         }
         
         // Init map
@@ -237,9 +242,10 @@ TracksPage.prototype.initPage = function() {
     $(this.document).on('click', '#tracks-info-map', function(e) {
         e.preventDefault();
         var trackName = decodeURIComponent(self._utils.getHashVar('track_id'));
-        if (trackName) {
-            self._mapCtrl.addTrack(self._tracks.getTrack(trackName, false));
-        }
+        if (trackName) {           
+            //self._routes.makeGoogleDirectionsRoute(self._tracks.getTrack(trackName, false));
+            self._mapCtrl.addTrack(self._tracks.getTrack(trackName, false), '0');
+        }       
     });
     
     // Enable/disable clear button for file inputs. (NOT WORKING)

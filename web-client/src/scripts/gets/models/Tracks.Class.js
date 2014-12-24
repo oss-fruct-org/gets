@@ -121,7 +121,7 @@ TracksClass.prototype.downloadTrackList = function (paramsObj, callback) {
             trackObj.description = $(value).find('description').length ? $(value).find('description').text() : '';
             trackObj.access = $(value).find('access').length ? $(value).find('access').text() : '';
             trackObj.categoryId = $(value).find('category_id').length ? $(value).find('category_id').text() : '';
-            trackObj.published = $(value).find('published').length ? $(value).find('published').text() : false;
+            trackObj.published = $(value).find('published').length ? ($(value).find('published').text() === 'true') : false;
             Logger.debug(trackObj);
             tracksArray.push(trackObj);
         });

@@ -39,8 +39,14 @@ TrackInfo.prototype.placeTrackInTrackInfo = function (track, categories, isAuth)
     var tracksInfoPublish = $(this.trackInfo).find('#tracks-info-publish');
     if (track.published) {
         $(tracksInfoPublish).html('<span class="glyphicon glyphicon-share-alt"></span> ' + $(tracksInfoPublish).data('labelUnpublish'));
-    } else {      
+    } else {
         $(tracksInfoPublish).html('<span class="glyphicon glyphicon-share-alt"></span> ' + $(tracksInfoPublish).data('labelPublish'));
+    }
+    
+    if (isAuth && track.access === 'rw') { 
+        $(tracksInfoPublish).removeClass('disabled');
+    } else {     
+        $(tracksInfoPublish).addClass('disabled');      
     }
     
     // Add points count
@@ -128,5 +134,14 @@ TrackInfo.prototype.toggleOverlay = function() {
     $(this.trackInfo).find('#tracks-info').toggleClass('busy-overlay-visible');
 };
 
-
-
+/**
+ * Toggle publish button
+ */
+TrackInfo.prototype.togglePublishButton = function(track) {
+    var tracksInfoPublish = $(this.trackInfo).find('#tracks-info-publish');
+    if (track.published) {
+        $(tracksInfoPublish).html('<span class="glyphicon glyphicon-share-alt"></span> ' + $(tracksInfoPublish).data('labelUnpublish'));
+    } else {
+        $(tracksInfoPublish).html('<span class="glyphicon glyphicon-share-alt"></span> ' + $(tracksInfoPublish).data('labelPublish'));
+    }
+};

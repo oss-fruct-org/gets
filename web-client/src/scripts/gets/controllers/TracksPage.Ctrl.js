@@ -452,7 +452,8 @@ TracksPage.prototype.initPage = function() {
                 self._tracks.publishTrack();
                 MessageBox.showMessage($(self._trackInfo.getView()).data('messagesuccessPublish'), MessageBox.SUCCESS_MESSAGE);
             }
-            self.showTrackInfo();
+            track.published = !track.published;
+            self._trackInfo.togglePublishButton(track);
         } catch (Exception) {
             MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
         }
@@ -554,7 +555,7 @@ TracksPage.prototype.showTrackInfo = function() {
             this._trackInfo.placeTrackInTrackInfo(
                     this._tracks.getTrack(trackName, true), 
                     this._categories.getCategories(), 
-                    this._user.isLoggedIn()
+                    this._user.getUser()
             );
 
             this.currentView.hideView();

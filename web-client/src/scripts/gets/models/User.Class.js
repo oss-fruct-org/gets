@@ -231,3 +231,17 @@ UserClass.prototype.isAdminUser = function() {
     }
     return this.adminUser;
 };
+
+/**
+ * Is admin user.
+ */
+UserClass.prototype.getUser = function() {
+    this.fetchInfo();
+    return {
+        email: this.email,
+        coreUser: this.coreUser,
+        trustedUser: this.trustedUser,
+        adminUser: this.adminUser,
+        isAuth: this.isAuthorized
+    };
+};

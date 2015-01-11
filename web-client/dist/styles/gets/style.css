@@ -278,3 +278,7 @@ input.search-query {
     left: 0;
     margin: 0 10px 10px 10px;
 }
+
+.display-none {
+    display: none;
+}

@@ -57,10 +57,8 @@ MapController.prototype.getMapSize = function() {
     return this._map.getSize();
 };
 
-MapController.prototype.addTrack = function(track, mode) {
-    if (!this._map.checkTrack(track)) {
-        this._map.placeTrackInMap(track, mode);
-    }
+MapController.prototype.addTrack = function(track, type) {
+    this._map.placeTrackInMap(track, type);
 };
 
 MapController.prototype.checkTrack = function(track) {
@@ -105,6 +103,22 @@ MapController.prototype.createUserMarker = function(lat, lng) {
 
 MapController.prototype.setMapCallback = function(eventName, callback) {
     this._map.setMapCallback(eventName, callback);
+};
+
+MapController.prototype.drawConvexHullObjects = function(objects) {
+    this._map.drawConvexHullObjects(objects);
+};
+
+MapController.prototype.drawBoundingBox = function(track) {
+    this._map.drawBoundingBox(track);
+};
+
+MapController.prototype.drawEncodedPolyline = function(polyline, label) {
+    this._map.drawEncodedPolyline(polyline, label);
+};
+
+MapController.prototype.addMarker = function(latLng, label) {
+    this._map.addMarker(latLng, label);
 };
 
 

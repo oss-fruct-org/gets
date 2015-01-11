@@ -239,14 +239,131 @@ TracksPage.prototype.initPage = function() {
     });
 
     // Add track to the map handler
-    $(this.document).on('click', '#tracks-info-map', function(e) {
+    //tracks-info-map-raw-simple
+    $(this.document).on('click', '#tracks-info-map-raw-simple', function (e) {
         e.preventDefault();
         var trackName = decodeURIComponent(self._utils.getHashVar('track_id'));
-        if (trackName) {           
-            //self._routes.makeGoogleDirectionsRoute(self._tracks.getTrack(trackName, false));
-            self._mapCtrl.addTrack(self._tracks.getTrack(trackName, false), '0');
-        }       
+        if (trackName) {
+            self._trackInfo.toggleOverlay();
+            
+            var track = self._tracks.getTrack(trackName, false);
+            
+            if (!track.bounds) {
+                track.bounds = self._routes.getBoundBoxForPoints(track.points);
+            }
+            
+            self._mapCtrl.addTrack(track, MapClass.ROUTE_TYPE_RAW);
+            self._trackInfo.toggleOverlay();
+        }
     });
+    
+    // Add track to the map handler
+    $(this.document).on('click', '#tracks-info-map-service', function (e) {
+        e.preventDefault();
+        $(self.document).find('#tracks-info-route-parameters-container').slideDown("slow");       
+    });
+    
+    // tracks-info-route-parameters-container-close 
+    $(this.document).on('click', '#tracks-info-route-parameters-container-close', function (e) {
+        e.preventDefault();
+        $(self.document).find('#tracks-info-route-parameters-container').slideUp("slow");
+    });
+    
+    // tracks-info-route-parameters-form
+    $(this.document).on('submit', '#tracks-info-route-parameters-form', function (e) {
+        e.preventDefault();
+        var options = $(this).serializeArray();
+        Logger.debug(options);
+        var trackName = decodeURIComponent(self._utils.getHashVar('track_id'));
+        if (trackName) {
+            self._trackInfo.toggleOverlay();
+
+            var track = self._tracks.getTrack(trackName, false);
+            try {
+                self._routes.makeGoogleDirectionsRoute(track, options, function () {
+                    self._mapCtrl.addTrack(track, MapClass.ROUTE_TYPE_SERVICE);
+                    self._trackInfo.toggleOverlay();
+                });
+            } catch (Exception) {
+                self._trackInfo.toggleOverlay();
+                MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
+                Logger.error(Exception.toString());
+            }
+        }
+    });
+    
+    // tracks-info-route-parameters-form
+    $(this.document).on('click', '#tracks-info-map-raw-curve', function (e) {
+        e.preventDefault();
+        var trackName = decodeURIComponent(self._utils.getHashVar('track_id'));
+        if (trackName) {
+            self._trackInfo.toggleOverlay();
+            
+            var track = self._tracks.getTrack(trackName, false);            
+            self._routes.obstacleAvoidingCurve(track, MapClass.ROUTE_TYPE_CURVE_RAW);
+            
+            if (!track.bounds) {
+                track.bounds = self._routes.getBoundBoxForPoints(track.points);
+            }
+            
+            self._mapCtrl.addTrack(track, MapClass.ROUTE_TYPE_CURVE_RAW);
+            
+            self._trackInfo.toggleOverlay();
+        }
+    });
+    
+    // tracks-info-route-parameters-form
+    $(this.document).on('click', '#tracks-info-map-service-curve', function (e) {
+        e.preventDefault();
+        var trackName = decodeURIComponent(self._utils.getHashVar('track_id'));
+        if (trackName) {
+            self._trackInfo.toggleOverlay();
+            
+            var track = self._tracks.getTrack(trackName, false);
+            self._routes.makeGoogleDirectionsRoute(track, [{name: 'mode', value: 'walking'}], function () {
+                self._routes.obstacleAvoidingCurve(track, MapClass.ROUTE_TYPE_CURVE_SERVICE);
+                self._mapCtrl.addTrack(track, MapClass.ROUTE_TYPE_CURVE_SERVICE);
+                self._trackInfo.toggleOverlay();
+            });
+        }
+    });
+
+    // Add track to the map handler
+    /*$(this.document).on('click', '#tracks-info-map', function (e) {
+        e.preventDefault();
+    });
+        var trackName = decodeURIComponent(self._utils.getHashVar('track_id'));
+        if (trackName) {           
+            var track = self._tracks.getTrack(trackName, false);
+            if (track.routePolyline) {
+                self._mapCtrl.addTrack(track, '1');
+            } else {
+                self._trackInfo.toggleOverlay();
+                self._routes.makeGoogleDirectionsRoute(track, function () {
+                    self._mapCtrl.addTrack(track, '1');
+                    self._routes.requestOSMObstacles(track);
+                    self._trackInfo.toggleOverlay();
+                });
+            }
+            self._mapCtrl.addTrack(track, '0');
+            self._trackInfo.toggleOverlay();
+            self._routes.requestOSMObstacles(track, function (objects) {
+                self._mapCtrl.drawBoundingBox(track);
+                //self._routes.addCShape(track);
+                self._routes.obstacleAvoidingCurve(track, self._mapCtrl);
+                //self._mapCtrl.drawEncodedPolyline(track.oACurve, 'oACurve for track: <b>' + track.hname + '</b>');
+                self._mapCtrl.drawConvexHullObjects(objects);
+                self._trackInfo.toggleOverlay();
+            }); 
+            
+            self._trackInfo.toggleOverlay();
+            self._routes.makeGoogleDirectionsRoute(track, function () {
+                self._mapCtrl.drawEncodedPolyline(track.routePolyline, 'google route for track: <b>' + track.hname + '</b>');
+                //self._routes.requestOSMObstacles(track);
+                self._trackInfo.toggleOverlay();
+            });
+        }*/
+    //});
     
     // Enable/disable clear button for file inputs. (NOT WORKING)
     $(this.document).on('change', 'input[type="file"]', function(e) {
@@ -675,17 +792,17 @@ TracksPage.prototype.addTrackHandler = function (form) {
     var formData = $(form).serializeArray();
     formData.push({name: 'user_name', value: this._user.getEmail()});
     var that = this;
-    this._tracks.addTrack(formData, function (track_name) {
-        try {
+    try {
+        this._tracks.addTrack(formData, function (track_name) {
             that._trackAdd.toggleOverlay();
             that.window.location.replace('#form=' + TracksPage.MAIN);
             MessageBox.showMessage($(that._trackAdd.getView()).data('messagesuccessAdd'), MessageBox.SUCCESS_MESSAGE);
-        } catch (Exception) {
-            that._trackAdd.toggleOverlay();
-            MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
-            Logger.error(Exception.toString());
-        }
-    });
+        });
+    } catch (Exception) {
+        this._trackAdd.toggleOverlay();
+        MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
+        Logger.error(Exception.toString());
+    }
 };
 
 TracksPage.prototype.editTrackHandler = function (form) {
@@ -694,17 +811,19 @@ TracksPage.prototype.editTrackHandler = function (form) {
     formData.push({name: 'update', value: 'true'});
     formData.push({name: 'user_name', value: this._user.getEmail()});
     var that = this;
-    this._tracks.addTrack(formData, function (track_name) {
-        try {
+    try {
+        this._tracks.addTrack(formData, function (track_name) {
+
             that._trackEdit.toggleOverlay();
             that.window.location.replace('#form=' + TracksPage.MAIN);
             MessageBox.showMessage($(that._trackEdit.getView()).data('messagesuccessEdit'), MessageBox.SUCCESS_MESSAGE);
-        } catch (Exception) {
-            that._trackEdit.toggleOverlay();
-            MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
-            Logger.error(Exception.toString());
-        }
-    });
+        });
+    } catch (Exception) {
+        this._trackEdit.toggleOverlay();
+        MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
+        Logger.error(Exception.toString());
+    }
+
 };
 
 TracksPage.prototype.addPointHandler = function (form, update) {

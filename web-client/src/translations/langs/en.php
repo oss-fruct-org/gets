@@ -42,7 +42,7 @@ $translations = array(
     'add-point' => 'Add point', 
     'edit-track' => 'Edit track', 
     'remove-track' => 'Remove track', 
-    'show-on-map' => 'Show on map', 
+    'show-on-map' => 'Show on map',        
     'point-list' => 'Point List', 
     'publish-track' => 'Publish track',
     'unpublish-track' => 'Unpublish track',
@@ -50,6 +50,21 @@ $translations = array(
     'track-remove-success' => 'Track was successfully removed', 
     'track-publish-success' => 'Track was successfully published', 
     'track-unpublish-success' => 'Track was successfully unpublished',
+    // Show on the map options
+    'show-on-map-raw-simple' => 'Raw route',
+    'show-on-map-service' => 'Use Google Route Service',
+    'show-on-map-raw-curve' => 'Curve based on Raw route (experimental)',
+    'show-on-map-service-curve' => 'Curve based on Google RS (experimental)',    
+    // Service route options
+    'route-parameters-mode' => 'Travel Mode: ',
+    'walking-mode' => 'Walking',
+    'driving-mode' => 'Driving',
+    'bicycling-mode' => 'Bicycling',
+    'route-parameters-optimization' => 'Optimization: ',
+    'optimize-route' => 'Optimize route',
+    'route-parameters-alternatives' => 'Alternatives: ',
+    'find-alternatives' => 'Find alternatives',
+    'request-route' => 'Request route',
     
     // Point Info widget strings
     'point-info-title' => 'Point Info', 

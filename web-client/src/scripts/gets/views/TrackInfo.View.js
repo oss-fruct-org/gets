@@ -25,7 +25,7 @@ function TrackInfo(document, trackInfo) {
  * 
  * @throws {GetsWebClientException}
  */
-TrackInfo.prototype.placeTrackInTrackInfo = function (track, categories, isAuth) {   
+TrackInfo.prototype.placeTrackInTrackInfo = function (track, categories, user) {   
     $(this.trackInfo).find('#tracks-info-name').text(track.hname).attr('title', track.hname).readmore({
         moreLink: '<a href="#">Expand</a>',
         lessLink: '<a href="#">Collapse</a>'
@@ -43,7 +43,7 @@ TrackInfo.prototype.placeTrackInTrackInfo = function (track, categories, isAuth)
         $(tracksInfoPublish).html('<span class="glyphicon glyphicon-share-alt"></span> ' + $(tracksInfoPublish).data('labelPublish'));
     }
     
-    if (isAuth && track.access === 'rw') { 
+    if (user.isAuth && track.access === 'rw') { 
         $(tracksInfoPublish).removeClass('disabled');
     } else {     
         $(tracksInfoPublish).addClass('disabled');      
@@ -83,10 +83,10 @@ TrackInfo.prototype.placeTrackInTrackInfo = function (track, categories, isAuth)
        
     // disable the buttons if user doesn't have the rights for modification of the track's data or 
     // user doesn't sign in or both
-    Logger.debug('IS_LOGGED_IN: ' + isAuth + ' track.access: ' + track.access);
-    Logger.debug('!IS_LOGGED_IN || track.access === \'r\': ' + (!isAuth || track.access === 'r'));
+    Logger.debug('IS_LOGGED_IN: ' + user.isAuth + ' track.access: ' + track.access);
+    Logger.debug('!IS_LOGGED_IN || track.access === \'r\': ' + (!user.isAuth || track.access === 'r'));
       
-    if (!isAuth || track.access === 'r') {      
+    if (!user.isAuth || track.access === 'r') {      
         $(tracksInfoAdd).on('click', function (e) {
             e.preventDefault();
         });
@@ -131,7 +131,12 @@ TrackInfo.prototype.hideView = function() {
  * Toggle overlay
  */
 TrackInfo.prototype.toggleOverlay = function() {
-    $(this.trackInfo).find('#tracks-info').toggleClass('busy-overlay-visible');
+    var overlay = $(this.trackInfo).find('#tracks-info-overlay');
+    if ($(overlay).hasClass('busy-overlay-visible')) {
+        $(overlay).removeClass('busy-overlay-visible');
+    } else {
+        $(overlay).addClass('busy-overlay-visible');
+    }  
 };
 
 /**

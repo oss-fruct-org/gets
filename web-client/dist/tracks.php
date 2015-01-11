@@ -31,6 +31,8 @@ session_start();
         <script src="scripts/readmore.min.js"></script>
         <script src="scripts/bootstrap-slider.min.js"></script>
         <script src="scripts/leaflet.contextmenu.js"></script>
+        <script src="scripts/Polyline.encoded.js"></script>
+        <script src="scripts/graham_scan.min.js"></script>
         <script src="scripts/gets/models/Categories.Class.js"></script>
         <script src="scripts/gets/models/Points.Class.js"></script>
         <script src="scripts/gets/models/Tracks.Class.js"></script>

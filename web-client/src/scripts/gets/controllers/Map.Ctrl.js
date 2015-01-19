@@ -65,8 +65,12 @@ MapController.prototype.checkTrack = function(track) {
     return this._map.checkTrack(track);
 };
 
-MapController.prototype.removeTrack = function(track) {
-    this._map.removeTrackFromMap(track);
+MapController.prototype.removeTrack = function(track, type) {
+    this._map.removeTrackFromMap(track, type);
+};
+
+MapController.prototype.getRoutesForTrack = function(track) {
+    return this._map.getRoutesForTrack(track);
 };
 
 MapController.prototype.placePointsOnMap = function(pointList, markerBaseLink) {

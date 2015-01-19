@@ -23,10 +23,17 @@ function MapClass() {
 }
 
 // Route types
+MapClass.ROUTE_TYPE_MARKERS = 'markers';
 MapClass.ROUTE_TYPE_RAW = 'raw';
 MapClass.ROUTE_TYPE_SERVICE = 'service';
 MapClass.ROUTE_TYPE_CURVE_RAW = 'curve-raw';
 MapClass.ROUTE_TYPE_CURVE_SERVICE = 'curve-service';
+
+// Route colors
+MapClass.ROUTE_TYPE_RAW_COLOR = '#8B8B8B';
+MapClass.ROUTE_TYPE_SERVICE_COLOR = '#4c4cff';
+MapClass.ROUTE_TYPE_CURVE_RAW_COLOR = '#00AA00';
+MapClass.ROUTE_TYPE_CURVE_SERVICE_COLOR = '#00AA00';
 
 /**
  * Init map with base tile layer.
@@ -232,7 +239,7 @@ MapClass.prototype.addRawRoute = function (track, mapRoute) {
     var polyline = L.polyline(
             coordinatesArray, 
             {
-                color: '#8B8B8B', //this.getRandomColor(),
+                color: track.onMap[MapClass.ROUTE_TYPE_RAW].color, //this.getRandomColor(),
                 weight: 5,
                 opacity: 0.8,
                 lineJoin: 'round',
@@ -253,11 +260,13 @@ MapClass.prototype.addRawRoute = function (track, mapRoute) {
     }
     
     mapRoute.routes.push({
+        name: track.onMap[MapClass.ROUTE_TYPE_RAW].name,
         type: MapClass.ROUTE_TYPE_RAW,
+        color: track.onMap[MapClass.ROUTE_TYPE_RAW].color,
         layerGroup: group
     });
     
-    this.layersControl.addOverlay(group, track.hname + ' - <span style="color: #8B8B8B;">Raw Route</span>');
+    this.layersControl.addOverlay(group, track.hname + ' - <span style="color: ' + track.onMap[MapClass.ROUTE_TYPE_RAW].color + ';">' + track.onMap[MapClass.ROUTE_TYPE_RAW].name + '</span>');
     this.map.addLayer(group);
 };
 
@@ -265,11 +274,10 @@ MapClass.prototype.addServiceRoute = function (track, mapRoute) {
     var group = L.layerGroup();
     
     for (var i = 0; i < track.serviceRoutes.length; i++) {
-        var count = String(i);
         var polyline = L.Polyline.fromEncoded(
                 track.serviceRoutes[i],
                 {
-                    color: '#4c4cff',
+                    color: track.onMap[MapClass.ROUTE_TYPE_SERVICE].color,
                     weight: 5,
                     opacity: 0.8,
                     lineJoin: 'round',
@@ -290,11 +298,13 @@ MapClass.prototype.addServiceRoute = function (track, mapRoute) {
     }
     
     mapRoute.routes.push({
+        name: track.onMap[MapClass.ROUTE_TYPE_SERVICE].name,
         type: MapClass.ROUTE_TYPE_SERVICE,
+        color: track.onMap[MapClass.ROUTE_TYPE_SERVICE].color,
         layerGroup: group
     });
     
-    this.layersControl.addOverlay(group, track.hname + ' - <span style="color: #4c4cff;">Google Route Service</span>');
+    this.layersControl.addOverlay(group, track.hname + ' - <span style="color: ' + track.onMap[MapClass.ROUTE_TYPE_SERVICE].color + ';">' + track.onMap[MapClass.ROUTE_TYPE_SERVICE].name + '</span>');
     this.map.addLayer(group);
 };
 
@@ -304,7 +314,7 @@ MapClass.prototype.addCurveRawRoute = function (track, mapRoute) {
     var polyline = L.Polyline.fromEncoded(
             track.oACurve,
             {
-                color: '#00AA00',
+                color: track.onMap[MapClass.ROUTE_TYPE_CURVE_RAW].color,
                 weight: 5,
                 opacity: 0.8,
                 lineJoin: 'round',
@@ -324,11 +334,13 @@ MapClass.prototype.addCurveRawRoute = function (track, mapRoute) {
     }
     
     mapRoute.routes.push({
+        name: track.onMap[MapClass.ROUTE_TYPE_CURVE_RAW].name,
         type: MapClass.ROUTE_TYPE_CURVE_RAW,
+        color: track.onMap[MapClass.ROUTE_TYPE_CURVE_RAW].color,
         layerGroup: group
     });
     
-    this.layersControl.addOverlay(group, track.hname + ' - <span style="color: #00AA00;">Curve Raw Route</span>');
+    this.layersControl.addOverlay(group, track.hname + ' - <span style="color: ' + track.onMap[MapClass.ROUTE_TYPE_CURVE_RAW].color + ';">' + track.onMap[MapClass.ROUTE_TYPE_CURVE_RAW].name + '</span>');
     this.map.addLayer(group);
 };
 
@@ -338,7 +350,7 @@ MapClass.prototype.addCurveServiceRoute = function (track, mapRoute) {
     var polyline = L.Polyline.fromEncoded(
             track.oACurve,
             {
-                color: '#00AA00',
+                color: track.onMap[MapClass.ROUTE_TYPE_CURVE_SERVICE].color,
                 weight: 5,
                 opacity: 0.8,
                 lineJoin: 'round',
@@ -358,11 +370,13 @@ MapClass.prototype.addCurveServiceRoute = function (track, mapRoute) {
     }
     
     mapRoute.routes.push({
+        name: track.onMap[MapClass.ROUTE_TYPE_CURVE_SERVICE].name,
         type: MapClass.ROUTE_TYPE_CURVE_SERVICE,
+        color: track.onMap[MapClass.ROUTE_TYPE_CURVE_SERVICE].color,
         layerGroup: group
     });
     
-    this.layersControl.addOverlay(group, track.hname + ' - <span style="color: #00AA00;">Curve Service Route</span>');
+    this.layersControl.addOverlay(group, track.hname + ' - <span style="color: ' + track.onMap[MapClass.ROUTE_TYPE_CURVE_SERVICE].color + ';">' + track.onMap[MapClass.ROUTE_TYPE_CURVE_SERVICE].name + '</span>');
     this.map.addLayer(group);
 };
 
@@ -388,7 +402,7 @@ MapClass.prototype.placeTrackInMap = function(track, type) {
         var group = L.layerGroup(); 
         
         this.addTrackPointsToLayerGroup(track, group);
-        this.layersControl.addOverlay(group, track.hname + ' - Markers Only');
+        this.layersControl.addOverlay(group, track.hname + ' - Markers');
         this.map.addLayer(group);
               
         var mapRoute = {
@@ -425,18 +439,36 @@ MapClass.prototype.placeTrackInMap = function(track, type) {
     this.map.fitBounds(bounds);
 };
 
-MapClass.prototype.removeTrackFromMap = function (track) {
+MapClass.prototype.removeTrackFromMap = function (track, type) {
     var index = this.getRouteIndex({id: track.name});
     if (index < 0) {
         return;
     }
-    if (this.map.hasLayer(this.routes[index].layerGroup)) {
-        this.map.removeLayer(this.routes[index].layerGroup);
+    var mapRoute = this.mapRoutes[index];
+    for (var i = 0, len = mapRoute.routes.length; i < len; i++) {
+        if (mapRoute.routes[i].type === type) {
+            this.layersControl.removeLayer(mapRoute.routes[i].layerGroup);
+            this.map.removeLayer(mapRoute.routes[i].layerGroup);
+            mapRoute.routes.splice(i, 1);
+            break;
+        }
     }
-    this.layersControl.removeLayer(this.routes[index].layerGroup);
     
-    this.routes.splice(index, 1);
-}
+    if (mapRoute.routes.length < 1) {
+        this.layersControl.removeLayer(mapRoute.points);
+        this.map.removeLayer(mapRoute.points);
+        this.mapRoutes.splice(index, 1);
+    }
+};
+
+MapClass.prototype.getRoutesForTrack = function (track) {    
+    var index = this.getRouteIndex({id: track.name});
+    if (index < 0) {
+        return;
+    }
+    
+    return this.mapRoutes[index].routes;
+};
 
 MapClass.prototype.placePointsOnMap = function(pointList, markerBaseLink) {
     if (!pointList) {

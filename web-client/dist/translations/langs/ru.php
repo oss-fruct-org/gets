@@ -13,6 +13,7 @@ $translations = array(
     'description' => 'Описание', 
     'url' => 'Ссылка', 
     'required-fields' => 'Обязательные поля', 
+    'map' => 'Карта',
     
     // Main tracks widget strings
     'add-track' => 'Добавить маршрут', 
@@ -52,10 +53,11 @@ $translations = array(
     'track-publish-success' => 'Маршрут был успешно опубликован', 
     'track-unpublish-success' => 'Маршрут был успешно снят с публикации',
     // Show on the map options
+    'show-on-map-markers' => 'Только точки',
     'show-on-map-raw-simple' => 'Простой маршрут',
-    'show-on-map-service' => 'Использовать сервис Google Route',
-    'show-on-map-raw-curve' => 'Кривая на основе простого марш-та (эксп-т.)',
-    'show-on-map-service-curve' => 'Кривая на основе Google RS (эксп-т.)',
+    'show-on-map-service' => 'Сервис Google Route',
+    'show-on-map-raw-curve' => 'Кривая на основе простого марш-та',
+    'show-on-map-service-curve' => 'Кривая на основе Google RS',
     // Service route options
     'route-parameters-mode' => 'Способ перемещения: ',
     'walking-mode' => 'Пешком',

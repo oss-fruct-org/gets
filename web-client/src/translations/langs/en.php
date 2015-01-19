@@ -13,6 +13,7 @@ $translations = array(
     'description' => 'Description', 
     'url' => 'Url', 
     'required-fields' => 'Required fields', 
+    'map' => 'Map',
     
     // Main tracks widget strings
     'add-track' => 'Add track', 
@@ -51,10 +52,11 @@ $translations = array(
     'track-publish-success' => 'Track was successfully published', 
     'track-unpublish-success' => 'Track was successfully unpublished',
     // Show on the map options
+    'show-on-map-markers' => 'Only points',
     'show-on-map-raw-simple' => 'Raw route',
-    'show-on-map-service' => 'Use Google Route Service',
-    'show-on-map-raw-curve' => 'Curve based on Raw route (experimental)',
-    'show-on-map-service-curve' => 'Curve based on Google RS (experimental)',    
+    'show-on-map-service' => 'Google Route Service',
+    'show-on-map-raw-curve' => 'Curve based on Raw route',
+    'show-on-map-service-curve' => 'Curve based on Google RS',    
     // Service route options
     'route-parameters-mode' => 'Travel Mode: ',
     'walking-mode' => 'Walking',

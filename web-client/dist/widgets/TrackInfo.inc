@@ -35,6 +35,7 @@ echo    '<div id="tracks-info-page" class="action-menu-container hidden" data-pa
                               <span class="caret"></span>
                             </button>
                             <ul class="dropdown-menu" role="menu" aria-labelledby="tracks-info-map">
+                              <!--<li role="presentation"><a id="tracks-info-map-markers" role="menuitem" tabindex="-1" href="#">' . getString('show-on-map-markers','Markers only') . '</a></li>-->  
                               <li role="presentation"><a id="tracks-info-map-raw-simple" role="menuitem" tabindex="-1" href="#">' . getString('show-on-map-raw-simple','Raw route') . '</a></li>
                               <li role="presentation"><a id="tracks-info-map-service" role="menuitem" tabindex="-1" href="#">' . getString('show-on-map-service','Use Google Route Service') . '</a></li>
                               <li role="presentation"><a id="tracks-info-map-raw-curve" role="menuitem" tabindex="-1" href="#">' . getString('show-on-map-raw-curve','Smooth curve based on Raw route (experimental)') . '</a></li>
@@ -95,6 +96,15 @@ echo    '<div id="tracks-info-page" class="action-menu-container hidden" data-pa
                             </div>    
                         </form>
                     </div>
+                    
+                <div id="tracks-info-on-map-container" class="main-block well well-sm hidden">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label class="control-label">' . getString('map','Map') . ': </label>
+                        </div>    
+                    </div>
+                    <div id="tracks-info-on-map-routes-container"></div>
+                </div>
                 
                 <div id="tracks-info-category" class="main-block"></div>
                 <div id="tracks-info-lang" class="main-block"></div>

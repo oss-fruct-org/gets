@@ -252,7 +252,24 @@ TracksPage.prototype.initPage = function() {
                 track.bounds = self._routes.getBoundBoxForPoints(track.points);
             }
             
+            if (!track.onMap) {
+                track.onMap = {};
+            }
+            
+            var trackAlreadyShown = true;
+            if (!track.onMap[MapClass.ROUTE_TYPE_RAW]) {
+                track.onMap[MapClass.ROUTE_TYPE_RAW] = {
+                    name: self._trackInfo.getRouteName(MapClass.ROUTE_TYPE_RAW),
+                    color: MapClass.ROUTE_TYPE_RAW_COLOR
+                };
+                trackAlreadyShown = false;
+            }
+            
             self._mapCtrl.addTrack(track, MapClass.ROUTE_TYPE_RAW);
+            if (!trackAlreadyShown) {
+                self._trackInfo.addRouteOnMap(track, MapClass.ROUTE_TYPE_RAW);
+            }
+            
             self._trackInfo.toggleOverlay();
         }
     });
@@ -281,7 +298,22 @@ TracksPage.prototype.initPage = function() {
             var track = self._tracks.getTrack(trackName, false);
             try {
                 self._routes.makeGoogleDirectionsRoute(track, options, function () {
+                    if (!track.onMap) {
+                        track.onMap = {};
+                    }
+                    var trackAlreadyShown = true;
+                    if (!track.onMap[MapClass.ROUTE_TYPE_SERVICE]) {
+                        track.onMap[MapClass.ROUTE_TYPE_SERVICE] = {
+                            name: self._trackInfo.getRouteName(MapClass.ROUTE_TYPE_SERVICE),
+                            color: MapClass.ROUTE_TYPE_SERVICE_COLOR
+                        };
+                        trackAlreadyShown = false;
+                    }
+                    
                     self._mapCtrl.addTrack(track, MapClass.ROUTE_TYPE_SERVICE);
+                    if (!trackAlreadyShown) {
+                        self._trackInfo.addRouteOnMap(track, MapClass.ROUTE_TYPE_SERVICE);
+                    }
                     self._trackInfo.toggleOverlay();
                 });
             } catch (Exception) {
@@ -306,8 +338,23 @@ TracksPage.prototype.initPage = function() {
                 track.bounds = self._routes.getBoundBoxForPoints(track.points);
             }
             
-            self._mapCtrl.addTrack(track, MapClass.ROUTE_TYPE_CURVE_RAW);
+            if (!track.onMap) {
+                track.onMap = {};
+            }
+            var trackAlreadyShown = true;
+            if (!track.onMap[MapClass.ROUTE_TYPE_CURVE_RAW]) {
+                track.onMap[MapClass.ROUTE_TYPE_CURVE_RAW] = {
+                    name: self._trackInfo.getRouteName(MapClass.ROUTE_TYPE_CURVE_RAW),
+                    color: MapClass.ROUTE_TYPE_CURVE_RAW_COLOR
+                };
+                trackAlreadyShown = false;
+            }
             
+            self._mapCtrl.addTrack(track, MapClass.ROUTE_TYPE_CURVE_RAW);
+            if (!trackAlreadyShown) {
+                self._trackInfo.addRouteOnMap(track, MapClass.ROUTE_TYPE_CURVE_RAW);
+            }
+                       
             self._trackInfo.toggleOverlay();
         }
     });
@@ -322,48 +369,41 @@ TracksPage.prototype.initPage = function() {
             var track = self._tracks.getTrack(trackName, false);
             self._routes.makeGoogleDirectionsRoute(track, [{name: 'mode', value: 'walking'}], function () {
                 self._routes.obstacleAvoidingCurve(track, MapClass.ROUTE_TYPE_CURVE_SERVICE);
+                
+                if (!track.onMap) {
+                    track.onMap = {};
+                }
+                var trackAlreadyShown = true;
+                if (!track.onMap[MapClass.ROUTE_TYPE_CURVE_SERVICE]) {
+                    track.onMap[MapClass.ROUTE_TYPE_CURVE_SERVICE] = {
+                        name: self._trackInfo.getRouteName(MapClass.ROUTE_TYPE_CURVE_SERVICE),
+                        color: MapClass.ROUTE_TYPE_CURVE_SERVICE_COLOR
+                    };
+                    trackAlreadyShown = false;
+                }
+                
                 self._mapCtrl.addTrack(track, MapClass.ROUTE_TYPE_CURVE_SERVICE);
+                if (!trackAlreadyShown) {
+                    self._trackInfo.addRouteOnMap(track, MapClass.ROUTE_TYPE_CURVE_SERVICE);
+                }
+                
                 self._trackInfo.toggleOverlay();
             });
         }
     });
 
-    // Add track to the map handler
-    /*$(this.document).on('click', '#tracks-info-map', function (e) {
+    // Remove route from map
+    $(this.document).on('click', '#tracks-info-on-map-route-remove', function (e) {
         e.preventDefault();
-    });
         var trackName = decodeURIComponent(self._utils.getHashVar('track_id'));
-        if (trackName) {           
+        if (trackName) {
             var track = self._tracks.getTrack(trackName, false);
-            if (track.routePolyline) {
-                self._mapCtrl.addTrack(track, '1');
-            } else {
-                self._trackInfo.toggleOverlay();
-                self._routes.makeGoogleDirectionsRoute(track, function () {
-                    self._mapCtrl.addTrack(track, '1');
-                    self._routes.requestOSMObstacles(track);
-                    self._trackInfo.toggleOverlay();
-                });
-            }
-            self._mapCtrl.addTrack(track, '0');
-            self._trackInfo.toggleOverlay();
-            self._routes.requestOSMObstacles(track, function (objects) {
-                self._mapCtrl.drawBoundingBox(track);
-                //self._routes.addCShape(track);
-                self._routes.obstacleAvoidingCurve(track, self._mapCtrl);
-                //self._mapCtrl.drawEncodedPolyline(track.oACurve, 'oACurve for track: <b>' + track.hname + '</b>');
-                self._mapCtrl.drawConvexHullObjects(objects);
-                self._trackInfo.toggleOverlay();
-            }); 
-            
-            self._trackInfo.toggleOverlay();
-            self._routes.makeGoogleDirectionsRoute(track, function () {
-                self._mapCtrl.drawEncodedPolyline(track.routePolyline, 'google route for track: <b>' + track.hname + '</b>');
-                //self._routes.requestOSMObstacles(track);
-                self._trackInfo.toggleOverlay();
-            });
-        }*/
-    //});
+            var type = $(this).parents('div[id^="tracks-info-on-map-route-"]').data('type');
+            delete track.onMap[type];
+            self._trackInfo.removeRouteFromMap(type);
+            self._mapCtrl.removeTrack(track, type);
+        }
+    });
     
     // Enable/disable clear button for file inputs. (NOT WORKING)
     $(this.document).on('change', 'input[type="file"]', function(e) {
@@ -669,11 +709,25 @@ TracksPage.prototype.showTrackInfo = function() {
         var trackName = decodeURIComponent(this._utils.getHashVar('track_id'));
         Logger.debug('trackName: ' + trackName);
         if (trackName) {
+            var track = this._tracks.getTrack(trackName, true);
             this._trackInfo.placeTrackInTrackInfo(
-                    this._tracks.getTrack(trackName, true), 
+                    track, 
                     this._categories.getCategories(), 
                     this._user.getUser()
             );
+    
+            var onMap = {};
+            var routes = this._mapCtrl.getRoutesForTrack(track);
+            if (routes) {               
+                for (var i = 0; i < routes.length; i++) {
+                    onMap[routes[i].type] = {
+                        name: routes[i].name,
+                        color: routes[i].color
+                    };
+                }
+                track.onMap = onMap;
+            }
+            this._trackInfo.showRoutesOnMap(track);
 
             this.currentView.hideView();
             this.currentView = this._trackInfo;

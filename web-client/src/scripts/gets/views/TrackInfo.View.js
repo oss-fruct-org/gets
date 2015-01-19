@@ -109,6 +109,81 @@ TrackInfo.prototype.placeTrackInTrackInfo = function (track, categories, user) {
     }
 };
 
+/**
+ * Show routes that on map
+ */
+TrackInfo.prototype.showRoutesOnMap = function(track) {
+    var onMapContainer = $(this.trackInfo).find('#tracks-info-on-map-container');
+    var routesOnMapContainer = $(this.trackInfo).find('#tracks-info-on-map-routes-container');
+    if (!track.onMap) {
+        $(routesOnMapContainer).empty();
+        if ($(onMapContainer).hasClass('show')) {
+            $(onMapContainer).removeClass('show').addClass('hidden');
+        }
+        return;
+    }
+
+    $(onMapContainer).removeClass('hidden').addClass('show');   
+    $(routesOnMapContainer).empty();
+    
+    var routesOnMapHTML = '';
+    $.each(track.onMap, function (key, value) {
+        routesOnMapHTML += '<div id="tracks-info-on-map-route-' + key + '" data-type="' + key + '" class="row">\n\
+                                <div class="col-md-10">\n\
+                                    <span style="color: ' + value.color + ';font-size: 15px;font-weight: bold;">' + value.name + '</span>\n\
+                                </div>\n\
+                                <div class="col-md-2">\n\
+                                    <button id="tracks-info-on-map-route-remove" type="button" class="close"><span aria-hidden="true">&times;</span></button>\n\
+                                </div>\n\
+                            </div>';
+    });
+    $(routesOnMapContainer).html(routesOnMapHTML);  
+};
+
+TrackInfo.prototype.addRouteOnMap = function(track, type) {
+    var onMapContainer = $(this.trackInfo).find('#tracks-info-on-map-container');
+    $(onMapContainer).removeClass('hidden').addClass('show');
+    
+    var routesOnMapContainer = $(this.trackInfo).find('#tracks-info-on-map-routes-container');
+    $(routesOnMapContainer).html($(routesOnMapContainer).html() + '<div id="tracks-info-on-map-route-' + type + '" data-type="' + type + '" class="row">\n\
+                                                                    <div class="col-md-10">\n\
+                                                                        <span style="color: ' + track.onMap[type].color + ';font-size: 15px;font-weight: bold;">' + track.onMap[type].name + '</span>\n\
+                                                                    </div>\n\
+                                                                    <div class="col-md-2">\n\
+                                                                        <button id="tracks-info-on-map-route-remove" type="button" class="close"><span aria-hidden="true">&times;</span></button>\n\
+                                                                    </div>\n\
+                                                                   </div>');
+};
+
+TrackInfo.prototype.removeRouteFromMap = function(type) {
+    var onMapContainer = $(this.trackInfo).find('#tracks-info-on-map-container');   
+    var routesOnMapContainer = $(this.trackInfo).find('#tracks-info-on-map-routes-container');
+    
+    $(routesOnMapContainer).find('#tracks-info-on-map-route-' + type).remove();
+    if ($(routesOnMapContainer).children().length < 1) {
+        $(onMapContainer).removeClass('show').addClass('hidden');
+    }
+};
+
+TrackInfo.prototype.getRouteName = function(type) {
+    var name = 'No name';
+    switch (type) {
+        case MapClass.ROUTE_TYPE_RAW:
+                name = $(this.trackInfo).find('#tracks-info-map-raw-simple').text();
+                break;
+        case MapClass.ROUTE_TYPE_SERVICE:
+                name = $(this.trackInfo).find('#tracks-info-map-service').text();
+                break;
+        case MapClass.ROUTE_TYPE_CURVE_RAW:
+                name = $(this.trackInfo).find('#tracks-info-map-raw-curve').text();
+                break;
+        case MapClass.ROUTE_TYPE_CURVE_SERVICE:
+                name = $(this.trackInfo).find('#tracks-info-map-service-curve').text();
+                break;    
+    }
+    return name;
+};
+
 TrackInfo.prototype.getView = function() {
     return this.trackInfo;
 };

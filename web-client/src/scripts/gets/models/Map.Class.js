@@ -731,8 +731,10 @@ MapClass.prototype.drawConvexHullObjects = function (objects) {
         throw new GetsWebClientException('Map Error', 'drawConvexHullObjects, objects undefined or null.');
     }
     
+    var group = L.layerGroup();
+    
     for (var i = 0, len = objects.length; i < len; i++) {
-        var cHull = objects[i].getHull();
+        var cHull = objects[i].hull;
         var coords = [];
         for (var j = 0, lenHull = cHull.length; j < lenHull; j++) {
             coords.push(new L.LatLng(cHull[j].x, cHull[j].y));
@@ -745,51 +747,157 @@ MapClass.prototype.drawConvexHullObjects = function (objects) {
                     opacity: 0.7,
                     lineJoin: 'round',
                     lineCap: 'round'
-        }).addTo(this.map);
-    }
+        }).addTo(group);       
+    }  
+    this.layersControl.addOverlay(group, 'Obstacles');
+    this.map.addLayer(group);
 };
 
-MapClass.prototype.drawBoundingBox = function (track) {
-    if (!track.bounds) {
-        throw new GetsWebClientException('Map Error', 'drawBoundingBox, track.bounds undefined or null.');
+MapClass.prototype.drawBoundingBox = function (obsts) {
+    if (!obsts) {
+        throw new GetsWebClientException('Map Error', 'drawBoundingBox, obsts undefined or null.');
     }
-        
-    var north = track.bounds.northeast.lat;
-    var east = track.bounds.northeast.lng;
-    var south = track.bounds.southwest.lat;
-    var west = track.bounds.southwest.lng;
+    var group = L.layerGroup();
+
+    for (var i = 0, len = obsts.length; i < len; i++) {
+
+        var north = obsts[i].bbox.northeast.lat;
+        var east = obsts[i].bbox.northeast.lng;
+        var south = obsts[i].bbox.southwest.lat;
+        var west = obsts[i].bbox.southwest.lng;
+
+
+        L.polygon(
+                [
+                    new L.LatLng(north, west),
+                    new L.LatLng(north, east),
+                    new L.LatLng(south, east),
+                    new L.LatLng(south, west)
+                ],
+                {
+                    color: '#FF0000',
+                    weight: 2,
+                    opacity: 0.7
+                }
+        ).addTo(group);
+    }
     
-    
-    L.polygon(
-            [
-                new L.LatLng(north, west),
-                new L.LatLng(north, east),
-                new L.LatLng(south, east),
-                new L.LatLng(south, west)
-            ],
-            {
-                color: '#0000FF',
-                weight: 1,
-                opacity: 0.4
-            }
-    ).bindPopup('Bounding box for track: <b>' + track.hname + '</b>').addTo(this.map);
+    this.layersControl.addOverlay(group, 'Obstacles');
+    //this.map.addLayer(group);
 };
 
 MapClass.prototype.drawEncodedPolyline = function (polyline, label) {
-    polyline = L.Polyline.fromEncoded(polyline, {
-        color: '#00FF00',
+    var group = L.layerGroup();
+    
+    var _polyline = L.Polyline.fromEncoded(polyline, {
+        color: '#0000FF',
         weight: 7,
         opacity: 0.9,
         lineJoin: 'round',
         lineCap: 'round'
     });
-    if (label) polyline.bindPopup(label);
+    if (label) _polyline.bindPopup(label);
+    _polyline.addTo(group);
     
-    polyline.addTo(this.map);
+    this.layersControl.addOverlay(group, label);
+    //this.map.addLayer(group);
 };
 
 MapClass.prototype.addMarker = function (latLng, label) {
     L.marker(latLng, {
         title: label
     }).bindPopup(label).addTo(this.map);
+};
+
+MapClass.prototype.addSquareGrid = function (bbox, width) {
+    var R = 6378137;//Earth radius in meters
+    
+    var north = bbox.northeast.lat,
+        east = bbox.northeast.lng,
+        south = bbox.southwest.lat,
+        west = bbox.southwest.lng;
+    
+    var topleft = new L.LatLng(north, west),
+        topright = new L.LatLng(north, east),
+        bottomright = new L.LatLng(south, east),
+        bottomleft = new L.LatLng(south, west);
+  
+    var group = L.layerGroup();
+    
+    // draw vertical lines of the grid
+    var distanceHorizontal = topleft.distanceTo(topright);
+    Logger.debug('distanceHorizontal: ' + distanceHorizontal);
+    for (var i = 0; i <= distanceHorizontal; i += width) {      
+        var newLng = west + (180 / Math.PI) * (i / (R * Math.cos(Math.PI * north / 180.0)));//(i*1000 / R / Math.cos(west));//(180/pi)*(dx/6378137)/cos(lat0)
+        L.polyline(
+            [
+                new L.LatLng(north, newLng),
+                new L.LatLng(south, newLng)
+            ], 
+            {
+                color: '#000000', 
+                weight: 1,
+                opacity: 0.8
+            }
+        ).addTo(group);
+    }
+    
+    // draw horizontal lines of the grid
+    var distanceVertical = topleft.distanceTo(bottomleft);
+    Logger.debug('distanceVertical: ' + distanceVertical);
+    for (var i = 0; i <= distanceVertical; i += width) {      
+        var newLat = south + (180 / Math.PI) * (i / R);
+        L.polyline(
+            [
+                new L.LatLng(newLat, west),
+                new L.LatLng(newLat, east)
+            ], 
+            {
+                color: '#000000', 
+                weight: 1,
+                opacity: 0.8
+            }
+        ).addTo(group);
+    }
+    
+    this.layersControl.addOverlay(group, 'Grid');
+    this.map.addLayer(group);
+}; 
+
+MapClass.prototype.drawValidPoints = function (grid) {
+    var group = L.layerGroup();
+    
+    for (var i = 0, len = grid.length; i < len; i++) {
+        for (var j = 0, len2 = grid[i].length; j < len2; j++) {
+            L.circle(grid[i][j].coords, 2, {
+                color: grid[i][j].valid ? (grid[i][j].waypoint ? '#0000ff' : '#00ff00') : '#ff0000',
+                weight: 2,
+                opacity: 1
+            }).addTo(group);
+        }
+    }
+    
+    this.layersControl.addOverlay(group, 'Grid');
+    //this.map.addLayer(group);
+};
+
+MapClass.prototype.drawPath = function (path) {
+    var group = L.layerGroup();
+    
+    for (var i = 0, len = path.length; i < len - 1; i++) {
+        L.polyline(
+            [
+                path[i].coords,
+                path[i + 1].coords
+            ], 
+            {
+                color: '#0000ff', 
+                weight: 2,
+                opacity: 0.9
+            }
+        ).addTo(group);
+    }
+    
+    this.layersControl.addOverlay(group, 'Shortest path');
+    this.map.addLayer(group);
 };

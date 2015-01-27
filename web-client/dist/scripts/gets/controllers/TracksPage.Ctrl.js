@@ -251,7 +251,7 @@ TracksPage.prototype.initPage = function() {
             if (!track.bounds) {
                 track.bounds = self._routes.getBoundBoxForPoints(track.points);
             }
-            
+                        
             if (!track.onMap) {
                 track.onMap = {};
             }
@@ -270,7 +270,19 @@ TracksPage.prototype.initPage = function() {
                 self._trackInfo.addRouteOnMap(track, MapClass.ROUTE_TYPE_RAW);
             }
             
-            self._trackInfo.toggleOverlay();
+            setTimeout(function () {
+                // Experiments
+                //self._mapCtrl.addSquareGrid({northeast: {lat: 64.11, lng: 34.11}, southwest: {lat: 64.11, lng: 35.11}}, 10000);
+                //self._mapCtrl.addSquareGrid(track.bounds, 10);
+                self._routes.ESP_gridbased(track, function (obsts) {
+                    self._mapCtrl.drawConvexHullObjects(obsts);
+                    //self._mapCtrl.drawBoundingBox(obsts);
+                    self._mapCtrl.drawValidPoints(track.esp.grid);
+                    self._mapCtrl.drawPath(track.esp.path);
+                    self._mapCtrl.drawEncodedPolyline(track.esp.curve, 'Shortest path - Curve');
+                });
+                self._trackInfo.toggleOverlay();
+            }, 0);           
         }
     });
     

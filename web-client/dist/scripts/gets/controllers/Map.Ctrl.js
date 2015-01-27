@@ -113,8 +113,8 @@ MapController.prototype.drawConvexHullObjects = function(objects) {
     this._map.drawConvexHullObjects(objects);
 };
 
-MapController.prototype.drawBoundingBox = function(track) {
-    this._map.drawBoundingBox(track);
+MapController.prototype.drawBoundingBox = function(obsts) {
+    this._map.drawBoundingBox(obsts);
 };
 
 MapController.prototype.drawEncodedPolyline = function(polyline, label) {
@@ -125,4 +125,14 @@ MapController.prototype.addMarker = function(latLng, label) {
     this._map.addMarker(latLng, label);
 };
 
+MapController.prototype.addSquareGrid = function(bbox, width) {
+    this._map.addSquareGrid(bbox, width);
+};
 
+MapController.prototype.drawValidPoints = function(grid) {
+    this._map.drawValidPoints(grid);
+};
+
+MapController.prototype.drawPath = function(path) {
+    this._map.drawPath(path); 
+};

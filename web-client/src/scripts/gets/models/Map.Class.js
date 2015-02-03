@@ -791,8 +791,8 @@ MapClass.prototype.drawEncodedPolyline = function (polyline, label) {
     
     var _polyline = L.Polyline.fromEncoded(polyline, {
         color: '#0000FF',
-        weight: 7,
-        opacity: 0.9,
+        weight: 3,
+        opacity: 0.8,
         lineJoin: 'round',
         lineCap: 'round'
     });
@@ -900,4 +900,53 @@ MapClass.prototype.drawPath = function (path) {
     
     this.layersControl.addOverlay(group, 'Shortest path');
     this.map.addLayer(group);
+};
+
+MapClass.prototype.drawTriangulation = function (tri) {
+    var group = L.layerGroup();
+
+    for (var i = 0, len = tri.length; i < len; i++) {
+
+        L.polygon(
+                [
+                    new L.LatLng(tri[i].points_[0].x, tri[i].points_[0].y),
+                    new L.LatLng(tri[i].points_[1].x, tri[i].points_[1].y),
+                    new L.LatLng(tri[i].points_[2].x, tri[i].points_[2].y)
+                ],
+                {
+                    color: '#006600',
+                    weight: 2,
+                    opacity: 0.7,
+                    fillOpacity: 0.5,
+                    fillColor: '#00CC66'
+                }
+        ).addTo(group);
+    }
+    
+    this.layersControl.addOverlay(group, 'Triangulation');
+    //this.map.addLayer(group);
+};
+
+MapClass.prototype.drawObstacles = function (objects) {
+    var group = L.layerGroup();
+
+    for (var i = 0, len = objects.length; i < len; i++) {
+        var points = objects[i].points;
+        var coords = [];
+        for (var j = 0, lenH = points.length; j < lenH; j++) {
+            coords.push(new L.LatLng(points[j].x, points[j].y));
+        }
+
+        L.polygon(
+                coords,
+                {
+                    color: '#FF0000',
+                    weight: 2,
+                    opacity: 1                   
+                }
+        ).addTo(group);
+    }
+    
+    this.layersControl.addOverlay(group, 'Obstacles');
+    //this.map.addLayer(group);
 };

@@ -136,3 +136,11 @@ MapController.prototype.drawValidPoints = function(grid) {
 MapController.prototype.drawPath = function(path) {
     this._map.drawPath(path); 
 };
+
+MapController.prototype.drawTriangulation = function (tri) {
+    this._map.drawTriangulation(tri);
+};
+
+MapController.prototype.drawObstacles = function (objects) {
+    this._map.drawObstacles(objects);
+};

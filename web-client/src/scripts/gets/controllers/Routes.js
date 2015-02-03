@@ -148,7 +148,7 @@ Routes.prototype.requestOSMObstacles = function (track, callback) {
         };
     };
     
-    var urlRequest = 'http://overpass-api.de/api/interpreter?data=[out:xml][timeout:1000];(way["building"="yes"](' + track.bounds.southwest.lat + ',' + track.bounds.southwest.lng + ',' + track.bounds.northeast.lat + ',' + track.bounds.northeast.lng + '););(._;>;);out skel qt;';
+    var urlRequest = 'http://overpass-api.de/api/interpreter?data=[out:xml][timeout:1000];(way["building"="yes"](' + track.bounds.southwest.lat + ',' + track.bounds.southwest.lng + ',' + track.bounds.northeast.lat + ',' + track.bounds.northeast.lng + ');way["natural"="water"](' + track.bounds.southwest.lat + ',' + track.bounds.southwest.lng + ',' + track.bounds.northeast.lat + ',' + track.bounds.northeast.lng + '););(._;>;);out skel qt;';
     urlRequest = urlRequest.split(' ').join('%20').split('"').join('%22');//replace(' ', '%20').replace('"','%22');
     Logger.debug(urlRequest);
   
@@ -157,7 +157,7 @@ Routes.prototype.requestOSMObstacles = function (track, callback) {
         type: 'GET',
         async: true,
         dataType: 'xml'
-        //data: JSON.stringify({url: urlRequest})
+        //data: JSON.stringify({url: urlRequest})8
     });
     
     getObstaclesRequest.fail(function(jqXHR, textStatus) {
@@ -170,12 +170,17 @@ Routes.prototype.requestOSMObstacles = function (track, callback) {
         var obsts = [];
         $(data).find('way').each(function (key, node) {
             var convexHull = new ConvexHullGrahamScan();
+            var ob = [];
             $(node).find('nd').each(function (key, ref) {
                 var point = $(data).find("node[id='" + $(ref).attr('ref')+ "']");
-                convexHull.addPoint($(point).attr('lat'), $(point).attr('lon'));
+                
+                ob.push({x: $(point).attr('lat'), y: $(point).attr('lon')});
             });
+            ob.splice(ob.length - 1, 1);
+            for (var i = 0, len = ob.length; i < len; i++) convexHull.addPoint(ob[i].x, ob[i].y);
             var obst = {
-                hull: convexHull.getHull()
+                hull: convexHull.getHull(),
+                points: ob
             };
             obsts.push(obst);
         });
@@ -383,6 +388,7 @@ Routes.prototype.ESP_gridbased = function (track, callback) {
     this.requestOSMObstacles(track, function (obsts) {
         that.markInvalidPointsOnGrid(track, obsts);
         that.AStarGrid(track);
+        track.esp.curve_ = L.PolylineUtil.encode(that.bezierCurves(that.partitionToCShape(track.esp.path), obsts));
         that.pointToPointCurve(track, obsts);
         callback(obsts);       
     });
@@ -528,14 +534,14 @@ Routes.prototype.AStarGrid = function (track) {
         var startPoint = A_StarGraph.grid[graph.waypoints[startIndex].x][graph.waypoints[startIndex].y],
             endPoint = A_StarGraph.grid[graph.waypoints[endIndex].x][graph.waypoints[endIndex].y];
     
-        var result = astar.search(A_StarGraph, startPoint, endPoint,{ heuristic: astar.heuristics.diagonal }); 
+        //var result = astar.search(A_StarGraph, startPoint, endPoint,{ heuristic: astar.heuristics.diagonal }); 
+        var result = theta_star.search(A_StarGraph, startPoint, endPoint); 
         for (var j = 0, res_len = result.length; j < res_len; j++) {
             graph.result.push(grid[result[j].x][result[j].y]);
-        }
+        }             
     }
-    
-    track.esp.path = graph.result;
-    Logger.debug(track.esp.path);
+    track.esp.path = graph.result;   
+    //Logger.debug(track.esp.path);
 };
 
 Routes.prototype.pointToPointCurve = function (track, obstacles) {
@@ -543,28 +549,40 @@ Routes.prototype.pointToPointCurve = function (track, obstacles) {
         tempPoints = [],
         curve = [];
 
-    var waypointsCounter = 0;    
-    tempPoints.push(path[0]);    
+    var waypointsCounter = 0;
+    tempPoints.push(path[0]);
     for (var i = 1, len = path.length; i < len; i++) {
         //if (waypointsCounter > 0) {
-            tempPoints.push(path[i]);
+        tempPoints.push(path[i]);
         //}
-        if (path[i].waypoint) {             
+        if (path[i].waypoint) {
+
             //if (waypointsCounter > 0) {
-                //var CShapePoints = this.partitionToCShape(tempPoints);
-                //Logger.debug(CShapePoints);
-                curve = curve.concat(this.bezierCurves(tempPoints));
-            //}           
+            var CShapePoints = this.partitionToCShape(tempPoints);
+            //Logger.debug(CShapePoints);
+            var bezierPoints = this.bezierCurves(CShapePoints, obstacles);
+            //Logger.debug(bezierPoints);
+            curve = curve.concat(bezierPoints);
+            //break;
+            //}
+            //Logger.debug(tempPoints);
             tempPoints = [];
-            tempPoints.push(path[i]); 
+            tempPoints.push(path[i]);
+            //waypointsCounter++;
         }
-    }
+    }   
     track.esp.curve = L.PolylineUtil.encode(curve);
+    Logger.debug(track.esp.curve);
 };
 
 Routes.prototype.partitionToCShape = function (points) {
     // only 4 or more points can create S-shaped curve, which is the type of curve we want to get rid
-    if (!points || points.length < 4) return;
+    if (points.length < 4) {
+        for (var i = 0; i < points.length; i++) {
+            points[i].isInflection = false;
+        }
+        return points;
+    }
     
     //sign( (Bx-Ax)*(Y-Ay) - (By-Ay)*(X-Ax) )//.coords
     var calculateSign = function (A, B, C) {
@@ -606,8 +624,19 @@ Routes.prototype.partitionToCShape = function (points) {
     return cShapePolyline;
 };
 
-Routes.prototype.bezierCurves = function (points) { 
-    var u = 0.8;
+Routes.prototype.bezierCurves = function (points, obstacles) { 
+    // only 4 or more points can create S-shaped curve, which is the type of curve we want to get rid
+    if (points.length < 4) {
+        var coordsArray = [];
+        for (var i = 0; i < points.length; i++) {
+            coordsArray.push(points[i].coords);
+        }
+        return coordsArray;
+    }
+    
+    var U_DEFAULT = 0.8;
+    
+    var u = U_DEFAULT;
     var accuracy = 0.1;
           
     var curve = [];
@@ -633,31 +662,84 @@ Routes.prototype.bezierCurves = function (points) {
         
         return new L.LatLng(lat, lng);
     };
+    
+    var that = this;
+    var checkCollision = function (p0, p1, p2, p3) {
+        //Logger.debug('in checkCollision');
+        var controlPointsHull = new ConvexHullGrahamScan();
+        controlPointsHull.addPoint(p0);
+        controlPointsHull.addPoint(p1);
+        controlPointsHull.addPoint(p2);
+        controlPointsHull.addPoint(p3);
+
+        controlPointsHull = controlPointsHull.getHull();
+        //Logger.debug(controlPointsHull);
+        for (var k = 0, len = obstacles.length; k < len; k++) {
+            for (var p = 0, len1 = controlPointsHull.length; p < len1; p++) {
+                if (that.pointInsidePolygon(controlPointsHull[p], obstacles[k].hull)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
        
     var b0 = points[0].coords,
         b1 = pointsAdd(points[0].coords, pointsMult(pointsSubs(points[1].coords, points[1].coords), u / 2)),
         b2 = pointsAdd(points[0].coords, pointsSubs(pointsSubs(points[1].coords, points[0].coords), pointsMult(pointsSubs(points[1].coords, points[0].coords), u / 2))),
         b3 = pointsAdd(points[0].coords, pointsAdd(pointsSubs(points[1].coords, points[0].coords), pointsMult(pointsSubs(pointsSubs(points[2].coords, points[1].coords), pointsSubs(points[1].coords, points[0].coords)), u / 4)));
+    while (checkCollision(b0, b1, b2, b3)) {
+        Logger.debug('u = ' + u);
+        if (u < 0.1) break;
+        u -= 0.09;        
+        b0 = points[0].coords,
+        b1 = pointsAdd(points[0].coords, pointsMult(pointsSubs(points[1].coords, points[1].coords), u / 2)),
+        b2 = pointsAdd(points[0].coords, pointsSubs(pointsSubs(points[1].coords, points[0].coords), pointsMult(pointsSubs(points[1].coords, points[0].coords), u / 2))),
+        b3 = pointsAdd(points[0].coords, pointsAdd(pointsSubs(points[1].coords, points[0].coords), pointsMult(pointsSubs(pointsSubs(points[2].coords, points[1].coords), pointsSubs(points[1].coords, points[0].coords)), u / 4)));
+    }   
+    
     for (var j = 0; j <= 1; j += accuracy) {
         curve.push(bezier(j, b0, b1, b2, b3));
     }
     
-    for (var i = 1, len = points.length; i < len - 2; i++) {            
+    u = U_DEFAULT;
+    for (var i = 1, len = points.length; i < len - 2; i++) {
+        if (points[i].isInflection) u = U_DEFAULT;
         b0 = pointsAdd(points[i].coords, pointsMult(pointsSubs(pointsSubs(points[i + 1].coords, points[i].coords), pointsSubs(points[i].coords, points[i - 1].coords)), u / 4));
         b1 = pointsAdd(points[i].coords, pointsMult(pointsSubs(points[i + 1].coords, points[i].coords), u / 2));
         b2 = pointsAdd(points[i].coords, pointsSubs(pointsSubs(points[i + 1].coords, points[i].coords), pointsMult(pointsSubs(points[i + 1].coords, points[i].coords), u / 2)));
         b3 = pointsAdd(points[i].coords, pointsAdd(pointsSubs(points[i + 1].coords, points[i].coords), pointsMult(pointsSubs(pointsSubs(points[i + 2].coords, points[i + 1].coords), pointsSubs(points[i + 1].coords, points[i].coords)), u / 4)));
+        while (checkCollision(b0, b1, b2, b3)) {
+            Logger.debug('u = ' + u);
+            if (u < 0.2) break;
+            u -= 0.09;
+            b0 = pointsAdd(points[i].coords, pointsMult(pointsSubs(pointsSubs(points[i + 1].coords, points[i].coords), pointsSubs(points[i].coords, points[i - 1].coords)), u / 4));
+            b1 = pointsAdd(points[i].coords, pointsMult(pointsSubs(points[i + 1].coords, points[i].coords), u / 2));
+            b2 = pointsAdd(points[i].coords, pointsSubs(pointsSubs(points[i + 1].coords, points[i].coords), pointsMult(pointsSubs(points[i + 1].coords, points[i].coords), u / 2)));
+            b3 = pointsAdd(points[i].coords, pointsAdd(pointsSubs(points[i + 1].coords, points[i].coords), pointsMult(pointsSubs(pointsSubs(points[i + 2].coords, points[i + 1].coords), pointsSubs(points[i + 1].coords, points[i].coords)), u / 4)));
+        }
         
         for (var j = 0; j <= 1; j += accuracy) {
             curve.push(bezier(j, b0, b1, b2, b3));
         }
     }
     
+    u = U_DEFAULT;
     var len = points.length;
     b0 = pointsAdd(points[len - 2].coords, pointsMult(pointsSubs(pointsSubs(points[len - 1].coords, points[len - 2].coords), pointsSubs(points[len - 2].coords, points[len - 3].coords)), u / 4));
     b1 = pointsAdd(points[len - 2].coords, pointsMult(pointsSubs(points[len - 1].coords, points[len - 2].coords), u / 2));
     b2 = pointsAdd(points[len - 2].coords, pointsSubs(pointsSubs(points[len - 1].coords, points[len - 2].coords), pointsMult(pointsSubs(points[len - 1].coords, points[len - 2].coords), u / 2)));
     b3 = points[len - 1].coords;
+    while (checkCollision(b0, b1, b2, b3)) {
+        Logger.debug('u = ' + u);
+        if (u < 0.1) break;
+        u -= 0.09;
+        b0 = pointsAdd(points[len - 2].coords, pointsMult(pointsSubs(pointsSubs(points[len - 1].coords, points[len - 2].coords), pointsSubs(points[len - 2].coords, points[len - 3].coords)), u / 4));
+        b1 = pointsAdd(points[len - 2].coords, pointsMult(pointsSubs(points[len - 1].coords, points[len - 2].coords), u / 2));
+        b2 = pointsAdd(points[len - 2].coords, pointsSubs(pointsSubs(points[len - 1].coords, points[len - 2].coords), pointsMult(pointsSubs(points[len - 1].coords, points[len - 2].coords), u / 2)));
+        b3 = points[len - 1].coords;
+    }
+    
     for (var j = 0; j <= 1; j += accuracy) {
         curve.push(bezier(j, b0, b1, b2, b3));
     }
@@ -703,10 +785,16 @@ Routes.prototype.pointInsidePolygon = function (point, polyVerts) {
         return v1.x * v2.y - v1.y * v2.x;
     };
 
-    var _point = {
-        x: point.lat,
-        y: point.lng
-    };
+    var _point;
+    if (!point.x || !point.y) {
+        _point = {
+            x: point.lat,
+            y: point.lng
+        };
+    } else {
+        _point = point;
+    }
+    
     
     var i, len, v1, v2, edge, x;
     // First translate the polygon so that `point` is the origin. Then, for each
@@ -728,5 +816,63 @@ Routes.prototype.pointInsidePolygon = function (point, polyVerts) {
     return true;
 };
 
+Routes.prototype.ESP_trianglebased = function (track, callback) {
+    var that = this;
+    this.requestOSMObstacles(track, function (obsts) {
+        that.generateTriangulation(track, obsts);
+        callback(obsts);
+    });
+    
+};
 
+Routes.prototype.generateTriangulation = function (track, obstacles) {
+    var bbox = track.bounds;
+       
+    var north = bbox.northeast.lat,
+        east = bbox.northeast.lng,
+        south = bbox.southwest.lat,
+        west = bbox.southwest.lng;
+
+    var R = 6378137, //Earth radius in meters
+        margin = 50; // bbox margin in meters
+    
+    Logger.debug('north = ' + north + '; east = ' + east + '; south = ' + south + '; west = ' + west);
+
+    north += (180 / Math.PI) * (margin / R);  
+    east += (180 / Math.PI) * (margin / (R * Math.cos(Math.PI * north / 180.0)));
+    south -= (180 / Math.PI) * (margin / R);  
+    west -= (180 / Math.PI) * (margin / (R * Math.cos(Math.PI * south / 180.0)));
+    
+    Logger.debug('north = ' + north + '; east = ' + east + '; south = ' + south + '; west = ' + west);
+    
+    var contour = [
+        new poly2tri.Point(north, west),
+        new poly2tri.Point(north, east),
+        new poly2tri.Point(south, east),
+        new poly2tri.Point(south, west)
+    ];
+    var swctx = new poly2tri.SweepContext(contour);
+    
+    var holes = [];
+    Logger.debug(obstacles);
+    for (var i = 0, len = obstacles.length; i < len; i++) {
+        if (i > 9 && i < 26) continue;
+        var hole = [];
+        //var hull = obstacles[i].hull;
+        var points = obstacles[i].points;
+        for (var j = 0, len2 = points.length; j < len2; j++) {
+            hole.push(new poly2tri.Point(points[j].x, points[j].y));
+        }
+        holes.push(hole);
+    }
+    swctx.addHoles(holes);
+    
+    swctx.triangulate();
+    var triangles = swctx.getTriangles();
+    Logger.debug(triangles);
+    
+    track.esp_tri = {
+        tri: triangles
+    };
+};
 

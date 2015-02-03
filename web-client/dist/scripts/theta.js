@@ -1,10 +1,3 @@
-// javascript-astar 0.4.0
-// http://github.com/bgrins/javascript-astar
-// Freely distributable under the MIT License.
-// Implements the astar search algorithm in javascript using a Binary Heap.
-// Includes Binary Heap (with modifications) from Marijn Haverbeke.
-// http://eloquentjavascript.net/appendix2.html
-
 (function (definition) {
     /* global module, define */
     if (typeof module === 'object' && typeof module.exports === 'object') {
@@ -13,118 +6,104 @@
         define([], definition);
     } else {
         var exports = definition();
-        window.astar = exports.astar;
-        window.Graph = exports.Graph;
+        window.theta_star = exports.theta_star;
+        window.GraphTheta = exports.GraphTheta;
     }
 })(function () {
-
+    
     function pathTo(node) {
         var curr = node,
             path = [];
-        while (curr.parent) {
+        while (curr.parent) {           
             path.push(curr);
+            if (curr === curr.parent) break;
             curr = curr.parent;
         }
         return path.reverse();
     }
-
+    
     function getHeap() {
         return new BinaryHeap(function (node) {
             return node.f;
         });
     }
-
-    var astar = {
-        /**
-         * Perform an A* Search on a graph given a start and end node.
-         * @param {Graph} graph
-         * @param {GridNode} start
-         * @param {GridNode} end
-         * @param {Object} [options]
-         * @param {bool} [options.closest] Specifies whether to return the
-         path to the closest node if the target is unreachable.
-         * @param {Function} [options.heuristic] Heuristic function (see
-         *          astar.heuristics).
-         */
-        search: function (graph, start, end, options) {
-            graph.cleanDirty();
-            options = options || {};
-            var heuristic = options.heuristic || astar.heuristics.manhattan,
-                    closest = options.closest || false;
-
-            var openHeap = getHeap(),
-                closestNode = start; // set the start node to be the closest if required
-
+           
+    var theta_star = {
+        search: function (graph, start, end) {
+            var heuristic = theta_star.heuristics.euclidian,
+                openHeap = [],
+                bigValue = 999999;
+        
+            var updateVertex = function (curN, neighN) {
+                var gOld = neighN.g;
+                
+                // Compute cost
+                if (theta_star.lineOfSightCheck(graph, curN.parent, neighN)) {
+                    var cost_path2 = curN.parent.g + heuristic(curN.parent, neighN);
+                    if (cost_path2 < neighN.g) {
+                        neighN.parent = curN.parent;
+                        neighN.g = cost_path2;
+                    }
+                } else {
+                    var cost_path1 = curN.g + heuristic(curN, neighN);
+                    if (cost_path1 < neighN.g) {
+                        neighN.parent = curN;
+                        neighN.g = cost_path1;
+                    }
+                }
+                
+                if (neighN.g < gOld) {
+                    var index = openHeap.indexOf(neighN);
+                    if (index > -1) {
+                        openHeap.splice(index, 1);
+                    }
+                    neighN.f = neighN.g + heuristic(neighN, end);
+                    openHeap.push(neighN);
+                }              
+            };
+                                
+            start.parent = start;
+            start.g = 0;
             start.h = heuristic(start, end);
-
+            start.f = start.g + start.h;
+            
             openHeap.push(start);
-
-            while (openHeap.size() > 0) {               
-
-                // Grab the lowest f(x) to process next.  Heap keeps this sorted for us.
-                var currentNode = openHeap.pop();
-
-                // End case -- result has been found, return the traced path.
+            
+            while (openHeap.length > 0) {
+                // Grab the lowest f(x) to process next
+                var lowInd = 0;
+                for (var i = 0; i < openHeap.length; i++) {
+                    if (openHeap[i].f < openHeap[lowInd].f) {
+                        lowInd = i;
+                    }
+                }
+                var currentNode = openHeap[lowInd];
+                openHeap.splice(lowInd, 1);
+                
                 if (currentNode === end) {
                     return pathTo(currentNode);
                 }
-
-                // Normal case -- move currentNode from open to closed, process each of its neighbors.
+                
                 currentNode.closed = true;
-
-                // Find all neighbors for the current node.
+                
                 var neighbors = graph.neighbors(currentNode);
-
                 for (var i = 0, il = neighbors.length; i < il; ++i) {
                     var neighbor = neighbors[i];
-
                     if (neighbor.closed || neighbor.isWall()) {
-                        // Not a valid node to process, skip to next neighbor.
                         continue;
                     }
-
-                    // The g score is the shortest distance from start to current node.
-                    // We need to check if the path we have arrived at this neighbor is the shortest one we have seen yet.
-                    var gScore = currentNode.g + neighbor.getCost(currentNode),
-                        beenVisited = neighbor.visited;
-
-                        if (!beenVisited || gScore < neighbor.g) {
-
-                            // Found an optimal (so far) path to this node.  Take score for node to see how good it is.
-                            neighbor.visited = true;
-                            neighbor.parent = currentNode;
-                            neighbor.h = neighbor.h || heuristic(neighbor, end);
-                            neighbor.g = gScore;
-                            neighbor.f = neighbor.g + neighbor.h;
-                            graph.markDirty(neighbor);
-                            if (closest) {
-                                // If the neighbour is closer than the current closestNode or if it's equally close but has
-                                // a cheaper path than the current closest node then it becomes the closest node
-                                if (neighbor.h < closestNode.h || (neighbor.h === closestNode.h && neighbor.g < closestNode.g)) {
-                                    closestNode = neighbor;
-                                }
-                            }
-
-                            if (!beenVisited) {
-                                // Pushing to heap will put it in proper place based on the 'f' value.
-                                openHeap.push(neighbor);
-                            }
-                            else {
-                                // Already seen the node, but since it has been rescored we need to reorder it in the heap
-                                openHeap.rescoreElement(neighbor);
-                            }
-                        }
-                                }
-                            }
-
-            if (closest) {
-                return pathTo(closestNode);
+                    if (!(openHeap.indexOf(neighbor) > -1)) {
+                        neighbor.g = bigValue;
+                        neighbor.parent = null;
+                    }
+                    updateVertex(currentNode, neighbor);                   
+                }
             }
-
-            // No result was found - empty array signifies failure to find path.
+            
+            Logger.debug('No path found');
             return [];
+
         },
-        // See list of heuristics: http://theory.stanford.edu/~amitp/GameProgramming/Heuristics.html
         heuristics: {
             manhattan: function (pos0, pos1) {
                 var d1 = Math.abs(pos1.x - pos0.x);
@@ -137,7 +116,80 @@
                 var d1 = Math.abs(pos1.x - pos0.x);
                 var d2 = Math.abs(pos1.y - pos0.y);
                 return (D * (d1 + d2)) + ((D2 - (2 * D)) * Math.min(d1, d2));
+            },
+            euclidian: function (pos0, pos1) {
+                var D = 1;
+                var dx = Math.abs(pos0.x - pos1.x);
+                var dy = Math.abs(pos0.y - pos1.y);
+                return D * Math.sqrt(dx * dx + dy * dy);
             }
+        },
+        lineOfSightCheck: function (graph, currentNode, parent) {
+            //Logger.debug('---------lineOfSightCheck-start--------------------');
+            //Logger.debug(currentNode);
+            //Logger.debug(parent);
+            var x_0 = currentNode.x,
+                y_0 = currentNode.y,
+                x_1 = parent.x,
+                y_1 = parent.y;
+        
+            var d_x = x_1 - x_0,
+                d_y = y_1 - y_0,
+                f = 0,
+                s_x, s_y;
+                    
+            if (d_y < 0) {
+                d_y = -d_y;
+                s_y = -1;
+            } else {
+                s_y = 1;
+            } 
+            
+            if (d_x < 0) {
+                d_x = -d_x;
+                s_x = -1;
+            } else {
+                s_x = 1;
+            }
+            
+            if (d_x >= d_y) {
+                while(x_0 !== x_1) {
+                    f += d_y;
+                    if (f >= d_x) {
+                        if (graph.isPositionBlocked(x_0 + (s_x - 1) / 2, y_0 + (s_y - 1) / 2)) {
+                            return false;
+                        }
+                        y_0 += s_y;
+                        f -= d_x;
+                    }
+                    if ((f !== 0) && graph.isPositionBlocked(x_0 + (s_x - 1) / 2, y_0 + (s_y - 1) / 2)) {
+                        return false;
+                    }
+                    if ((d_y === 0) && graph.isPositionBlocked(x_0 + (s_x - 1) / 2, y_0) && graph.isPositionBlocked(x_0 + (s_x - 1) / 2, y_0 - 1)) {
+                        return false;
+                    }
+                    x_0 += s_x;
+                }
+            } else {
+                while(y_0 !== y_1) {
+                    f += d_x;
+                    if (f >= d_y) {
+                        if (graph.isPositionBlocked(x_0 + (s_x - 1) / 2, y_0 + (s_y - 1) / 2)) {
+                            return false;
+                        }
+                        x_0 += s_x;
+                        f -= d_y;
+                    }
+                    if ((f !== 0) && graph.isPositionBlocked(x_0 + (s_x - 1) / 2, y_0 + (s_y - 1) / 2)) {
+                        return false;
+                    }
+                    if ((d_x === 0) && graph.isPositionBlocked(x_0, y_0 + (s_y - 1) / 2) && graph.isPositionBlocked(x_0 - 1, y_0 + (s_y - 1) / 2)) {
+                        return false;
+                    }
+                    y_0 += s_y;
+                }
+            }
+            return true;               
         },
         cleanNode: function (node) {
             node.f = 0;
@@ -146,19 +198,14 @@
             node.visited = false;
             node.closed = false;
             node.parent = null;
-            } 
+        }
     };
-
+         
     /**
      * A graph memory structure
      * @param {Array} gridIn 2D array of input weights
-     * @param {Object} [options]
-     * @param {bool} [options.diagonal] Specifies whether diagonal moves are allowed
      */
-    function Graph(gridIn, options) {
-        options = options || {};
-        this.nodes = [];
-        this.diagonal = !!options.diagonal;
+    function GraphTheta(gridIn) {
         this.grid = [];
         for (var x = 0; x < gridIn.length; x++) {
             this.grid[x] = [];
@@ -166,35 +213,24 @@
             for (var y = 0, row = gridIn[x]; y < row.length; y++) {
                 var node = new GridNode(x, y, row[y]);
                 this.grid[x][y] = node;
-                this.nodes.push(node);
             }
         }
         this.init();
     }
-
-    Graph.prototype.init = function () {
-        this.dirtyNodes = [];
-        for (var i = 0; i < this.nodes.length; i++) {
-            astar.cleanNode(this.nodes[i]);
+    
+    GraphTheta.prototype.init = function () {
+        for (var i = 0; i < this.grid.length; i++) {
+            for (var j = 0; j < this.grid[i].length; j++) {
+                theta_star.cleanNode(this.grid[i][j]);
+            }
         }
-    };
-
-    Graph.prototype.cleanDirty = function () {
-        for (var i = 0; i < this.dirtyNodes.length; i++) {
-            astar.cleanNode(this.dirtyNodes[i]);
-        }
-        this.dirtyNodes = [];
-    };
-
-    Graph.prototype.markDirty = function (node) {
-        this.dirtyNodes.push(node);
     };
     
-    Graph.prototype.neighbors = function (node) {
+    GraphTheta.prototype.neighbors = function (node) {
         var ret = [],
-                x = node.x,
-                y = node.y,
-                grid = this.grid;
+            x = node.x,
+            y = node.y,
+            grid = this.grid;
 
         // West
         if (grid[x - 1] && grid[x - 1][y]) {
@@ -216,54 +252,37 @@
             ret.push(grid[x][y + 1]);
         }
 
-        if (this.diagonal) {
-            // Southwest
-            if (grid[x - 1] && grid[x - 1][y - 1]) {
-                ret.push(grid[x - 1][y - 1]);
-            }
+        // Southwest
+        if (grid[x - 1] && grid[x - 1][y - 1]) {
+            ret.push(grid[x - 1][y - 1]);
+        }
 
-            // Southeast
-            if (grid[x + 1] && grid[x + 1][y - 1]) {
-                ret.push(grid[x + 1][y - 1]);
-            }
+        // Southeast
+        if (grid[x + 1] && grid[x + 1][y - 1]) {
+            ret.push(grid[x + 1][y - 1]);
+        }
 
-            // Northwest
-            if (grid[x - 1] && grid[x - 1][y + 1]) {
-                ret.push(grid[x - 1][y + 1]);
-            }
+        // Northwest
+        if (grid[x - 1] && grid[x - 1][y + 1]) {
+            ret.push(grid[x - 1][y + 1]);
+        }
 
-            // Northeast
-            if (grid[x + 1] && grid[x + 1][y + 1]) {
-                ret.push(grid[x + 1][y + 1]);
-            }
+        // Northeast
+        if (grid[x + 1] && grid[x + 1][y + 1]) {
+            ret.push(grid[x + 1][y + 1]);
         }
 
         return ret;
     };
-
-    Graph.prototype.toString = function () {
-        var graphString = [],
-                nodes = this.grid, // when using grid
-                rowDebug, row, y, l;
-        for (var x = 0, len = nodes.length; x < len; x++) {
-            rowDebug = [];
-            row = nodes[x];
-            for (y = 0, l = row.length; y < l; y++) {
-                rowDebug.push(row[y].weight);
-            }
-            graphString.push(rowDebug.join(" "));
-        }
-        return graphString.join("\n");
-    };
     
-    Graph.prototype.isPositionBlocked = function (x, y) {
+    GraphTheta.prototype.isPositionBlocked = function (x, y) {
         if (x < 0 || y < 0) return true;
         //Logger.debug('--------------------------------------');
         //Logger.debug('this.grid[x][y]: ' + x + ', ' + y);
         //Logger.debug('--------------------------------------');
         return this.grid[x][y].weight === 0;
     };
-
+    
     function GridNode(x, y, weight) {
         this.x = x;
         this.y = y;
@@ -281,12 +300,12 @@
     GridNode.prototype.isWall = function () {
         return this.weight === 0;
     };
-
+    
     function BinaryHeap(scoreFunction) {
         this.content = [];
         this.scoreFunction = scoreFunction;
     }
-
+    
     BinaryHeap.prototype = {
         push: function (element) {
             // Add the new element to the end of the array.
@@ -402,9 +421,9 @@
             }
         }
     };
-
+    
     return {
-        astar: astar,
-        Graph: Graph
+        theta_star: theta_star,
+        GraphTheta: GraphTheta
     };
 });

@@ -20,7 +20,7 @@
 
     function pathTo(node) {
         var curr = node,
-                path = [];
+            path = [];
         while (curr.parent) {
             path.push(curr);
             curr = curr.parent;
@@ -53,13 +53,13 @@
                     closest = options.closest || false;
 
             var openHeap = getHeap(),
-                    closestNode = start; // set the start node to be the closest if required
+                closestNode = start; // set the start node to be the closest if required
 
             start.h = heuristic(start, end);
 
             openHeap.push(start);
 
-            while (openHeap.size() > 0) {
+            while (openHeap.size() > 0) {               
 
                 // Grab the lowest f(x) to process next.  Heap keeps this sorted for us.
                 var currentNode = openHeap.pop();
@@ -86,36 +86,36 @@
                     // The g score is the shortest distance from start to current node.
                     // We need to check if the path we have arrived at this neighbor is the shortest one we have seen yet.
                     var gScore = currentNode.g + neighbor.getCost(currentNode),
-                            beenVisited = neighbor.visited;
+                        beenVisited = neighbor.visited;
 
-                    if (!beenVisited || gScore < neighbor.g) {
+                        if (!beenVisited || gScore < neighbor.g) {
 
-                        // Found an optimal (so far) path to this node.  Take score for node to see how good it is.
-                        neighbor.visited = true;
-                        neighbor.parent = currentNode;
-                        neighbor.h = neighbor.h || heuristic(neighbor, end);
-                        neighbor.g = gScore;
-                        neighbor.f = neighbor.g + neighbor.h;
-                        graph.markDirty(neighbor);
-                        if (closest) {
-                            // If the neighbour is closer than the current closestNode or if it's equally close but has
-                            // a cheaper path than the current closest node then it becomes the closest node
-                            if (neighbor.h < closestNode.h || (neighbor.h === closestNode.h && neighbor.g < closestNode.g)) {
-                                closestNode = neighbor;
+                            // Found an optimal (so far) path to this node.  Take score for node to see how good it is.
+                            neighbor.visited = true;
+                            neighbor.parent = currentNode;
+                            neighbor.h = neighbor.h || heuristic(neighbor, end);
+                            neighbor.g = gScore;
+                            neighbor.f = neighbor.g + neighbor.h;
+                            graph.markDirty(neighbor);
+                            if (closest) {
+                                // If the neighbour is closer than the current closestNode or if it's equally close but has
+                                // a cheaper path than the current closest node then it becomes the closest node
+                                if (neighbor.h < closestNode.h || (neighbor.h === closestNode.h && neighbor.g < closestNode.g)) {
+                                    closestNode = neighbor;
+                                }
+                            }
+
+                            if (!beenVisited) {
+                                // Pushing to heap will put it in proper place based on the 'f' value.
+                                openHeap.push(neighbor);
+                            }
+                            else {
+                                // Already seen the node, but since it has been rescored we need to reorder it in the heap
+                                openHeap.rescoreElement(neighbor);
                             }
                         }
-
-                        if (!beenVisited) {
-                            // Pushing to heap will put it in proper place based on the 'f' value.
-                            openHeap.push(neighbor);
-                        }
-                        else {
-                            // Already seen the node, but since it has been rescored we need to reorder it in the heap
-                            openHeap.rescoreElement(neighbor);
-                        }
-                    }
-                }
-            }
+                                }
+                            }
 
             if (closest) {
                 return pathTo(closestNode);
@@ -146,7 +146,7 @@
             node.visited = false;
             node.closed = false;
             node.parent = null;
-        }
+            } 
     };
 
     /**
@@ -189,7 +189,7 @@
     Graph.prototype.markDirty = function (node) {
         this.dirtyNodes.push(node);
     };
-
+    
     Graph.prototype.neighbors = function (node) {
         var ret = [],
                 x = node.x,
@@ -254,6 +254,14 @@
             graphString.push(rowDebug.join(" "));
         }
         return graphString.join("\n");
+    };
+    
+    Graph.prototype.isPositionBlocked = function (x, y) {
+        if (x < 0 || y < 0) return true;
+        //Logger.debug('--------------------------------------');
+        //Logger.debug('this.grid[x][y]: ' + x + ', ' + y);
+        //Logger.debug('--------------------------------------');
+        return this.grid[x][y].weight === 0;
     };
 
     function GridNode(x, y, weight) {

@@ -524,7 +524,7 @@ Routes.prototype.AStarGrid = function (track) {
         }
     };
     
-    var A_StarGraph = new Graph(graph.weights, { diagonal: true });
+    var A_StarGraph = new GraphTheta(graph.weights, { diagonal: true });
     Logger.debug(A_StarGraph);
     for (var i = 0, len = graph.waypoints.length; i < len - 1; i++) {
         //Logger.debug('indexOf ' + i + ' and ' + (i + 1) + ': ' + findWithProp(graph.waypoints, 'order', i) + ', ' + findWithProp(graph.waypoints, 'order', i + 1));

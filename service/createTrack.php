@@ -37,11 +37,13 @@ if (!$dom->schemaValidate('schemes/createTrack.xsd')) {
 
 $data_array = array();
 
+$default_category_id = defined('DEFAULT_CATEGORY_ID') ? DEFAULT_CATEGORY_ID : -1;
+
 $auth_token = get_request_argument($dom, 'auth_token');
 $description = get_request_argument($dom, 'description');
 $url = get_request_argument($dom, 'url');
 $name = get_request_argument($dom, 'name');
-$category_id = get_request_argument($dom, 'category_id', -1);
+$category_id = get_request_argument($dom, 'category_id', $default_category_id);
 $lang = get_request_argument($dom, 'lang');
 $hname = get_request_argument($dom, 'hname');
 

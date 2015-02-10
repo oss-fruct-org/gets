@@ -282,14 +282,15 @@ TracksPage.prototype.initPage = function() {
                     self._mapCtrl.drawConvexHullObjects(obsts);
                     //self._mapCtrl.drawBoundingBox(obsts);
                     self._mapCtrl.drawValidPoints(track.esp.grid);
-                    self._mapCtrl.drawPath(track.esp.path);
-                    self._mapCtrl.drawEncodedPolyline(track.esp.curve, 'Shortest path - Curve waypoints - fixed');
+                    self._mapCtrl.drawPath(track.esp.path);//self._mapCtrl.drawPath(track.esp.pp);
+                    //self._mapCtrl.drawEncodedPolyline(track.esp.curve, 'Shortest path - Curve waypoints - fixed');
                     self._mapCtrl.drawEncodedPolyline(track.esp.curve_, 'Shortest path - Curve');
-                });
+                    //self._mapCtrl.drawEncodedPolyline(track.esp.curve_s, 'Shortest path - Curve sections');
+                }, self._mapCtrl);
                 self._routes.ESP_trianglebased(track, function (obsts) {
-                    self._mapCtrl.drawTriangulation(track.esp_tri.tri);
+                    //self._mapCtrl.drawTriangulation(track.esp_tri.tri);
                     self._mapCtrl.drawObstacles(obsts);
-                });
+                }, self._mapCtrl);
                 self._trackInfo.toggleOverlay();
             }, 0);
         }

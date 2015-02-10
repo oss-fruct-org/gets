@@ -35,6 +35,7 @@ session_start();
         <script src="scripts/graham_scan.min.js"></script>
         <!--<script src="scripts/astar_0.4.0.js"></script>-->
         <script src="scripts/theta.js"></script>
+        <script src="scripts/astar_triangles.js"></script>
         <script src="scripts/poly2tri.js"></script>
         <script src="scripts/gets/models/Categories.Class.js"></script>
         <script src="scripts/gets/models/Points.Class.js"></script>

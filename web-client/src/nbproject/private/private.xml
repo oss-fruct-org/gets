@@ -5,12 +5,11 @@
         <group>
             <file>file:/home/davidson/projects/gets/web-client/src/scripts/poly2tri.js</file>
             <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/controllers/Map.Ctrl.js</file>
+            <file>file:/home/davidson/projects/gets/web-client/src/scripts/astar_triangles.js</file>
             <file>file:/home/davidson/projects/gets/web-client/src/scripts/astar_0.4.0.js</file>
             <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/models/Map.Class.js</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/tracks.php</file>
             <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/controllers/Routes.js</file>
             <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/controllers/TracksPage.Ctrl.js</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/scripts/graham_scan.min.js</file>
         </group>
     </open-files>
 </project-private>

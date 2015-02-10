@@ -805,7 +805,8 @@ MapClass.prototype.drawEncodedPolyline = function (polyline, label) {
 
 MapClass.prototype.addMarker = function (latLng, label) {
     L.marker(latLng, {
-        title: label
+        title: label,
+        riseOnHover: true
     }).bindPopup(label).addTo(this.map);
 };
 
@@ -896,6 +897,8 @@ MapClass.prototype.drawPath = function (path) {
                 opacity: 0.9
             }
         ).addTo(group);
+
+        L.marker(path[i].coords).bindPopup('#' + i + '<br>isInflection: ' + path[i].isInflection).addTo(group);
     }
     
     this.layersControl.addOverlay(group, 'Shortest path');
@@ -907,7 +910,7 @@ MapClass.prototype.drawTriangulation = function (tri) {
 
     for (var i = 0, len = tri.length; i < len; i++) {
 
-        L.polygon(
+        /*L.polygon(
                 [
                     new L.LatLng(tri[i].points_[0].x, tri[i].points_[0].y),
                     new L.LatLng(tri[i].points_[1].x, tri[i].points_[1].y),
@@ -915,6 +918,47 @@ MapClass.prototype.drawTriangulation = function (tri) {
                 ],
                 {
                     color: '#006600',
+                    weight: 2,
+                    opacity: 0.7,
+                    fillOpacity: 0.5,
+                    fillColor: '#00CC66'
+                }
+        ).addTo(group);*/
+        L.polyline(
+                [
+                    new L.LatLng(tri[i].points_[0].x, tri[i].points_[0].y),
+                    new L.LatLng(tri[i].points_[1].x, tri[i].points_[1].y)
+                ],
+                {
+                    color: tri[i].constrained_edge[0] ? '#660000' : '#006600',
+                    weight: 2,
+                    opacity: 0.7,
+                    fillOpacity: 0.5,
+                    fillColor: '#00CC66'
+                }
+        ).addTo(group);
+
+        L.polyline(
+                [
+                    new L.LatLng(tri[i].points_[1].x, tri[i].points_[1].y),
+                    new L.LatLng(tri[i].points_[2].x, tri[i].points_[2].y)
+                ],
+                {
+                    color: tri[i].constrained_edge[1] ? '#660000' : '#006600',
+                    weight: 2,
+                    opacity: 0.7,
+                    fillOpacity: 0.5,
+                    fillColor: '#00CC66'
+                }
+        ).addTo(group);
+
+        L.polyline(
+                [
+                    new L.LatLng(tri[i].points_[2].x, tri[i].points_[2].y),
+                    new L.LatLng(tri[i].points_[0].x, tri[i].points_[0].y)
+                ],
+                {
+                    color: tri[i].constrained_edge[2] ? '#660000' : '#006600',
                     weight: 2,
                     opacity: 0.7,
                     fillOpacity: 0.5,

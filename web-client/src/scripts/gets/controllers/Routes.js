@@ -161,7 +161,7 @@ Routes.prototype.requestOSMObstacles = function (track, callback) {
     });
     
     getObstaclesRequest.fail(function(jqXHR, textStatus) {
-        throw new GetsWebClientException('Routes Error', 'makeGoogleDirectionsRoute, getObstaclesRequest failed ' + textStatus);
+        throw new GetsWebClientException('Routes Error', 'requestOSMObstacles, getObstaclesRequest failed ' + textStatus);
     });
     
     getObstaclesRequest.done(function(data, textStatus, jqXHR) {*/
@@ -349,7 +349,7 @@ Routes.prototype.obstacleAvoidingCurve = function (track, type) {
         
         return new L.LatLng(lat, lng);
     };
-       
+         
     var b0 = track.cShapePolyline[0].point,
         b1 = pointsAdd(track.cShapePolyline[0].point, pointsMult(pointsSubs(track.cShapePolyline[1].point, track.cShapePolyline[0].point), u / 2)),
         b2 = pointsAdd(track.cShapePolyline[0].point, pointsSubs(pointsSubs(track.cShapePolyline[1].point, track.cShapePolyline[0].point), pointsMult(pointsSubs(track.cShapePolyline[1].point, track.cShapePolyline[0].point), u / 2))),
@@ -363,7 +363,7 @@ Routes.prototype.obstacleAvoidingCurve = function (track, type) {
         b1 = pointsAdd(track.cShapePolyline[i].point, pointsMult(pointsSubs(track.cShapePolyline[i + 1].point, track.cShapePolyline[i].point), u / 2));
         b2 = pointsAdd(track.cShapePolyline[i].point, pointsSubs(pointsSubs(track.cShapePolyline[i + 1].point, track.cShapePolyline[i].point), pointsMult(pointsSubs(track.cShapePolyline[i + 1].point, track.cShapePolyline[i].point), u / 2)));
         b3 = pointsAdd(track.cShapePolyline[i].point, pointsAdd(pointsSubs(track.cShapePolyline[i + 1].point, track.cShapePolyline[i].point), pointsMult(pointsSubs(pointsSubs(track.cShapePolyline[i + 2].point, track.cShapePolyline[i + 1].point), pointsSubs(track.cShapePolyline[i + 1].point, track.cShapePolyline[i].point)), u / 4)));
-        
+                
         for (var j = 0; j <= 1; j += accuracy) {
             oACurve.push(bezier(j, b0, b1, b2, b3));
             //oACurve.push(bezier(j, p_0, p_1, p_2, p_3));
@@ -382,14 +382,16 @@ Routes.prototype.obstacleAvoidingCurve = function (track, type) {
     track.oACurve = L.PolylineUtil.encode(oACurve);
 };
 
-Routes.prototype.ESP_gridbased = function (track, callback) {
+Routes.prototype.ESP_gridbased = function (track, callback, map) {
     var that = this;
     this.generateGrid(track, 15);
     this.requestOSMObstacles(track, function (obsts) {
         that.markInvalidPointsOnGrid(track, obsts);
         that.AStarGrid(track);
-        track.esp.curve_ = L.PolylineUtil.encode(that.bezierCurves(that.partitionToCShape(track.esp.path), obsts));
-        that.pointToPointCurve(track, obsts);
+        track.esp.curve_ = L.PolylineUtil.encode(that.bezierCurves(that.partitionToCShape(track.esp.path, map), obsts, map));
+        //that.pointToPointCurve(track, obsts);
+        //track.esp.pp = that.partitionToCShape(track.esp.path, track);
+        //track.esp.curve_s = that.bezierCurvesSections(track.esp.sections);
         callback(obsts);       
     });
 };
@@ -541,7 +543,7 @@ Routes.prototype.AStarGrid = function (track) {
         }             
     }
     track.esp.path = graph.result;   
-    //Logger.debug(track.esp.path);
+    Logger.debug(track.esp.path);
 };
 
 Routes.prototype.pointToPointCurve = function (track, obstacles) {
@@ -575,7 +577,7 @@ Routes.prototype.pointToPointCurve = function (track, obstacles) {
     Logger.debug(track.esp.curve);
 };
 
-Routes.prototype.partitionToCShape = function (points) {
+Routes.prototype.partitionToCShape = function (points, map) {
     // only 4 or more points can create S-shaped curve, which is the type of curve we want to get rid
     if (points.length < 4) {
         for (var i = 0; i < points.length; i++) {
@@ -599,11 +601,11 @@ Routes.prototype.partitionToCShape = function (points) {
             b_1 = points[i], 
             b_2 = points[i + 1], 
             b_3 = points[i + 2];
-        
+              
         b_1.isInflection = false;
         cShapePolyline.push(b_1);
                
-        //Logger.debug('i = ' + i + ' sign1 = ' + calculateSign(b_1, b_0, b_2) + ' sign2 = ' + calculateSign(b_2, b_1, b_3));
+        Logger.debug('i = ' + i + ' sign1 = ' + calculateSign(b_1, b_0, b_2) + ' sign2 = ' + calculateSign(b_2, b_1, b_3));
         if ((calculateSign(b_1, b_0, b_2) * calculateSign(b_2, b_1, b_3)) <= 0) {
             cShapePolyline.push({
                 coords: new L.LatLng((b_1.coords.lat + b_2.coords.lat) / 2, (b_1.coords.lng + b_2.coords.lng) / 2), 
@@ -614,17 +616,13 @@ Routes.prototype.partitionToCShape = function (points) {
         }       
     }
     
-    points[points.length - 2].isInflection = false;
     points[points.length - 1].isInflection = false;
-    cShapePolyline.push(points[points.length - 2]);
     cShapePolyline.push(points[points.length - 1]);
-    
-    //Logger.debug(cShapePolyline);
-    
+         
     return cShapePolyline;
 };
 
-Routes.prototype.bezierCurves = function (points, obstacles) { 
+Routes.prototype.bezierCurves = function (points, obstacles, map) { 
     // only 4 or more points can create S-shaped curve, which is the type of curve we want to get rid
     if (points.length < 4) {
         var coordsArray = [];
@@ -634,7 +632,7 @@ Routes.prototype.bezierCurves = function (points, obstacles) {
         return coordsArray;
     }
     
-    var U_DEFAULT = 0.8;
+    var U_DEFAULT = 0.9;
     
     var u = U_DEFAULT;
     var accuracy = 0.1;
@@ -685,31 +683,36 @@ Routes.prototype.bezierCurves = function (points, obstacles) {
     };
        
     var b0 = points[0].coords,
-        b1 = pointsAdd(points[0].coords, pointsMult(pointsSubs(points[1].coords, points[1].coords), u / 2)),
+        b1 = pointsAdd(points[0].coords, pointsMult(pointsSubs(points[1].coords, points[0].coords), u / 2)),
         b2 = pointsAdd(points[0].coords, pointsSubs(pointsSubs(points[1].coords, points[0].coords), pointsMult(pointsSubs(points[1].coords, points[0].coords), u / 2))),
         b3 = pointsAdd(points[0].coords, pointsAdd(pointsSubs(points[1].coords, points[0].coords), pointsMult(pointsSubs(pointsSubs(points[2].coords, points[1].coords), pointsSubs(points[1].coords, points[0].coords)), u / 4)));
-    while (checkCollision(b0, b1, b2, b3)) {
+    /*while (checkCollision(b0, b1, b2, b3)) {
         Logger.debug('u = ' + u);
         if (u < 0.1) break;
         u -= 0.09;        
         b0 = points[0].coords,
-        b1 = pointsAdd(points[0].coords, pointsMult(pointsSubs(points[1].coords, points[1].coords), u / 2)),
+        b1 = pointsAdd(points[0].coords, pointsMult(pointsSubs(points[1].coords, points[0].coords), u / 2)),
         b2 = pointsAdd(points[0].coords, pointsSubs(pointsSubs(points[1].coords, points[0].coords), pointsMult(pointsSubs(points[1].coords, points[0].coords), u / 2))),
         b3 = pointsAdd(points[0].coords, pointsAdd(pointsSubs(points[1].coords, points[0].coords), pointsMult(pointsSubs(pointsSubs(points[2].coords, points[1].coords), pointsSubs(points[1].coords, points[0].coords)), u / 4)));
     }   
-    
+    if (map) {
+        map.addMarker(b0, 'b0');
+        map.addMarker(b1, 'b1');
+        map.addMarker(b2, 'b2');
+        map.addMarker(b3, 'b3');
+    }*/
     for (var j = 0; j <= 1; j += accuracy) {
         curve.push(bezier(j, b0, b1, b2, b3));
     }
     
     u = U_DEFAULT;
     for (var i = 1, len = points.length; i < len - 2; i++) {
-        if (points[i].isInflection) u = U_DEFAULT;
+        //if (points[i].isInflection) u = U_DEFAULT;
         b0 = pointsAdd(points[i].coords, pointsMult(pointsSubs(pointsSubs(points[i + 1].coords, points[i].coords), pointsSubs(points[i].coords, points[i - 1].coords)), u / 4));
         b1 = pointsAdd(points[i].coords, pointsMult(pointsSubs(points[i + 1].coords, points[i].coords), u / 2));
         b2 = pointsAdd(points[i].coords, pointsSubs(pointsSubs(points[i + 1].coords, points[i].coords), pointsMult(pointsSubs(points[i + 1].coords, points[i].coords), u / 2)));
         b3 = pointsAdd(points[i].coords, pointsAdd(pointsSubs(points[i + 1].coords, points[i].coords), pointsMult(pointsSubs(pointsSubs(points[i + 2].coords, points[i + 1].coords), pointsSubs(points[i + 1].coords, points[i].coords)), u / 4)));
-        while (checkCollision(b0, b1, b2, b3)) {
+        /*while (checkCollision(b0, b1, b2, b3)) {
             Logger.debug('u = ' + u);
             if (u < 0.2) break;
             u -= 0.09;
@@ -717,8 +720,13 @@ Routes.prototype.bezierCurves = function (points, obstacles) {
             b1 = pointsAdd(points[i].coords, pointsMult(pointsSubs(points[i + 1].coords, points[i].coords), u / 2));
             b2 = pointsAdd(points[i].coords, pointsSubs(pointsSubs(points[i + 1].coords, points[i].coords), pointsMult(pointsSubs(points[i + 1].coords, points[i].coords), u / 2)));
             b3 = pointsAdd(points[i].coords, pointsAdd(pointsSubs(points[i + 1].coords, points[i].coords), pointsMult(pointsSubs(pointsSubs(points[i + 2].coords, points[i + 1].coords), pointsSubs(points[i + 1].coords, points[i].coords)), u / 4)));
-        }
-        
+        } 
+        if (map) {
+            map.addMarker(b0, 'b0');
+            map.addMarker(b1, 'b1');
+            map.addMarker(b2, 'b2');
+            map.addMarker(b3, 'b3');
+        }*/
         for (var j = 0; j <= 1; j += accuracy) {
             curve.push(bezier(j, b0, b1, b2, b3));
         }
@@ -730,7 +738,7 @@ Routes.prototype.bezierCurves = function (points, obstacles) {
     b1 = pointsAdd(points[len - 2].coords, pointsMult(pointsSubs(points[len - 1].coords, points[len - 2].coords), u / 2));
     b2 = pointsAdd(points[len - 2].coords, pointsSubs(pointsSubs(points[len - 1].coords, points[len - 2].coords), pointsMult(pointsSubs(points[len - 1].coords, points[len - 2].coords), u / 2)));
     b3 = points[len - 1].coords;
-    while (checkCollision(b0, b1, b2, b3)) {
+    /*while (checkCollision(b0, b1, b2, b3)) {
         Logger.debug('u = ' + u);
         if (u < 0.1) break;
         u -= 0.09;
@@ -738,13 +746,40 @@ Routes.prototype.bezierCurves = function (points, obstacles) {
         b1 = pointsAdd(points[len - 2].coords, pointsMult(pointsSubs(points[len - 1].coords, points[len - 2].coords), u / 2));
         b2 = pointsAdd(points[len - 2].coords, pointsSubs(pointsSubs(points[len - 1].coords, points[len - 2].coords), pointsMult(pointsSubs(points[len - 1].coords, points[len - 2].coords), u / 2)));
         b3 = points[len - 1].coords;
-    }
-    
+    }*/   
     for (var j = 0; j <= 1; j += accuracy) {
         curve.push(bezier(j, b0, b1, b2, b3));
     }
+    
+    
+    /*for (var i = 0, len = points.length; i < len - 3; i += 3) {
+        for (var j = 0; j <= 1; j += accuracy) {
+            curve.push(bezier(j, points[i].coords, points[i + 1].coords, points[i + 2].coords, points[i + 3].coords));
+        }
+    }*/
        
     return curve;
+};
+
+Routes.prototype.bezierCurvesSections = function (sections) {
+    var accuracy = 0.1;         
+    var curve = [];
+    
+    var bezier = function (t, p0, p1, p2, p3) {
+        var lat = Math.pow(1 - t, 3) * p0.lat + 3 * Math.pow(1 - t, 2) * t * p1.lat + 3 * (1 - t) * Math.pow(t, 2) * p2.lat + Math.pow(t, 3) * p3.lat;
+        var lng = Math.pow(1 - t, 3) * p0.lng + 3 * Math.pow(1 - t, 2) * t * p1.lng + 3 * (1 - t) * Math.pow(t, 2) * p2.lng + Math.pow(t, 3) * p3.lng;
+
+        return new L.LatLng(lat, lng);
+    };
+    
+    for (var i = 0, len = sections.length; i < len; i++) {
+        if (i === 1) continue;
+        for (var j = 0; j <= 1; j += accuracy) {
+            curve.push(bezier(j, sections[i][0].coords, sections[i][1].coords, sections[i][2].coords, sections[i][3].coords));
+        }
+    }
+    
+    return L.PolylineUtil.encode(curve);
 };
 
 Routes.prototype.checkHit = function (bbox, point) {
@@ -816,16 +851,17 @@ Routes.prototype.pointInsidePolygon = function (point, polyVerts) {
     return true;
 };
 
-Routes.prototype.ESP_trianglebased = function (track, callback) {
+Routes.prototype.ESP_trianglebased = function (track, callback, map) {
     var that = this;
     this.requestOSMObstacles(track, function (obsts) {
-        that.generateTriangulation(track, obsts);
-        callback(obsts);
+        that.generateTriangulation(track, obsts, map);
+        that.AStarTri(track, map);
+        callback(obsts);       
     });
     
 };
 
-Routes.prototype.generateTriangulation = function (track, obstacles) {
+Routes.prototype.generateTriangulation = function (track, obstacles, map) {
     var bbox = track.bounds;
        
     var north = bbox.northeast.lat,
@@ -854,7 +890,7 @@ Routes.prototype.generateTriangulation = function (track, obstacles) {
     var swctx = new poly2tri.SweepContext(contour);
     
     var holes = [];
-    Logger.debug(obstacles);
+    //Logger.debug(obstacles);
     for (var i = 0, len = obstacles.length; i < len; i++) {
         if (i > 9 && i < 26) continue;
         var hole = [];
@@ -869,10 +905,184 @@ Routes.prototype.generateTriangulation = function (track, obstacles) {
     
     swctx.triangulate();
     var triangles = swctx.getTriangles();
+    var point = swctx.locateNode(new poly2tri.Point(61.787393, 34.392571));
+    Logger.debug(swctx);
     Logger.debug(triangles);
+    Logger.debug(point);
     
     track.esp_tri = {
         tri: triangles
     };
 };
 
+Routes.prototype.AStarTri = function (track, map) {
+    for (var i = 0; i < track.points.length - 1; i++) {
+    //for (var i = 3; i < 4; i++) {
+        var coords = track.points[i].coordinates.split(',').map(parseFloat);
+        var start_p = {
+            x: coords[1],
+            y: coords[0]
+        };
+
+        coords = track.points[i + 1].coordinates.split(',').map(parseFloat);
+        var end_p = {
+            x: coords[1],
+            y: coords[0]
+        };
+
+        var start_index = this.locatePointIndexInTri(start_p, track.esp_tri.tri);
+        var end_index = this.locatePointIndexInTri(end_p, track.esp_tri.tri);
+        Logger.debug('start_index: ' + start_index);
+        Logger.debug('end_index: ' + end_index);
+        if ((start_index > -1) && (end_index > -1)) {
+            var result = astar_tri.search(track.esp_tri.tri, track.esp_tri.tri[start_index], track.esp_tri.tri[end_index], start_p, end_p);
+            map.drawTriangulation(result);           
+            Logger.debug(result);
+            var path = this.funnel(result, start_p, end_p, map);
+            Logger.debug(path);
+            var path_ = [];
+            for (var k = 0, len = path.length; k < len; k++) {
+                path_.push(new L.LatLng(path[k].x, path[k].y));
+            }
+            Logger.debug(path_);
+            map.drawEncodedPolyline(L.PolylineUtil.encode(path_), 'tr - ' + (i + 1));
+            
+        } else {
+            Logger.debug('one or both points wasn\'t located ' + (i + 1) + ', ' + (i + 2));
+        }
+    }
+};
+
+Routes.prototype.locatePointIndexInTri = function (point, tri) {
+    for (var lp = 0, lplen = tri.length; lp < lplen; lp++) {
+        if (this.pointInsidePolygon(point, tri[lp].points_)) {
+            return lp;
+        }
+    }
+    return -1;
+};
+
+Routes.prototype.funnel = function (tri, start_p, end_p, map) {
+    if (tri.length <= 1) {
+        return [start_p, end_p];
+    }
+    
+    var path = [],
+        leftVertices = new Array(tri.length + 1),
+        rightVertices = new Array(tri.length + 1),
+        apex = start_p,
+        left = 1,
+        right = 1;
+
+    var i, j, next, len; 
+    
+    path.push(start_p);      
+    // Initialise portal vertices.
+    for (i = 0; i < tri.length - 1; i++) {
+        for (j = 0; j < tri[i].neighbors_.length; j++) {
+            if (!tri[i].neighbors_[j]) continue;
+            if (tri[i].neighbors_[j] === tri[i + 1]) {
+                var k = j + 1 >= tri[i].neighbors_.length ? 0 : j + 1;
+ 
+                leftVertices[i + 1] = tri[i].points_[j];
+                rightVertices[i + 1] = tri[i].points_[k];
+                break;
+            }
+        }
+    }
+ 
+    // Initialise portal vertices first point.
+    for (j = 0; j < tri[0].points_.length; j++) {
+        if ((tri[0].points_[j] !== leftVertices[1]) && (tri[0].points_[j] !== rightVertices[1])) {
+            leftVertices[0] = tri[0].points_[j];
+            rightVertices[0] = tri[0].points_[j];
+        }
+    }
+ 
+    for (j = 0; j < tri[tri.length - 1].points_.length; j++) {
+        if ((tri[tri.length - 1].points_[j] !== leftVertices[tri.length - 1]) 
+            && (tri[tri.length - 1].points_[j] !== rightVertices[tri.length - 1])) {
+            leftVertices[tri.length] = tri[tri.length - 1].points_[j];
+            rightVertices[tri.length] = tri[tri.length - 1].points_[j];
+        }
+    }
+    
+    /*for (i = 0, len = leftVertices.length; i < len; i++) {
+        map.addMarker(new L.LatLng(leftVertices[i].x, leftVertices[i].y), 'left i = ' + i);
+    }
+    for (i = 0, len = rightVertices.length; i < len; i++) {
+        map.addMarker(new L.LatLng(rightVertices[i].x, rightVertices[i].y), 'right i = ' + i);
+    }*/
+      
+    var pointSub = function (p0, p1) {       
+        return {
+            x: p0.x - p1.x,
+            y: p0.y - p1.y
+        }; 
+    };
+    
+    var vectorSign = function (p0, p1) {
+        //Logger.debug(p0, p1);
+        var angle = Math.atan2(p0.y, p0.x) - Math.atan2(p1.y, p1.x);
+        //Logger.debug(angle);
+        return angle;
+    };
+    
+    // Step through channel.
+    for (i = 2; i <= tri.length - 1; i++) {
+        // If new left vertex is different, process.
+        if ((leftVertices[i] !== leftVertices[left]) && (i > left)) {
+            var newSide = pointSub(leftVertices[i], apex);
+
+            // If new side does not widen funnel, update.
+            if (vectorSign(newSide, pointSub(leftVertices[left], apex)) > 0) {
+                // If new side crosses other side, update apex.
+                if (vectorSign(newSide, pointSub(rightVertices[right], apex)) > 0) {
+                    // Find next vertex.
+                    next = right;
+                    for (j = next; j <= tri.length; j++) {
+                        if (rightVertices[j] !== rightVertices[next]) {
+                            next = j;
+                            break;
+                        }
+                    }
+
+                    path.push(rightVertices[right]);
+                    apex = rightVertices[right];
+                    right = next;
+                } else {
+                    left = i;
+                }
+            }
+        }
+ 
+        // If new right vertex is different, process.
+        if ((rightVertices[i] !== rightVertices[right]) && (i > right)) {
+            var newSide = pointSub(rightVertices[i], apex);
+
+            // If new side does not widen funnel, update.
+            if (vectorSign(newSide, pointSub(rightVertices[right], apex)) < 0) {
+                // If new side crosses other side, update apex.
+                if (vectorSign(newSide, pointSub(leftVertices[left], apex)) < 0) {
+                    // Find next vertex.
+                    next = left;
+                    for (j = next; j <= tri.length; j++) {
+                        if (leftVertices[j] !== leftVertices[next]) {
+                            next = j;
+                            break;
+                        }
+                    }
+
+                    path.push(leftVertices[left]);
+                    apex = leftVertices[left];
+                    left = next;
+                } else {
+                    right = i;
+                }
+            }
+        }
+    }
+    
+    path.push(end_p);
+    return path;
+};

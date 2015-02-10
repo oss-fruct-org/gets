@@ -1970,6 +1970,11 @@ SweepContext.prototype.locateNode = function(point) {
 };
 
 /** @private */
+SweepContext.prototype.locatePoint = function(point) {
+    return this.front_.locatePoint(point);
+};
+
+/** @private */
 SweepContext.prototype.createAdvancingFront = function() {
     var head;
     var middle;

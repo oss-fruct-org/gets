@@ -35,22 +35,22 @@ if (!$dom->schemaValidate('schemes/createTrack.xsd')) {
     die();
 }
 
-$data_array = array();
 
 if (!defined('DEFAULT_CATEGORY_ID')) {
     send_error(1, 'Server misconfigured: DEFAULT_CATEGORY_ID undefined');
     die();
 }
 
+$data_array = array();
 $auth_token = get_request_argument($dom, 'auth_token');
 $description = get_request_argument($dom, 'description');
 $url = get_request_argument($dom, 'url');
 $name = get_request_argument($dom, 'name');
-$category_id = get_request_argument($dom, 'category_id', DEFAULT_CATEGORY_ID);
+$category_id = (int) get_request_argument($dom, 'category_id', DEFAULT_CATEGORY_ID);
 $lang = get_request_argument($dom, 'lang');
 $hname = get_request_argument($dom, 'hname');
 
-// Backward compatibility with clients that pass -1 assuming "null category"
+// Compatibility with clients that pass -1 assuming "null category"
 if ($category_id === -1) {
     $category_id = DEFAULT_CATEGORY_ID;
 }

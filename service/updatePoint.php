@@ -29,8 +29,12 @@ if (!$dom) {
     die();
 }
 
+// Enable user error handling
+libxml_use_internal_errors(true);
+
 if (!$dom->schemaValidate('schemes/updatePoint.xsd')) {
-    send_error(1, 'Error: not valid input XML document.');
+    
+    send_error(1, 'Error: not valid input XML document'.$xml_post.libxml_display_errors());
     die();
 }
 

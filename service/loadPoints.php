@@ -132,7 +132,7 @@ while ($row = pg_fetch_row($result)) {
     $access = $row[9] == 'f' ? 'r' : 'rw';
     $id = $row[10];
 
-    add_place_mark($xml, $label, $description, $url, $datetime, $latitude, $longitude, $id, $access, $category_id);
+    add_place_mark($xml, $label, $description, $url, $datetime, $latitude, $longitude, $altitude, $id, $access, $category_id);
 }
 
 $xml .= '</Document></kml>';

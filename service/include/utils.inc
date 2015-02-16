@@ -170,7 +170,7 @@ function send_result($code, $message, $content) {
 	echo $xml_response;
 }
 
-function add_place_mark(&$xml, $label, $description, $url, $datetime, $latitude, $longitude, $id, $access = null, $category_id = null) {
+function add_place_mark(&$xml, $label, $description, $url, $datetime, $latitude, $longitude, $altitude, $id, $access = null, $category_id = null) {
     // Try parse description json
     $description_json = json_decode($description, true);
     $url_json = json_decode($url, true);
@@ -235,7 +235,7 @@ function add_place_mark(&$xml, $label, $description, $url, $datetime, $latitude,
 
     $xml .= '</ExtendedData>';
 
-    $xml .= '<Point><coordinates>' . $longitude . ',' . $latitude . ',0.0' . '</coordinates></Point>';
+    $xml .= '<Point><coordinates>' . $longitude . ',' . $latitude . ',' . $altitude . '</coordinates></Point>';
     $xml .= '</Placemark>';
 }
 
@@ -645,4 +645,41 @@ function date_postgres_to_gets($gets_date) {
         $date_parsed = date_create_from_format('Y-m-d H:i:s', $gets_date);
     }
     return date_format($date_parsed, 'd m Y H:i:s.u');
+}
+
+// display error description in xml validation
+function libxml_display_error($error)
+{
+    $return = "";
+    switch ($error->level) {
+        case LIBXML_ERR_WARNING:
+            $return .= "Warning $error->code: ";
+            break;
+        case LIBXML_ERR_ERROR:
+            $return .= "Error $error->code: ";
+            break;
+        case LIBXML_ERR_FATAL:
+            $return .= "Fatal Error $error->code: ";
+            break;
+    }
+    $return .= trim($error->message);
+    if ($error->file) {
+        $return .=    " in $error->file";
+    }
+    $return .= " on line $error->line";
+    $return .= " on column $error->column";
+
+    return $return;
+}
+
+// gather all errors in xml validation
+function libxml_display_errors() {
+    $return = "<errors>";
+    $errors = libxml_get_errors();
+    foreach ($errors as $error) {
+        $return .= "<error>".libxml_display_error($error)."</error>";
+    }
+    libxml_clear_errors();
+    
+    return $return."</errors>";
 }

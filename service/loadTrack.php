@@ -69,7 +69,7 @@ while ($row = pg_fetch_row($result_tag)) {
     $url = $row[6];
     $id = $row[7];
 
-    add_place_mark($xml, $label, $description, $url, $datetime, $latitude, $longitude, $id);
+    add_place_mark($xml, $label, $description, $url, $datetime, $latitude, $longitude, $altitude, $id);
 }
 
 $xml .= '</Document>';

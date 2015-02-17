@@ -117,8 +117,8 @@ MapController.prototype.drawBoundingBox = function(obsts) {
     this._map.drawBoundingBox(obsts);
 };
 
-MapController.prototype.drawEncodedPolyline = function(polyline, label) {
-    this._map.drawEncodedPolyline(polyline, label);
+MapController.prototype.drawEncodedPolyline = function(polyline, label, color) {
+    this._map.drawEncodedPolyline(polyline, label, color);
 };
 
 MapController.prototype.addMarker = function(latLng, label) {
@@ -133,8 +133,8 @@ MapController.prototype.drawValidPoints = function(grid) {
     this._map.drawValidPoints(grid);
 };
 
-MapController.prototype.drawPath = function(path) {
-    this._map.drawPath(path); 
+MapController.prototype.drawPath = function(path, label, color) {
+    this._map.drawPath(path, label, color); 
 };
 
 MapController.prototype.drawTriangulation = function (tri) {
@@ -143,4 +143,8 @@ MapController.prototype.drawTriangulation = function (tri) {
 
 MapController.prototype.drawObstacles = function (objects) {
     this._map.drawObstacles(objects);
+};
+
+MapController.prototype.drawPolygon = function (polygon) {
+    this._map.drawPolygon(polygon);
 };

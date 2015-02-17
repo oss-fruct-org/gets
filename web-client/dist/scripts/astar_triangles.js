@@ -28,28 +28,64 @@
     }
 
     var astar_tri = {
-        search: function (tri, start, end, start_p, end_p) {            
+        search: function (tri, start, end, start_p, end_p, map) {            
             var openHeap = getHeap(),
-                bigValue = 999999;
+                bigValue = 999999999;
+        
+            var dist = astar_tri.heuristics.euclidian_p2p(start_p, end_p); 
+            
+            var dot = function (p0, p1) {
+                return p0.x * p1.x + p0.y * p1.y;
+            };
+
+            var cross = function (p0, p1) {
+                return p0.x * p1.y - p0.y * p1.x;
+            };
+
+            var angle = function (p0, p1) {
+                var angle2 = Math.atan2(cross(p0, p1), dot(p0, p1));
+                return Math.abs(angle2);
+            };
+            
+            /*var getAngle = function (curN, neighN) {
+                for (var p = 0; p < neighN.neighbors_.length; p++) {
+                    if (neighN.neighbors_[p] === curN) {
+                        
+                    }
+                }
+            };*/
+            var distanceBetweenTriangles = function (curN, neighN) {
+                var curN_MidPoint = {
+                    x: (curN.points_[0].x + curN.points_[1].x + curN.points_[2].x) / 3, 
+                    y: (curN.points_[0].y + curN.points_[1].y + curN.points_[2].y) / 3
+                };
+                var neighN_MidPoint = {
+                    x: (neighN.points_[0].x + neighN.points_[1].x + neighN.points_[2].x) / 3, 
+                    y: (neighN.points_[0].y + neighN.points_[1].y + neighN.points_[2].y) / 3
+                };
+                
+                return astar_tri.heuristics.euclidian_p2p(curN_MidPoint, neighN_MidPoint);
+            };
             
             var updateVertex = function (curN, neighN, i) {
-                var gOld = neighN.g;
-
-                var bound0 = astar_tri.heuristics.euclidian_p2e(start_p, curN.points_[i], curN.points_[(i + 1) % 3]),
-                        //bound1 = curN.g + astar_tri.heuristics.euclidian_p2e(start_p, curN.points_[i], curN.points_[(i + 1) % 3]),
-                    bound2 = curN.g + (curN.h - astar_tri.heuristics.euclidian_p2e(end_p, curN.points_[i], curN.points_[(i + 1) % 3]));
-                var cost_path = Math.max(bound0, bound2);
+                //Logger.debug(curN.points_);
+                //Logger.debug(neighN.points_);
+                //Logger.debug('-------------');               
+                var bound0 = astar_tri.heuristics.euclidian_p2e(start_p, curN.points_[(i + 2) % 3], curN.points_[(i + 1) % 3]),
+                    //bound1 = curN.g + distanceBetweenTriangles(curN, neighN),
+                    bound2 = curN.g + (curN.h - astar_tri.heuristics.euclidian_p2e(end_p, curN.points_[(i + 2) % 3], curN.points_[(i + 1) % 3]));
+                var cost_path = Math.max(bound0, bound2);//bound1;//
                 //Logger.debug(cost_path);
                 if (cost_path < neighN.g) {
                     neighN.parent = curN;
                     neighN.g = cost_path;
-                }
-
-                if (neighN.g < gOld) {
-                    if (neighbor.visited) {
+                    if (neighN.visited) {
                         openHeap.remove(neighN);
+                    } else {
+                        neighN.visited = true;
                     }
-                    neighN.f = neighN.g + astar_tri.heuristics.euclidian_p2e(end_p, curN.points_[i], curN.points_[(i + 1) % 3]);
+                    neighN.h = astar_tri.heuristics.euclidian_p2e(end_p, curN.points_[(i + 2) % 3], curN.points_[(i + 1) % 3]);
+                    neighN.f = neighN.g + neighN.h;
                     openHeap.push(neighN);
                 }
             };
@@ -58,8 +94,9 @@
                 astar_tri.cleanNode(tri[i]);
             }
             
+            
             start.parent = start;
-            start.h = astar_tri.heuristics.euclidian_p2p(start_p, end_p);
+            start.h = dist;
             start.f = start.g + start.h;
             
             openHeap.push(start);
@@ -68,6 +105,7 @@
 
                 // Grab the lowest f(x) to process next.  Heap keeps this sorted for us.
                 var currentNode = openHeap.pop();
+                //map.drawPolygon(currentNode.points_);
 
                 // End case -- result has been found, return the traced path.
                 if (currentNode === end) {
@@ -83,9 +121,10 @@
                 var constrained_edges = currentNode.constrained_edge;
                 for (var i = 0, il = neighbors.length; i < il; ++i) {
                     var neighbor = neighbors[i];
-                    if (!neighbor || neighbor.closed) {
+                    if (!neighbor || neighbor.closed || constrained_edges[i]) {
                         continue;
                     }
+                    //map.drawPolygon(neighbor.points_);
                     
                     var beenVisited = neighbor.visited;
                                        
@@ -100,6 +139,7 @@
                     }
                     updateVertex(currentNode, neighbor, i);                 
                 }
+                //break;
             }
             
         },

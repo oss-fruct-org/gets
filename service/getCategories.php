@@ -53,6 +53,8 @@ $query = "SELECT category.id, category.name, category.description, category.url
     WHERE users.login='${public_login_escaped}';";
 $result = pg_query($dbconn, $query);
 
+$default_category_id = defined("DEFAULT_CATEGORY_ID") ? DEFAULT_CATEGORY_ID : -1;
+
 $xml = '<categories>';
 
 while ($row = pg_fetch_row($result)) {
@@ -67,6 +69,9 @@ while ($row = pg_fetch_row($result)) {
     $xml .= "<name>${xml_name}</name>";
     $xml .= "<description>${xml_description}</description>";
     $xml .= "<url>${xml_url}</url>";
+    if ($default_category_id !== -1 && $default_category_id === (int) $row[0]) {
+        $xml .= "<default>true</default>";
+    }
 
     $xml .= '</category>';
 }

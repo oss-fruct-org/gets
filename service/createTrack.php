@@ -35,17 +35,25 @@ if (!$dom->schemaValidate('schemes/createTrack.xsd')) {
     die();
 }
 
+
+if (!defined('DEFAULT_CATEGORY_ID')) {
+    send_error(1, 'Server misconfigured: DEFAULT_CATEGORY_ID undefined');
+    die();
+}
+
 $data_array = array();
-
-$default_category_id = defined('DEFAULT_CATEGORY_ID') ? DEFAULT_CATEGORY_ID : -1;
-
 $auth_token = get_request_argument($dom, 'auth_token');
 $description = get_request_argument($dom, 'description');
 $url = get_request_argument($dom, 'url');
 $name = get_request_argument($dom, 'name');
-$category_id = get_request_argument($dom, 'category_id', $default_category_id);
+$category_id = (int) get_request_argument($dom, 'category_id', DEFAULT_CATEGORY_ID);
 $lang = get_request_argument($dom, 'lang');
 $hname = get_request_argument($dom, 'hname');
+
+// Compatibility with clients that pass -1 assuming "null category"
+if ($category_id === -1) {
+    $category_id = DEFAULT_CATEGORY_ID;
+}
 
 $need_update = get_request_argument($dom, 'update', 'false') === 'true';
 
@@ -90,10 +98,6 @@ $data_array['url'] = $url;
 $data_array['name'] = $track_id;
 
 try {
-    if ($category_id > 0) {
-        require_category($dbconn, $category_id);
-    }
-
     $user_id = auth_get_db_id($dbconn);
     $existing_channel_id = get_channel_id($dbconn, $track_id);
 } catch (Exception $e) {

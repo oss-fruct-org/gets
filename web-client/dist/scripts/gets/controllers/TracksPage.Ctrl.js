@@ -282,14 +282,16 @@ TracksPage.prototype.initPage = function() {
                     self._mapCtrl.drawConvexHullObjects(obsts);
                     //self._mapCtrl.drawBoundingBox(obsts);
                     self._mapCtrl.drawValidPoints(track.esp.grid);
-                    self._mapCtrl.drawPath(track.esp.path);//self._mapCtrl.drawPath(track.esp.pp);
+                    self._mapCtrl.drawPath(track.esp.path, 'Grid Shortest path - Orginal Len: ' + track.esp.path.length, '#0000FF');//self._mapCtrl.drawPath(track.esp.pp);
                     //self._mapCtrl.drawEncodedPolyline(track.esp.curve, 'Shortest path - Curve waypoints - fixed');
-                    self._mapCtrl.drawEncodedPolyline(track.esp.curve_, 'Shortest path - Curve');
+                    self._mapCtrl.drawEncodedPolyline(track.esp.curve_, 'Grid Shortest path - Curve', '#0000BB');
                     //self._mapCtrl.drawEncodedPolyline(track.esp.curve_s, 'Shortest path - Curve sections');
                 }, self._mapCtrl);
                 self._routes.ESP_trianglebased(track, function (obsts) {
-                    //self._mapCtrl.drawTriangulation(track.esp_tri.tri);
+                    self._mapCtrl.drawTriangulation(track.esp_tri.tri);
                     self._mapCtrl.drawObstacles(obsts);
+                    self._mapCtrl.drawPath(track.esp_tri.path, 'Tri. Shortest path - Orginal Len: ' + track.esp_tri.path.length, '#2E0854');
+                    self._mapCtrl.drawEncodedPolyline(track.esp_tri.curve_, 'Tri. Shortest path - Curve', '#7D26CD');
                 }, self._mapCtrl);
                 self._trackInfo.toggleOverlay();
             }, 0);

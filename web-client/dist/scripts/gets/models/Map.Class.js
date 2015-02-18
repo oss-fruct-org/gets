@@ -786,11 +786,12 @@ MapClass.prototype.drawBoundingBox = function (obsts) {
     //this.map.addLayer(group);
 };
 
-MapClass.prototype.drawEncodedPolyline = function (polyline, label) {
+MapClass.prototype.drawEncodedPolyline = function (polyline, label, color) {
     var group = L.layerGroup();
     
+    var color_ = color || this.getRandomColor();
     var _polyline = L.Polyline.fromEncoded(polyline, {
-        color: '#0000FF',
+        color: color_,
         weight: 3,
         opacity: 0.8,
         lineJoin: 'round',
@@ -799,7 +800,7 @@ MapClass.prototype.drawEncodedPolyline = function (polyline, label) {
     if (label) _polyline.bindPopup(label);
     _polyline.addTo(group);
     
-    this.layersControl.addOverlay(group, label);
+    this.layersControl.addOverlay(group, '<span style="color: '+ color_ +';">' + label + '</span>');
     //this.map.addLayer(group);
 };
 
@@ -871,7 +872,7 @@ MapClass.prototype.drawValidPoints = function (grid) {
     for (var i = 0, len = grid.length; i < len; i++) {
         for (var j = 0, len2 = grid[i].length; j < len2; j++) {
             L.circle(grid[i][j].coords, 2, {
-                color: grid[i][j].valid ? (grid[i][j].waypoint ? '#0000ff' : '#00ff00') : '#ff0000',
+                color: grid[i][j].valid ? (grid[i][j].waypoint ? '#0000ff' : '#006600') : '#660000',
                 weight: 2,
                 opacity: 1
             }).addTo(group);
@@ -882,9 +883,10 @@ MapClass.prototype.drawValidPoints = function (grid) {
     //this.map.addLayer(group);
 };
 
-MapClass.prototype.drawPath = function (path) {
+MapClass.prototype.drawPath = function (path, label, color) {
     var group = L.layerGroup();
     
+    var color_ = color || this.getRandomColor();
     for (var i = 0, len = path.length; i < len - 1; i++) {
         L.polyline(
             [
@@ -892,16 +894,16 @@ MapClass.prototype.drawPath = function (path) {
                 path[i + 1].coords
             ], 
             {
-                color: '#0000ff', 
+                color: color_, 
                 weight: 2,
                 opacity: 0.9
             }
         ).addTo(group);
 
-        L.marker(path[i].coords).bindPopup('#' + i + '<br>isInflection: ' + path[i].isInflection).addTo(group);
+        //L.marker(path[i].coords).bindPopup('#' + i).addTo(group);
     }
     
-    this.layersControl.addOverlay(group, 'Shortest path');
+    this.layersControl.addOverlay(group, '<span style="color: '+ color_ +';">' + label + '</span>');
     this.map.addLayer(group);
 };
 
@@ -992,5 +994,26 @@ MapClass.prototype.drawObstacles = function (objects) {
     }
     
     this.layersControl.addOverlay(group, 'Obstacles');
+    //this.map.addLayer(group);
+};
+
+MapClass.prototype.drawPolygon = function (polygon) {
+    //var group = L.layerGroup();
+
+    var coords = [];
+    for (var i = 0, len = polygon.length; i < len; i++) {
+        coords.push(new L.LatLng(polygon[i].x, polygon[i].y));
+    }
+
+    L.polygon(
+            coords,
+            {
+                color: this.getRandomColor(),
+                weight: 2,
+                opacity: 1
+            }
+    ).addTo(this.map);
+
+    //this.layersControl.addOverlay(group, 'intersecting polygon');
     //this.map.addLayer(group);
 };

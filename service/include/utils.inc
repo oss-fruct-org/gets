@@ -609,13 +609,20 @@ function require_channel_accessible($dbconn, $channel_name, $is_public) {
 
 /*
  * Check that current user owns channel $channel_name
+ * Admin users also has permissions
  * Returns: array (user_id, channel_id)
  */
 function require_channel_owned($dbconn, $channel_name) {
-    $email = auth_get_google_email();
-    $result_check = pg_query_params($dbconn, 'SELECT users.id, channel.id FROM channel 
+    if (is_user_admin($dbconn)) {
+	$result_check = pg_query_params($dbconn, 'SELECT users.id, channel.id FROM channel 
+            INNER JOIN users ON users.id = channel.owner_id 
+            WHERE channel.name=$1;', array($channel_name));
+    } else {
+	$email = auth_get_google_email();
+	$result_check = pg_query_params($dbconn, 'SELECT users.id, channel.id FROM channel 
             INNER JOIN users ON users.id = channel.owner_id 
             WHERE users.email=$1 AND channel.name=$2;', array($email, $channel_name));
+    }
 
     if (!($result_check_row = pg_fetch_row($result_check))) {
         throw new Exception("Channel ${channel_name} not owned", 1);

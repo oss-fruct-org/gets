@@ -7,7 +7,7 @@
     } else {
         var exports = definition();
         window.theta_star = exports.theta_star;
-        window.GraphTheta = exports.GraphTheta;
+        window.Graph = exports.Graph;
     }
 })(function () {
     
@@ -205,7 +205,7 @@
      * A graph memory structure
      * @param {Array} gridIn 2D array of input weights
      */
-    function GraphTheta(gridIn) {
+    function Graph(gridIn) {
         this.grid = [];
         for (var x = 0; x < gridIn.length; x++) {
             this.grid[x] = [];
@@ -218,7 +218,7 @@
         this.init();
     }
     
-    GraphTheta.prototype.init = function () {
+    Graph.prototype.init = function () {
         for (var i = 0; i < this.grid.length; i++) {
             for (var j = 0; j < this.grid[i].length; j++) {
                 theta_star.cleanNode(this.grid[i][j]);
@@ -226,7 +226,7 @@
         }
     };
     
-    GraphTheta.prototype.neighbors = function (node) {
+    Graph.prototype.neighbors = function (node) {
         var ret = [],
             x = node.x,
             y = node.y,
@@ -275,7 +275,7 @@
         return ret;
     };
     
-    GraphTheta.prototype.isPositionBlocked = function (x, y) {
+    Graph.prototype.isPositionBlocked = function (x, y) {
         if (x < 0 || y < 0) return true;
         //Logger.debug('--------------------------------------');
         //Logger.debug('this.grid[x][y]: ' + x + ', ' + y);
@@ -424,6 +424,6 @@
     
     return {
         theta_star: theta_star,
-        GraphTheta: GraphTheta
+        Graph: Graph
     };
 });

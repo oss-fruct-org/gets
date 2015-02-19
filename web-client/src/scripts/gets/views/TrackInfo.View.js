@@ -58,7 +58,7 @@ TrackInfo.prototype.placeTrackInTrackInfo = function (track, categories, user) {
         $(trackPointLinkElement).attr('title', track.points[i].name);
         $(trackPointLinkElement).addClass('ellipsis-text');
         $(trackPointLinkElement).addClass('list-group-item');
-        $(trackPointLinkElement).text(track.points[i].name);
+        $(trackPointLinkElement).text((i+1) + '. ' + track.points[i].name);
         $(trackPointLinkElement).appendTo(tracksPointList);
     }
     

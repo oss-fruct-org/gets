@@ -14,4 +14,6 @@ define('ALL_USERS_TRUSTED', false);
 define('GOOGLE_APP_NAME', 'GeTS-Service');
 define('GOOGLE_CLIENT_ID', '710658254828-tntn2h772v22ilii1qgsvlfgrijrbg6e.apps.googleusercontent.com');
 define('GOOGLE_SECRET_ID', 'y8fwnTyiEs-gsrCTLtfFyjXn');
+
+define('DEFAULT_CATEGORY_ID', 21);
 ?>

@@ -51,7 +51,7 @@ PointEdit.prototype.placePointInPointEdit = function(point) {
     
     $(this.editPoint).find('#edit-point-desc-input').val(point.description);              
   
-    $(this.editPoint).find('#edit-point-url-input').val(point.url);
+    $(this.editPoint).find('#edit-point-url-input').val(point.url === '{}' ? '' : point.url);
     $(this.editPoint).find('#edit-point-active-radius-input').val(point.radius);
     $(this.editPoint).find('#edit-point-picture-input-url').val(point.photo);
     $(this.editPoint).find('#edit-point-audio-input-url').val(point.audio);
@@ -70,7 +70,8 @@ PointEdit.prototype.placePointInPointEdit = function(point) {
             point.extendedData[i].name !== 'description' &&
             point.extendedData[i].name !== 'category_id' && 
             point.extendedData[i].name !== 'radius' && 
-            point.extendedData[i].name !== 'index') {
+            point.extendedData[i].name !== 'index' &&
+            point.extendedData[i].name !== 'idx') {
             extendedDataText += '<div class="form-group"><label>' + point.extendedData[i].name + '</label><input class="form-control" type="text" name="' + point.extendedData[i].name + '" value="' + point.extendedData[i].value + '" /></div>';
         }
     }

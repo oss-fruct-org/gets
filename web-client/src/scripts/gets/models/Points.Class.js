@@ -196,6 +196,7 @@ PointsClass.prototype.addPoint = function (paramsObj, update, callback) {
          
     $(paramsObj).each(function (idx, value) {
         Logger.debug(idx, value);
+        if (value.name === 'altitude') return true;
         if (value.name === 'title') {
             newParamsObj.title = value.value;
         } else if (value.name === 'description') {

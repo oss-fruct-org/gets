@@ -478,7 +478,23 @@ TracksPage.prototype.initPage = function() {
             $(useMapButton).removeClass('active');
             $(useMapButton).click();
         }
-    });    
+    });
+    
+    // Use different modes for coords input
+    $(this.document).on('click', '#edit-point-coords-input-type li a', function (e){
+        e.preventDefault();
+        
+        $(self.document).find('#edit-point-coords-input-type li a').removeClass('marked-list-item');   
+        
+        if ($(this).hasClass('marked-list-item')) {
+            $(this).removeClass('marked-list-item');
+        } else {
+            $(this).addClass('marked-list-item');
+        }
+        
+        var type = $(self.document).find('#edit-point-coords-input-type li a.marked-list-item').data('item');
+        self._pointAdd.switchCoordsInputFormat(type);
+    });
     
     // upload picture show/hide handler
     $(this.document).on('click', '#edit-point-picture-toggle-upload', function (e){
@@ -795,10 +811,11 @@ TracksPage.prototype.showPointInfo = function() {
 TracksPage.prototype.showEditPoint = function() {
     try {
         var point = this._points.getPoint();
-        this._headerView.changeOption($(this._pointEdit.getView()).data('pagetitleEdit'), 'glyphicon-chevron-left', '#form=point_info&track_id=' + point.track + '&point_name=' + point.name);
+        this._headerView.changeOption($(this._pointEdit.getView()).data('pagetitleEdit'), 'glyphicon-chevron-left', '#form=point_info&track_id=' + point.track + '&point_uuid=' + point.uuid);
         this._pointEdit.removeCustomFields();
         this._pointEdit.placePointInPointEdit(point);  
         this._pointEdit.placeCategoriesInPointAdd(this._categories.getCategories(), point.category_id);
+        this._pointAdd.defaultCoordsInputFormat();
         
         this.currentView.hideView();
         this.currentView = this._pointEdit;
@@ -882,9 +899,10 @@ TracksPage.prototype.editTrackHandler = function (form) {
 
 TracksPage.prototype.addPointHandler = function (form, update) {
     try {
+        var latlng = this._pointAdd.getLatLng();
         if (this._utils.checkCoordsInput(
-                $(form).find('#edit-point-lat-input').val(),
-                $(form).find('#edit-point-lon-input').val(),
+                latlng.lat,
+                latlng.lng,
                 $(form).find('#edit-point-alt-input').val()
                 )) {
             this._pointAdd.toggleOverlay();
@@ -892,6 +910,8 @@ TracksPage.prototype.addPointHandler = function (form, update) {
             var paramsObj = $(form).serializeArray();
             var trackName = decodeURIComponent(this._utils.getHashVar('track_id'));
             paramsObj.push({name: 'channel', value: trackName});
+            paramsObj.push({name: 'latitude', value: latlng.lat});
+            paramsObj.push({name: 'longitude', value: latlng.lng});
             if (!update) {
                 paramsObj.push({name: 'index', value: this._tracks.getTrack(trackName, true).points.length + 1});
             }
@@ -903,7 +923,7 @@ TracksPage.prototype.addPointHandler = function (form, update) {
                     that._mapCtrl.addTrack(that._tracks.getTrack(trackName, true));
                 }
                 that.window.location.replace('#form=' + TracksPage.TRACK_INFO + '&track_id=' + trackName);
-                MessageBox.showMessage($(that._pointAdd.getView()).data('messagesuccessAdd'), MessageBox.SUCCESS_MESSAGE);
+                MessageBox.showMessage(update ? $(that._pointAdd.getView()).data('messagesuccessEdit') : $(that._pointAdd.getView()).data('messagesuccessAdd'), MessageBox.SUCCESS_MESSAGE);
             });
         }
     } catch (Exception) {

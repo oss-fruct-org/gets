@@ -58,8 +58,7 @@ PointEdit.prototype.placePointInPointEdit = function(point) {
     $(this.editPoint).find('#edit-point-active-radius-input').val(point.radius);//
     
     var coords = point.coordinates.split(',');
-    $(this.editPoint).find('#edit-point-lat-input').val(coords[1]);
-    $(this.editPoint).find('#edit-point-lon-input').val(coords[0]);
+    $(this.editPoint).find('#edit-point-lat-lon-input').val(coords[1] + ', ' + coords[0]);
     
     var extendedDataText = '';
     for (var i = 0, len = point.extendedData.length; i < len; i++) {
@@ -70,7 +69,8 @@ PointEdit.prototype.placePointInPointEdit = function(point) {
             point.extendedData[i].name !== 'time' && 
             point.extendedData[i].name !== 'description' &&
             point.extendedData[i].name !== 'category_id' && 
-            point.extendedData[i].name !== 'radius') {
+            point.extendedData[i].name !== 'radius' && 
+            point.extendedData[i].name !== 'index') {
             extendedDataText += '<div class="form-group"><label>' + point.extendedData[i].name + '</label><input class="form-control" type="text" name="' + point.extendedData[i].name + '" value="' + point.extendedData[i].value + '" /></div>';
         }
     }
@@ -80,7 +80,7 @@ PointEdit.prototype.placePointInPointEdit = function(point) {
 /**
  * Show view
  */
-PointEdit.prototype.showView = function() {
+PointEdit.prototype.showView = function() {   
     $(this.editPoint).removeClass('hidden').addClass('show');
 };
 
@@ -116,6 +116,6 @@ PointEdit.prototype.setLatLng = function(lat, lng) {
 };
 
 PointEdit.prototype.removeCustomFields = function () {
-    $(this.addPoint).find('#edit-point-extended-data').html('');   
+    $(this.editPoint).find('#edit-point-extended-data').html('');   
 };
 

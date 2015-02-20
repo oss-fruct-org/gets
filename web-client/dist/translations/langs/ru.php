@@ -102,7 +102,10 @@ $translations = array(
     'value' => 'Значение',
     'enter-value' => 'Введите значение (опционально)',
     'cancel' => 'Отменить',
-    'point-add-success' => 'Точка была успешно добавлена', 
+    'point-add-success' => 'Точка была успешно добавлена',
+    'coords-input-type-decimal' => 'Градусы',
+    'coords-input-type-degrees-m' => 'Градусы, минуты',
+    'coords-input-type-degrees-m-s' => 'Градусы, минуты, секунды',
     
     // Edit Point widget strings
     'edit-point-title' => 'Редактировать точку', 

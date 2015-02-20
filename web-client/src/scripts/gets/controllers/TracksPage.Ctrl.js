@@ -814,7 +814,6 @@ TracksPage.prototype.showEditPoint = function() {
         this._headerView.changeOption($(this._pointEdit.getView()).data('pagetitleEdit'), 'glyphicon-chevron-left', '#form=point_info&track_id=' + point.track + '&point_uuid=' + point.uuid);
         this._pointEdit.removeCustomFields();
         this._pointEdit.placePointInPointEdit(point);  
-        this._pointEdit.placeCategoriesInPointAdd(this._categories.getCategories(), point.category_id);
         this._pointAdd.defaultCoordsInputFormat();
         
         this.currentView.hideView();

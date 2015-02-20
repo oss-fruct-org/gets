@@ -57,7 +57,6 @@ session_start();
         <title>GeTS Web Client</title>
     </head>
     <body>
-	<?php include_once('./widgets/googleanalytics.inc');?>
         <div class="main-container">
             <div class="main-header">
                 <?php

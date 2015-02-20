@@ -216,6 +216,22 @@ PointsPage.prototype.initPage = function() {
         }
     });
     
+    // Use different modes for coords input
+    $(this.document).on('click', '#edit-point-coords-input-type li a', function (e){
+        e.preventDefault();
+        
+        $(self.document).find('#edit-point-coords-input-type li a').removeClass('marked-list-item');   
+        
+        if ($(this).hasClass('marked-list-item')) {
+            $(this).removeClass('marked-list-item');
+        } else {
+            $(this).addClass('marked-list-item');
+        }
+        
+        var type = $(self.document).find('#edit-point-coords-input-type li a.marked-list-item').data('item');
+        self._pointAdd.switchCoordsInputFormat(type);
+    });
+    
     // Create/remove search area
     $(this.document).on('change', '#points-main-show-search-area', function(e) {
         e.preventDefault();
@@ -518,6 +534,7 @@ PointsPage.prototype.showEditPoint = function() {
         this._pointEdit.removeCustomFields();
         this._pointEdit.placePointInPointEdit(point);  
         this._pointEdit.placeCategoriesInPointAdd(this._categories.getCategories(), point.category_id);
+        this._pointAdd.defaultCoordsInputFormat();
         
         this.currentView.hideView();
         this.currentView = this._pointEdit;
@@ -529,17 +546,19 @@ PointsPage.prototype.showEditPoint = function() {
 };
 
 PointsPage.prototype.addPointHandler = function(formData, update) {
-    var that = this;
-    try {         
+    var that = this;   
+    try { 
+        var latlng = this._pointAdd.getLatLng();
         if (this._utils.checkCoordsInput(
-                $(formData).find('#edit-point-lat-input').val(),
-                $(formData).find('#edit-point-lon-input').val(),
+                latlng.lat,
+                latlng.lng,
                 $(formData).find('#edit-point-alt-input').val()
                 )) {
             this._pointAdd.toggleOverlay();
 
             var paramsObj = $(formData).serializeArray();
-            Logger.debug(paramsObj);
+            paramsObj.push({name: 'latitude', value: latlng.lat});
+            paramsObj.push({name: 'longitude', value: latlng.lng});
             this._points.addPoint(paramsObj, update, function () {
                 that.window.location.replace('#form=' + PointsPage.MAIN);
                 var message = update ? $(that._pointAdd.getView()).data('messagesuccessEdit') : $(that._pointAdd.getView()).data('messagesuccessAdd'); 

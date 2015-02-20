@@ -101,7 +101,10 @@ $translations = array(
     'value' => 'Value',
     'enter-value' => 'Enter value (optional)',
     'cancel' => 'Cancel',
-    'point-add-success' => 'Point was successfully added', 
+    'point-add-success' => 'Point was successfully added',
+    'coords-input-type-decimal' => 'Degree decimal',
+    'coords-input-type-degrees-m' => 'Degree, minutes',
+    'coords-input-type-degrees-m-s' => 'Degree, minutes, seconds',
     
     // Edit Point widget strings
     'edit-point-title' => 'Edit Point', 

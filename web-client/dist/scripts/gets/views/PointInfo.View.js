@@ -55,7 +55,7 @@ PointInfo.prototype.placePointInPointInfo = function(point, isAuth) {
     
     $(descElement).html(point.description);
           
-    if (point.url !== '') {
+    if (point.url !== '' && point.url !== '{}') {
         $(urlElement).attr('href', point.url).text(point.url);
     }
 

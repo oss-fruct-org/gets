@@ -75,7 +75,10 @@ PointInfo.prototype.placePointInPointInfo = function(point, isAuth) {
     
     var extendedDataText = '';
     for (var i = 0, len = point.extendedData.length; i < len; i++) {
-        extendedDataText += '<div class="emulate-tab"><label>' + point.extendedData[i].name + ': &nbsp;</label><div class="inline">' + point.extendedData[i].value + '</div></div>';
+        if (point.extendedData[i].name !== 'link' &&
+            point.extendedData[i].name !== 'description') {
+            extendedDataText += '<div class="emulate-tab"><label>' + point.extendedData[i].name + ': &nbsp;</label><div class="inline">' + point.extendedData[i].value + '</div></div>';
+        }
     }
     $(extendedDataElement).html(extendedDataText);
 

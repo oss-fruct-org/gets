@@ -356,7 +356,7 @@ TracksPage.prototype.initPage = function() {
             self._trackInfo.toggleOverlay();
             
             var track = self._tracks.getTrack(trackName, false);            
-            self._routes.obstacleAvoidingCurve(track, MapClass.ROUTE_TYPE_CURVE_RAW);
+            self._routes.simpleCurve(track, MapClass.ROUTE_TYPE_CURVE_RAW);
             
             if (!track.bounds) {
                 track.bounds = self._routes.getBoundBoxForPoints(track.points);
@@ -392,7 +392,7 @@ TracksPage.prototype.initPage = function() {
             
             var track = self._tracks.getTrack(trackName, false);
             self._routes.makeGoogleDirectionsRoute(track, [{name: 'mode', value: 'walking'}], function () {
-                self._routes.obstacleAvoidingCurve(track, MapClass.ROUTE_TYPE_CURVE_SERVICE);
+                self._routes.simpleCurve(track, MapClass.ROUTE_TYPE_CURVE_SERVICE);
                 
                 if (!track.onMap) {
                     track.onMap = {};

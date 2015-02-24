@@ -747,7 +747,7 @@ MapClass.prototype.drawConvexHullObjects = function (objects) {
                     opacity: 0.7,
                     lineJoin: 'round',
                     lineCap: 'round'
-        }).addTo(group);       
+        }).bindPopup('#' + i).addTo(group);       
     }  
     this.layersControl.addOverlay(group, 'Obstacles');
     this.map.addLayer(group);
@@ -990,7 +990,7 @@ MapClass.prototype.drawObstacles = function (objects) {
                     weight: 2,
                     opacity: 1                   
                 }
-        ).addTo(group);
+        ).bindPopup('#' + i).addTo(group);
     }
     
     this.layersControl.addOverlay(group, 'Obstacles');

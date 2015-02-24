@@ -1727,7 +1727,7 @@ var SweepContext = function(contour, options) {
 SweepContext.prototype.addHole = function(polyline) {
     this.initEdges(polyline);
     var i, len = polyline.length;
-    for (i = 0; i < len; i++) {      
+    for (i = 0; i < len; i++) {
         this.points_.push(polyline[i]);
     }
     return this; // for chaining
@@ -1764,7 +1764,6 @@ SweepContext.prototype.AddHole = SweepContext.prototype.addHole;
 SweepContext.prototype.addHoles = function(holes) {
     var i, len = holes.length;
     for (i = 0; i < len; i++) {
-        Logger.debug('i = ' + i);
         this.initEdges(holes[i]);
     }
     this.points_ = this.points_.concat.apply(this.points_, holes);
@@ -1967,11 +1966,6 @@ SweepContext.prototype.addToMap = function(triangle) {
 /** @private */
 SweepContext.prototype.locateNode = function(point) {
     return this.front_.locateNode(point.x);
-};
-
-/** @private */
-SweepContext.prototype.locatePoint = function(point) {
-    return this.front_.locatePoint(point);
 };
 
 /** @private */

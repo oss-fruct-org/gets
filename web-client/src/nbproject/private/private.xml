@@ -3,21 +3,12 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/home/davidson/projects/gets/web-client/src/scripts/poly2tri.js</file>
             <file>file:/home/davidson/projects/gets/web-client/src/scripts/astar_triangles.js</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/scripts/astar_0.4.0.js</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/styles/gets/style.css</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/models/Points.Class.js</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/widgets/Header.inc</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/controllers/Map.Ctrl.js</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/views/PointAdd.View.js</file>
+            <file>file:/home/davidson/projects/gets/web-client/src/scripts/theta.js</file>
             <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/models/Map.Class.js</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/widgets/PointEdit.inc</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/scripts/jquery.inputmask.bundle.min.js</file>
             <file>file:/home/davidson/projects/gets/web-client/src/tracks.php</file>
             <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/controllers/Routes.js</file>
             <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/controllers/TracksPage.Ctrl.js</file>
-            <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/views/TrackInfo.View.js</file>
         </group>
     </open-files>
 </project-private>

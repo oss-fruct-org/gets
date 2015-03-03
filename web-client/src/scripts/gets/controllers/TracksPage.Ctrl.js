@@ -259,7 +259,7 @@ TracksPage.prototype.initPage = function() {
             var trackAlreadyShown = true;
             if (!track.onMap[MapClass.ROUTE_TYPE_RAW]) {
                 track.onMap[MapClass.ROUTE_TYPE_RAW] = {
-                    name: self._trackInfo.getRouteName(MapClass.ROUTE_TYPE_RAW),
+                    name: self._trackInfo.getRouteName(MapClass.ROUTE_TYPE_RAW) + 'Points Num: ' + track.points.length + '; Distance: ' + self._routes.calcDistTrack(track) + 'm',
                     color: MapClass.ROUTE_TYPE_RAW_COLOR
                 };
                 trackAlreadyShown = false;
@@ -278,19 +278,19 @@ TracksPage.prototype.initPage = function() {
             }, 0);*/
             setTimeout(function () {
                 // Experiments
-                self._routes.ESP_gridbased(track, function (obsts) {
+                /*self._routes.ESP_gridbased(track, function (obsts) {
                     self._mapCtrl.drawConvexHullObjects(obsts);
                     //self._mapCtrl.drawBoundingBox(obsts);
                     self._mapCtrl.drawValidPoints(track.esp.grid);
-                    self._mapCtrl.drawPath(track.esp.path, 'Grid Shortest path - Orginal Len: ' + track.esp.path.length, '#0000FF');//self._mapCtrl.drawPath(track.esp.pp);
+                    self._mapCtrl.drawPath(track.esp.path, 'Grid Shortest path - Points Num: ' + track.esp.path.length, '#0000FF');//self._mapCtrl.drawPath(track.esp.pp);
                     //self._mapCtrl.drawEncodedPolyline(track.esp.curve, 'Shortest path - Curve waypoints - fixed');
                     self._mapCtrl.drawEncodedPolyline(track.esp.curve_, 'Grid Shortest path - Curve', '#0000BB');
                     //self._mapCtrl.drawEncodedPolyline(track.esp.curve_s, 'Shortest path - Curve sections');
-                }, self._mapCtrl);
+                }, self._mapCtrl);*/
                 self._routes.ESP_trianglebased(track, function (obsts) {
                     self._mapCtrl.drawTriangulation(track.esp_tri.tri);
                     self._mapCtrl.drawObstacles(obsts);
-                    self._mapCtrl.drawPath(track.esp_tri.path, 'Tri. Shortest path - Orginal Len: ' + track.esp_tri.path.length, '#2E0854');
+                    self._mapCtrl.drawPath(track.esp_tri.path, 'Tri. Shortest path - Points Num: ' + track.esp_tri.path.length + '; Distance: ' + track.esp_tri.path_dist + 'm', '#2E0854');                   
                     self._mapCtrl.drawEncodedPolyline(track.esp_tri.curve_, 'Tri. Shortest path - Curve', '#7D26CD');
                 }, self._mapCtrl);
                 self._trackInfo.toggleOverlay();
@@ -368,7 +368,7 @@ TracksPage.prototype.initPage = function() {
             var trackAlreadyShown = true;
             if (!track.onMap[MapClass.ROUTE_TYPE_CURVE_RAW]) {
                 track.onMap[MapClass.ROUTE_TYPE_CURVE_RAW] = {
-                    name: self._trackInfo.getRouteName(MapClass.ROUTE_TYPE_CURVE_RAW),
+                    name: self._trackInfo.getRouteName(MapClass.ROUTE_TYPE_CURVE_RAW) + ' Distance: ' + self._routes.calcDistEncodedPolyline(track.oACurve) + 'm',
                     color: MapClass.ROUTE_TYPE_CURVE_RAW_COLOR
                 };
                 trackAlreadyShown = false;

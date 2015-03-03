@@ -37,7 +37,8 @@ session_start();
         <script src="scripts/theta.js"></script>
         <script src="scripts/astar_triangles.js"></script>
         <script src="scripts/poly2tri.js"></script>
-        <script src="scripts/jquery.inputmask.bundle.min.js"></script>    
+        <script src="scripts/jquery.inputmask.bundle.min.js"></script> 
+        <script src="scripts/smoothcurves.js"></script>
         <script src="scripts/gets/models/Categories.Class.js"></script>
         <script src="scripts/gets/models/Points.Class.js"></script>
         <script src="scripts/gets/models/Tracks.Class.js"></script>

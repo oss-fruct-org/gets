@@ -259,7 +259,7 @@ TracksPage.prototype.initPage = function() {
             var trackAlreadyShown = true;
             if (!track.onMap[MapClass.ROUTE_TYPE_RAW]) {
                 track.onMap[MapClass.ROUTE_TYPE_RAW] = {
-                    name: self._trackInfo.getRouteName(MapClass.ROUTE_TYPE_RAW) + 'Points Num: ' + track.points.length + '; Distance: ' + self._routes.calcDistTrack(track) + 'm',
+                    name: self._trackInfo.getRouteName(MapClass.ROUTE_TYPE_RAW) + 'P-s Num: ' + track.points.length + '; D: ' + self._routes.calcDistTrack(track) + 'm; A: ' + self._routes.calcAnglesSumTrack(track, self._mapCtrl) + '°',
                     color: MapClass.ROUTE_TYPE_RAW_COLOR
                 };
                 trackAlreadyShown = false;
@@ -290,8 +290,8 @@ TracksPage.prototype.initPage = function() {
                 self._routes.ESP_trianglebased(track, function (obsts) {
                     self._mapCtrl.drawTriangulation(track.esp_tri.tri);
                     self._mapCtrl.drawObstacles(obsts);
-                    self._mapCtrl.drawPath(track.esp_tri.path, 'Tri. Shortest path - Points Num: ' + track.esp_tri.path.length + '; Distance: ' + track.esp_tri.path_dist + 'm', '#2E0854');                   
-                    self._mapCtrl.drawEncodedPolyline(track.esp_tri.curve_, 'Tri. Shortest path - Curve', '#7D26CD');
+                    self._mapCtrl.drawPath(track.esp_tri.path, 'Tri. Shortest path - P-s Num: ' + track.esp_tri.path.length + '; D: ' + track.esp_tri.path_dist + 'm; A: ' + self._routes.calcAnglesSumLineSegs(track.esp_tri.path, self._mapCtrl) + '°', '#2E0854');                   
+                    self._mapCtrl.drawLatLngPolyline(track.esp_tri.curve_, 'Tri. Shortest path - Curve', '#7D26CD');
                 }, self._mapCtrl);
                 self._trackInfo.toggleOverlay();
             }, 0);
@@ -356,7 +356,7 @@ TracksPage.prototype.initPage = function() {
             self._trackInfo.toggleOverlay();
             
             var track = self._tracks.getTrack(trackName, false);            
-            self._routes.simpleCurve(track, MapClass.ROUTE_TYPE_CURVE_RAW);
+            self._routes.simpleCurve(track, MapClass.ROUTE_TYPE_CURVE_RAW, self._mapCtrl);
             
             if (!track.bounds) {
                 track.bounds = self._routes.getBoundBoxForPoints(track.points);
@@ -368,7 +368,7 @@ TracksPage.prototype.initPage = function() {
             var trackAlreadyShown = true;
             if (!track.onMap[MapClass.ROUTE_TYPE_CURVE_RAW]) {
                 track.onMap[MapClass.ROUTE_TYPE_CURVE_RAW] = {
-                    name: self._trackInfo.getRouteName(MapClass.ROUTE_TYPE_CURVE_RAW) + ' Distance: ' + self._routes.calcDistEncodedPolyline(track.oACurve) + 'm',
+                    name: self._trackInfo.getRouteName(MapClass.ROUTE_TYPE_CURVE_RAW) + 'P-s Num: ' + track.oACurve.length + '; D: ' + self._routes.calcDistLatLngs(track.oACurve) + 'm; A: ' + self._routes.calcAnglesSumLatLngs(track.oACurve, self._mapCtrl) + '°',
                     color: MapClass.ROUTE_TYPE_CURVE_RAW_COLOR
                 };
                 trackAlreadyShown = false;
@@ -378,6 +378,8 @@ TracksPage.prototype.initPage = function() {
             if (!trackAlreadyShown) {
                 self._trackInfo.addRouteOnMap(track, MapClass.ROUTE_TYPE_CURVE_RAW);
             }
+            
+            self._routes.calcAnglesSumTrack(track, self._mapCtrl);
                        
             self._trackInfo.toggleOverlay();
         }

@@ -148,3 +148,15 @@ MapController.prototype.drawObstacles = function (objects) {
 MapController.prototype.drawPolygon = function (polygon) {
     this._map.drawPolygon(polygon);
 };
+
+MapController.prototype.project = function (latlng) {
+    return this._map.project(latlng);
+};
+
+MapController.prototype.unproject = function (point) {
+    return this._map.unproject(point);
+};
+
+MapController.prototype.drawLatLngPolyline = function (path, label, color) {
+    this._map.drawLatLngPolyline(path, label, color);
+};

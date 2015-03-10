@@ -344,16 +344,14 @@ Routes.prototype.addCShape = function (track) {
     track.cShapeSections = cShapeSections;
 };
 
-Routes.prototype.simpleCurve = function (track, type) { 
+Routes.prototype.simpleCurve = function (track, type, map) { 
     if (track.points.length < 2) {
         throw new GetsWebClientException('Routes Error', 'obstacleAvoidingCurve, total number of points in the route must be 2 or more');
     }
     
     var curvePoints = this.addCurvePoints(track, type);
     
-    var oACurve = this.bezierCurveszzz(curvePoints);
-     
-    track.oACurve = L.PolylineUtil.encode(oACurve);
+    track.oACurve = this.smoothcurvejs(curvePoints, map);//this.bezierCurveszzz(curvePoints);    
 };
 
 Routes.prototype.ESP_gridbased = function (track, callback, map) {
@@ -633,7 +631,7 @@ Routes.prototype.bezierCurves = function (points, obstacles, map) {
         return coordsArray;
     }
     
-    var U_DEFAULT = 0.5;
+    var U_DEFAULT = 0.7;
     
     var u = U_DEFAULT;
     var u_ = 0;
@@ -991,7 +989,7 @@ Routes.prototype.bezierCurveszzz = function (points, map) {
 Routes.prototype.yetAnotherBezierCurve = function (points) {
     var accuracy = 0.1;
     var curve = [];
-    var p = 1;
+    var p = 0;
     
     var getControlPoints = function (x0, y0, x1, y1, x2, y2, t) {
         var d01 = Math.sqrt(Math.pow(x1 - x0, 2) + Math.pow(y1 - y0, 2));
@@ -1112,10 +1110,15 @@ Routes.prototype.ESP_trianglebased = function (track, callback, map) {
     this.requestOSMObstacles(track, function (obsts) {
         that.generateTriangulation(track, obsts, map);
         that.AStarTri(track, map);
-        track.esp_tri.curve_ = L.PolylineUtil.encode(that.bezierCurves(track.esp_tri.path, map, obsts));
-        map.drawEncodedPolyline(L.PolylineUtil.encode(that.bezierCurveszzz(that.removeClosePoints(track.esp_tri.path), map)), 'Tri. Shortest path - Curve---', '#BB00BB');
+        track.esp_tri.curve_ = that.bezierCurves(that.partitionToCShape(track.esp_tri.path), map, obsts);
+        //map.drawEncodedPolyline(L.PolylineUtil.encode(that.yetAnotherBezierCurve(that.additionalPoints(track.esp_tri.path), map)), 'Tri. Shortest path - Curve---', '#BB00BB');
+        var bezier = that.bezierCurveszzz(track.esp_tri.path, map);
+        map.drawLatLngPolyline(bezier, 'Tri. Shortest path - Curve (Bezier)| P-s Num: ' + bezier.length + '; D: ' + that.calcDistLatLngs(bezier) + 'm; A: ' + that.calcAnglesSumLatLngs(bezier, map) + '°', '#BB00BB');
         //that.calcAnglesSumTrack(track);
-        //map.drawEncodedPolyline(L.PolylineUtil.encode(that.smoothcurvejs(track.esp_tri.path, map)), 'Tri. Shortest path - Curve Lib', '#123456');
+        //that.smoothcurvejs(track.esp_tri.path, map);
+        var hermite = that.smoothcurvejs(track.esp_tri.path, map);
+        map.drawLatLngPolyline(hermite, 'Tri. Shortest path - Curve Lib (Hermite 0.4)| P-s Num: ' + hermite.length + '; D: ' + that.calcDistLatLngs(hermite) + 'm; A: ' + that.calcAnglesSumLatLngs(hermite, map) + '°', '#123456');
+        //map.drawEncodedPolyline(L.PolylineUtil.encode(that.smoothcurvejs2(track.esp_tri.path, map)), 'Tri. Shortest path - Curve Lib2', '#654321');
         callback(obsts);       
     });
     
@@ -1538,6 +1541,15 @@ Routes.prototype.calcDistLineSegs = function (arr) {
     return distance.toFixedDown(3);
 };
 
+Routes.prototype.calcDistLatLngs = function (arr) {
+    var distance = 0;
+    for (var i = 0; i < arr.length - 1; i++) {
+        distance += arr[i].distanceTo(arr[i + 1]);
+    }
+    
+    return distance.toFixedDown(3);
+};
+
 Routes.prototype.calcDistTrack = function (track) {
     var waypoints = [];
     for (var k = 0, len = track.points.length; k < len; k++) {
@@ -1568,63 +1580,222 @@ Routes.prototype.calcDistEncodedPolyline = function (polyline) {
     return distance.toFixedDown(3);
 };
 
-Routes.prototype.calcAnglesSumTrack = function (track) {
-    var lengthOfVector = function (v) {
-        return Math.sqrt(Math.pow(v.lat, 2) + Math.pow(v.lng, 2));
-    };
-    
-    var dotProduct = function (v1, v2) {
-        return v1.lat * v1.lng + v2.lat * v2.lng;
-    };
-    
+Routes.prototype.calcAnglesSumTrack = function (track, map) {
     var waypoints = [];
     for (var k = 0, len = track.points.length; k < len; k++) {
         var point = track.points[k].coordinates.split(',').map(parseFloat);
         waypoints.push(new L.LatLng(point[1], point[0]));
     }
     
-    //var distance = 0;
+    var sum = 0;
     for (var i = 1; i < waypoints.length - 1; i++) {
-        var ba = new L.LatLng(waypoints[i - 1].lat - waypoints[i].lat, waypoints[i - 1].lng - waypoints[i].lng),
-            bc = new L.LatLng(waypoints[i + 1].lat - waypoints[i].lat, waypoints[i + 1].lng - waypoints[i].lng);    
-        var angle = (Math.atan2(bc.lng, bc.lat) * 180 / Math.PI) - (Math.atan2(ba.lng, ba.lat) * 180 / Math.PI);
-        //Logger.debug(waypoints[i - 1], waypoints[i], waypoints[i + 1]);
-        var angle2 = Math.acos(dotProduct(ba, bc) / (lengthOfVector(ba) * lengthOfVector(bc))) * 180 / Math.PI;
+        var p0 = map.project(waypoints[i - 1]),
+            p1 = map.project(waypoints[i]),
+            p2 = map.project(waypoints[i + 1]);
+    
+        //Logger.debug(p0, p1, p2);
+        var dotprod = (p2.x - p1.x) * (p0.x - p1.x) + (p2.y - p1.y) * (p0.y - p1.y);
+        var len1squared = (p0.x - p1.x) * (p0.x - p1.x) + (p0.y - p1.y) * (p0.y - p1.y);
+        var len2squared = (p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y);
+
+        var angle = 180 - Math.acos(dotprod / Math.sqrt(len1squared * len2squared)) * 180 / Math.PI;
         //Logger.debug('angle in point: ' + (i + 1) + ' equals: ' + angle);
-        //Logger.debug('angle in point: ' + (i + 1) + ' equals: ' + angle2);
-        //distance += waypoints[i].distanceTo(waypoints[i + 1]);
+        sum += angle;
     }
     
-    //return distance.toFixedDown(3);
+    return sum.toFixedDown(3);
 };
 
-Routes.prototype.smoothcurvejs = function (points) {
+Routes.prototype.calcAnglesSumLineSegs = function (arr, map) {
+    var sum = 0;
+    for (var i = 1; i < arr.length - 1; i++) {
+        var p0 = map.project(arr[i - 1].coords),
+            p1 = map.project(arr[i].coords),
+            p2 = map.project(arr[i + 1].coords);
+    
+        //Logger.debug(p0, p1, p2);
+        var dotprod = (p2.x - p1.x) * (p0.x - p1.x) + (p2.y - p1.y) * (p0.y - p1.y);
+        var len1squared = (p0.x - p1.x) * (p0.x - p1.x) + (p0.y - p1.y) * (p0.y - p1.y);
+        var len2squared = (p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y);
+
+        var angle = 180 - Math.acos(dotprod / Math.sqrt(len1squared * len2squared)) * 180 / Math.PI;
+        //Logger.debug('angle in point: ' + (i + 1) + ' equals: ' + angle);
+        sum += isNaN(angle) ? 0 : angle;
+    }
+    
+    return sum.toFixedDown(3);
+};
+
+Routes.prototype.calcAnglesSumLatLngs = function (arr, map) {
+    var sum = 0;
+    for (var i = 1; i < arr.length - 1; i++) {
+        var p0 = map.project(arr[i - 1]),
+            p1 = map.project(arr[i]),
+            p2 = map.project(arr[i + 1]);
+
+        var dotprod = (p2.x - p1.x) * (p0.x - p1.x) + (p2.y - p1.y) * (p0.y - p1.y);
+        var len1squared = (p0.x - p1.x) * (p0.x - p1.x) + (p0.y - p1.y) * (p0.y - p1.y);
+        var len2squared = (p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y);
+
+        var angle = 180 - Math.acos(dotprod / Math.sqrt(len1squared * len2squared)) * 180 / Math.PI;
+        //Logger.debug('angle in point: ' + (i + 1) + ' equals: ' + angle);
+        sum += isNaN(angle) ? 0 : angle;
+    }
+    
+    return sum.toFixedDown(3);
+};
+
+Routes.prototype.smoothcurvejs = function (points, map) {
     var accuracy = 0.1;
+    var tension = 0.4;
     var curve = [];
-    
+       
     var newPoints = points.map(function (elem) {
-        return [elem.coords.lat, elem.coords.lng];
+        var projection = map.project(elem.coords);
+        return [projection.x, projection.y];
     });
-    Logger.debug(newPoints);
+       
+    var path = Smooth(newPoints, {
+        method: Smooth.METHOD_CUBIC,
+        clip: Smooth.CLIP_MIRROR,
+        cubicTension: tension
+    });
     
-    var smoother3 = new PlotSmoother(3,1);
-    smoother3.setSane(true);
-    var d3 = smoother3.smooth(newPoints);
-    
-    Logger.debug(d3);
-    
-    var bezier = function (t, p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y) {        
-        var lat = Math.pow(1 - t, 3) * p0x + 3 * Math.pow(1 - t, 2) * t * p1x + 3 * (1 - t) * Math.pow(t, 2) * p2x + Math.pow(t, 3) * p3x;
-        var lng = Math.pow(1 - t, 3) * p0y + 3 * Math.pow(1 - t, 2) * t * p1y + 3 * (1 - t) * Math.pow(t, 2) * p2y + Math.pow(t, 3) * p3y;
-        
-        return new L.LatLng(lat, lng);
-    };
-    
-    /*for (var i = 0, len = points.length; i < len - 1; i++) {
-        for (var j = 0; j <= 1; j += accuracy) {
-            curve.push(bezier(j, newPoints[i][0], newPoints[i][1], d3[i][0], d3[i][1], d3[i][2], d3[i][3], newPoints[i + 1][0], newPoints[i + 1][1]));
+    for (var i = 0, len = points.length; i < len - 1; i++) {
+        curve.push(points[i].coords);
+        for (var j = i + accuracy; j < i + 1; j += accuracy) {
+            curve.push(map.unproject(path(j)));
         }
-    }*/
+    }
+    curve.push(points[points.length - 1].coords);
     
     return curve;
+};
+
+Routes.prototype.smoothcurvejs2 = function (points, map) {
+    var accuracy = 0.0000001;
+    var curve = [];
+            
+    var newPointsX = points.map(function (elem) {
+        return elem.coords.lat;
+    });
+      
+    var newPointsY = points.map(function (elem) {
+        return elem.coords.lng;
+    });
+    
+    var bubbleSort = function (a, b) {
+        var swapped;
+        do {
+            swapped = false;
+            for (var i = 0; i < a.length - 1; i++) {
+                if (a[i] > a[i + 1]) {
+                    var temp = a[i];
+                    a[i] = a[i + 1];
+                    a[i + 1] = temp;
+                    
+                    temp = b[i];
+                    b[i] = b[i + 1];
+                    b[i + 1] = temp;
+                    
+                    swapped = true;
+                    
+                    
+                }
+            }
+        } while (swapped);
+    };
+    
+    bubbleSort(newPointsX, newPointsY);         
+    var mySpline = new MonotonicCubicSpline(newPointsX, newPointsY);
+    Logger.debug(mySpline);
+         
+    for (var i = 0; i < newPointsX.length - 1; i++) {
+        var diff = newPointsX[i + 1] - newPointsX[i];
+        Logger.debug('newPointsX[i + 1],newPointsX[i],diff: ');
+        Logger.debug(newPointsX[i + 1], newPointsX[i], diff);
+        var step = diff / 10;
+        //step = step.toFixedDown(10);
+        var p2p = newPointsX[i];
+        Logger.debug('step,p2p: ');
+        Logger.debug(step,p2p);
+        for (var j = 0; j < 10; j++) {           
+            var inter = mySpline.interpolate(p2p);
+            Logger.debug('val: ' + p2p + ' inter: ' + inter);
+            var latlng = new L.LatLng(p2p, inter);
+            //map.addMarker(latlng, 'i ' + i);
+            curve.push(latlng);
+            p2p += step;
+        }     
+    }
+      
+    return curve;
+};
+
+// point each N meters: 
+// http://stackoverflow.com/questions/3073281/how-to-move-a-marker-100-meters-with-coordinates
+Routes.prototype.additionalPoints = function (points) {
+    var minDistance = points[0].coords.distanceTo(points[1].coords);
+    for (var i = 1; i < points.length - 1; i++) {
+        var distance = points[i].coords.distanceTo(points[i + 1].coords);
+        if (distance < minDistance) {
+            minDistance = distance;
+        }
+    }
+    
+    var newPoints = [];
+    var N = minDistance / 2;
+    for (var i = 0; i < points.length - 1; i++) {
+        newPoints.push(points[i]);
+        var dist = points[i].coords.distanceTo(points[i + 1].coords);
+        var count = parseInt(dist / N);
+        for (var j = 1; j < count; j++) {
+            var ratio = (N * j) / dist;
+            var newLat = points[i].coords.lat + ((points[i + 1].coords.lat - points[i].coords.lat) * ratio);
+            var newLng = points[i].coords.lng + ((points[i + 1].coords.lng - points[i].coords.lng) * ratio);
+            newPoints.push({
+                coords: new L.LatLng(newLat, newLng)
+            });
+        }      
+    }
+    newPoints.push(points[points.length - 1]);
+    
+    Logger.debug(newPoints);
+    return newPoints;
+};
+
+
+Routes.prototype.additionalPoints2 = function (points) {
+    var index = 0;
+    var minDistance = points[0].coords.distanceTo(points[1].coords);
+    for (var i = 1; i < points.length - 1; i++) {
+        var distance = points[i].coords.distanceTo(points[i + 1].coords);
+        if (distance < minDistance) {
+            minDistance = distance;
+            index = i;
+        }
+    }
+    
+    var newPoints = [];
+    for (var i = 0; i < points.length - 1; i++) {
+        if (i === index) continue;
+        newPoints.push(points[i]);
+        var dist = points[i].coords.distanceTo(points[i + 1].coords);
+        newPoints.push({
+            coords: new L.LatLng((points[i].coords.lat + points[i + 1].coords.lat) / 2, (points[i].coords.lng + points[i + 1].coords.lng) / 2)
+        });
+        /*var count = parseInt(dist / minDistance);
+        for (var j = 1; j < count; j++) {
+            var ratio = (N * j) / dist;
+            var newLat = points[i].coords.lat + ((points[i + 1].coords.lat - points[i].coords.lat) * ratio);
+            var newLng = points[i].coords.lng + ((points[i + 1].coords.lng - points[i].coords.lng) * ratio);
+            newPoints.push({
+                coords: new L.LatLng(newLat, newLng)
+            });
+        }*/      
+    }
+    newPoints.push(points[points.length - 1]);
+    
+    Logger.debug(newPoints);
+    return newPoints;
 };

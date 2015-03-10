@@ -311,19 +311,22 @@ MapClass.prototype.addServiceRoute = function (track, mapRoute) {
 MapClass.prototype.addCurveRawRoute = function (track, mapRoute) {
     var group = L.layerGroup();
 
-    var polyline = L.Polyline.fromEncoded(
-            track.oACurve,
-            {
-                color: track.onMap[MapClass.ROUTE_TYPE_CURVE_RAW].color,
-                weight: 5,
-                opacity: 0.8,
-                lineJoin: 'round',
-                lineCap: 'round'
-            }
-    ).bindPopup('<b>Track</b>: ' + track.hname);
+    for (var i = 0, len = track.oACurve.length; i < len - 1; i++) {
+        L.polyline(
+                [
+                    track.oACurve[i],
+                    track.oACurve[i + 1]
+                ],
+                {
+                    color: track.onMap[MapClass.ROUTE_TYPE_CURVE_RAW].color,
+                    weight: 5,
+                    opacity: 0.8,
+                    lineJoin: 'round',
+                    lineCap: 'round'
+                }
+        ).addTo(group);
+    }
 
-    group.addLayer(polyline);
-    
     for (var i = 0, len = mapRoute.routes.length; i < len; i++) {
         if (mapRoute.routes[i].type === MapClass.ROUTE_TYPE_CURVE_RAW) {
             this.layersControl.removeLayer(mapRoute.routes[i].layerGroup);
@@ -332,14 +335,14 @@ MapClass.prototype.addCurveRawRoute = function (track, mapRoute) {
             break;
         }
     }
-    
+
     mapRoute.routes.push({
         name: track.onMap[MapClass.ROUTE_TYPE_CURVE_RAW].name,
         type: MapClass.ROUTE_TYPE_CURVE_RAW,
         color: track.onMap[MapClass.ROUTE_TYPE_CURVE_RAW].color,
         layerGroup: group
     });
-    
+
     this.layersControl.addOverlay(group, track.hname + ' - <span style="color: ' + track.onMap[MapClass.ROUTE_TYPE_CURVE_RAW].color + ';">' + track.onMap[MapClass.ROUTE_TYPE_CURVE_RAW].name + '</span>');
     this.map.addLayer(group);
 };
@@ -359,7 +362,7 @@ MapClass.prototype.addCurveServiceRoute = function (track, mapRoute) {
     ).bindPopup('<b>Track</b>: ' + track.hname);
 
     group.addLayer(polyline);
-    
+
     for (var i = 0, len = mapRoute.routes.length; i < len; i++) {
         if (mapRoute.routes[i].type === MapClass.ROUTE_TYPE_CURVE_SERVICE) {
             this.layersControl.removeLayer(mapRoute.routes[i].layerGroup);
@@ -368,14 +371,14 @@ MapClass.prototype.addCurveServiceRoute = function (track, mapRoute) {
             break;
         }
     }
-    
+
     mapRoute.routes.push({
         name: track.onMap[MapClass.ROUTE_TYPE_CURVE_SERVICE].name,
         type: MapClass.ROUTE_TYPE_CURVE_SERVICE,
         color: track.onMap[MapClass.ROUTE_TYPE_CURVE_SERVICE].color,
         layerGroup: group
     });
-    
+
     this.layersControl.addOverlay(group, track.hname + ' - <span style="color: ' + track.onMap[MapClass.ROUTE_TYPE_CURVE_SERVICE].color + ';">' + track.onMap[MapClass.ROUTE_TYPE_CURVE_SERVICE].name + '</span>');
     this.map.addLayer(group);
 };
@@ -792,7 +795,7 @@ MapClass.prototype.drawEncodedPolyline = function (polyline, label, color) {
     var color_ = color || this.getRandomColor();
     var _polyline = L.Polyline.fromEncoded(polyline, {
         color: color_,
-        weight: 3,
+        weight: 5,
         opacity: 0.8,
         lineJoin: 'round',
         lineCap: 'round'
@@ -1015,5 +1018,39 @@ MapClass.prototype.drawPolygon = function (polygon) {
     ).addTo(this.map);
 
     //this.layersControl.addOverlay(group, 'intersecting polygon');
+    //this.map.addLayer(group);
+};
+
+MapClass.prototype.project = function (latlng) {
+    return this.map.project(latlng);
+};
+
+MapClass.prototype.unproject = function (point) {
+    return this.map.unproject(point);
+};
+
+MapClass.prototype.drawLatLngPolyline = function (path, label, color) {
+    var group = L.layerGroup();
+    
+    var color_ = color || this.getRandomColor();
+    for (var i = 0, len = path.length; i < len - 1; i++) {
+        L.polyline(
+            [
+                path[i],
+                path[i + 1]
+            ], 
+            {
+                color: color_, 
+                weight: 2,
+                opacity: 0.9,
+                lineJoin: 'round',
+                lineCap: 'round'
+            }
+        ).addTo(group);
+
+        //L.marker(path[i].coords).bindPopup('#' + i).addTo(group);
+    }
+    
+    this.layersControl.addOverlay(group, '<span style="color: '+ color_ +';">' + label + '</span>');
     //this.map.addLayer(group);
 };

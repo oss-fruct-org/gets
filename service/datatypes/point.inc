@@ -70,7 +70,7 @@ class Point {
     }
     
     public function toKmlPlacemark() {
-        $xml .= '<Placemark>';
+        $xml = '<Placemark>';
         $xml .= '<name>' . htmlspecialchars($this->title) . '</name>';
         $xml .= '<description>' . htmlspecialchars($this->description) . '</description>';
         $xml .= '<ExtendedData xmlns:gets="http://gets.cs.petrsu.ru/">';

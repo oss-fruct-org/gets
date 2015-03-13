@@ -48,9 +48,30 @@ try {
 }
 
 $public_login_escaped = pg_escape_string(GEO2TAG_USER);
-$query = "SELECT category.id, category.name, category.description, category.url
+
+if (!$auth_token) {
+$query = "SELECT category.id, category.name, category.description, category.url, false AS published
     FROM category JOIN users ON category.owner_id=users.id
     WHERE users.login='${public_login_escaped}';";
+} else {
+    $query = "WITH published_channels AS (
+        SELECT channel.id AS id, channel.name
+        FROM channel
+        INNER JOIN users ON users.id = channel.owner_id
+        INNER JOIN subscribe ON subscribe.channel_id=channel.id
+        INNER JOIN users AS subscribed_users ON subscribed_users.id = subscribe.user_id
+        WHERE users.email='${private_email_escaped}' AND subscribed_users.login='${public_login_escaped}' AND channel.name LIKE 'ch+%'
+    )
+
+    SELECT category.id, category.name, category.description, category.url, bool_or(channel.id IN (SELECT id from published_channels)) AS published
+    FROM category 
+    INNER JOIN users AS project_users ON category.owner_id = project_users.id
+
+    LEFT JOIN channel ON safe_cast_to_json(channel.description)->>'category_id' = category.id::text
+    WHERE project_users.login = '${public_login_escaped}'
+    GROUP BY category.id;";
+}
+    
 $result = pg_query($dbconn, $query);
 
 $default_category_id = defined("DEFAULT_CATEGORY_ID") ? DEFAULT_CATEGORY_ID : -1;
@@ -72,11 +93,15 @@ while ($row = pg_fetch_row($result)) {
     if ($default_category_id !== -1 && $default_category_id === (int) $row[0]) {
         $xml .= "<default>true</default>";
     }
-
+    
+    if ($auth_token) {
+        $xml_published = htmlspecialchars($row[4]) === 't' ? "true" : "false";
+        $xml .= "<published>${xml_published}</published>";
+    }
+    
     $xml .= '</category>';
 }
 
 $xml .= '</categories>';
 
 send_result(0, 'success', $xml);
-?>

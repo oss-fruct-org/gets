@@ -262,7 +262,7 @@ function get_request_argument($dom, $field, $default_value = null) {
 
 /**
  * @param $dom DOMNode
- * @return array of first level children
+ * @return associative array of first level children
  */
 function get_request_array($dom) {
     $ret = array();
@@ -271,6 +271,21 @@ function get_request_array($dom) {
                 && $node->firstChild !== null
                 && $node->firstChild->nodeType == XML_TEXT_NODE) {
             $ret[$node->nodeName] = $node->firstChild->nodeValue;
+        }
+    }
+    return $ret;
+}
+
+/**
+ * @param $dom DOMNode
+ * @param $tag string
+ * @return array of children with given name
+ */
+function get_request_plain_array($dom, $tag) {
+    $ret = array();
+    for ($node = $dom->firstChild; $node !== null; $node = $node->nextSibling) {
+        if ($node->nodeType == XML_ELEMENT_NODE && $node->firstChild !== null && $node->firstChild->nodeType == XML_TEXT_NODE && $node->nodeName === $tag) {
+            $ret[] = $node->firstChild->nodeValue;
         }
     }
     return $ret;
@@ -404,10 +419,14 @@ function safe_pg_insert($dbconn, $table, $data_array) {
  * Source: http://php.net/manual/ru/function.json-encode.php#105789
  */
 function unicode_json_encode($arr) {
-    //convmap since 0x80 char codes so it takes all multibyte codes (above ASCII 127). 
-    //So such characters are being "hidden" from normal json_encoding
-    array_walk_recursive($arr, 'unicode_callback');
-    return mb_decode_numericentity(json_encode($arr), array(0x80, 0xffff, 0, 0xffff), 'UTF-8');
+    if (defined(JSON_UNESCAPED_UNICODE)) {
+        return json_encode($arr, JSON_UNESCAPED_UNICODE);
+    } else {
+        //convmap since 0x80 char codes so it takes all multibyte codes (above ASCII 127). 
+        //So such characters are being "hidden" from normal json_encoding
+        array_walk_recursive($arr, 'unicode_callback');
+        return mb_decode_numericentity(json_encode($arr), array(0x80, 0xffff, 0, 0xffff), 'UTF-8');
+    }
 }
 
 function unicode_callback(&$item, $key) {

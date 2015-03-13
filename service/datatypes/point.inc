@@ -11,7 +11,7 @@ class Point {
     public $link = "";
     public $latitude;
     public $longitude;
-    public $altitude;
+    public $altitude = 0;
     public $time;
     public $uuid;
     
@@ -27,7 +27,7 @@ class Point {
         $pg_array["latitude"] = $this->latitude;
         $pg_array["longitude"] = $this->longitude;
         $pg_array["altitude"] = $this->altitude;
-        
+
         $pg_array["user_id"] = $user_id;
         $pg_array["channel_id"] = $channel_id;
         
@@ -118,7 +118,7 @@ class Point {
         $point->title = get_array_element($request_array, "title");
         $point->latitude = get_array_element($request_array, "latitude");
         $point->longitude = get_array_element($request_array, "longitude");
-        $point->altitude = get_array_element($request_array, "altitude");
+        $point->altitude = get_array_element($request_array, "altitude", 0);
         $point->time = get_array_element($request_array, "time");
         $point->link = get_array_element($request_array, "link");
 

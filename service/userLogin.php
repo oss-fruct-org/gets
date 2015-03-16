@@ -85,7 +85,7 @@ session_unset();
 session_destroy();
 
 $auth_token = auth_set_initial_token($google_access_token, $google_email);
-auth_refresh_geo2tag_access();
+// auth_refresh_geo2tag_access();
 
 $content = '<auth_token>' . $auth_token . '</auth_token>';
 send_result(0, 'success', $content);

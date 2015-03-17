@@ -360,7 +360,7 @@ Routes.prototype.ESP_gridbased = function (track, callback, map) {
     this.requestOSMObstacles(track, function (obsts) {
         that.markInvalidPointsOnGrid(track, obsts);
         that.AStarGrid(track);
-        track.esp.curve_ = L.PolylineUtil.encode(that.bezierCurves(that.partitionToCShape(track.esp.path, map), obsts, map));
+        track.esp.curve_ = that.bezierCurves(that.partitionToCShape(track.esp.path, map), obsts, map);
         //map.drawEncodedPolyline(L.PolylineUtil.encode(that.bezierCurvesz(track.esp.path)), 'Grid Shortest path - Curve---', '#0000BB');
         map.drawEncodedPolyline(L.PolylineUtil.encode(that.bezierCurveszzz(that.removeClosePoints(track.esp.path), map)), 'Grid Shortest path - Curve---', '#0000BB');
         
@@ -687,7 +687,7 @@ Routes.prototype.bezierCurves = function (points, obstacles, map) {
     var b0 = points[0].coords,
         b1 = pointsAdd(points[0].coords, pointsMult(pointsSubs(points[1].coords, points[0].coords), u / 2)),
         b2 = pointsAdd(points[0].coords, pointsSubs(pointsSubs(points[1].coords, points[0].coords), pointsMult(pointsSubs(points[1].coords, points[0].coords), u / 2))),
-        b3 = points[1].waypoint ? points[1].coords : pointsAdd(points[0].coords, pointsAdd(pointsSubs(points[1].coords, points[0].coords), pointsMult(pointsSubs(pointsSubs(points[2].coords, points[1].coords), pointsSubs(points[1].coords, points[0].coords)), u / 4)));
+        b3 = /*points[1].waypoint ? points[1].coords : */pointsAdd(points[0].coords, pointsAdd(pointsSubs(points[1].coords, points[0].coords), pointsMult(pointsSubs(pointsSubs(points[2].coords, points[1].coords), pointsSubs(points[1].coords, points[0].coords)), u / 4)));
     /*while (checkCollision(b0, b1, b2, b3)) {
         Logger.debug('u = ' + u);
         if (u < 0.1) break;
@@ -714,10 +714,10 @@ Routes.prototype.bezierCurves = function (points, obstacles, map) {
     u = U_DEFAULT;
     for (var i = 1, len = points.length; i < len - 2; i++) {
         if (points[i].isInflection) u = U_DEFAULT;       
-        b0 = points[i].waypoint ? points[i].coords : pointsAdd(points[i].coords, pointsMult(pointsSubs(pointsSubs(points[i + 1].coords, points[i].coords), pointsSubs(points[i].coords, points[i - 1].coords)), u / 4));
+        b0 = /*points[i].waypoint ? points[i].coords : */pointsAdd(points[i].coords, pointsMult(pointsSubs(pointsSubs(points[i + 1].coords, points[i].coords), pointsSubs(points[i].coords, points[i - 1].coords)), u / 4));
         b1 = pointsAdd(points[i].coords, pointsMult(pointsSubs(points[i + 1].coords, points[i].coords), u / 2));
         b2 = pointsAdd(points[i].coords, pointsSubs(pointsSubs(points[i + 1].coords, points[i].coords), pointsMult(pointsSubs(points[i + 1].coords, points[i].coords), u / 2)));
-        b3 = points[i + 1].waypoint ? points[i + 1].coords : pointsAdd(points[i].coords, pointsAdd(pointsSubs(points[i + 1].coords, points[i].coords), pointsMult(pointsSubs(pointsSubs(points[i + 2].coords, points[i + 1].coords), pointsSubs(points[i + 1].coords, points[i].coords)), u / 4)));
+        b3 = /*points[i + 1].waypoint ? points[i + 1].coords : */pointsAdd(points[i].coords, pointsAdd(pointsSubs(points[i + 1].coords, points[i].coords), pointsMult(pointsSubs(pointsSubs(points[i + 2].coords, points[i + 1].coords), pointsSubs(points[i + 1].coords, points[i].coords)), u / 4)));
         //
         //Logger.debug('b i = ' + i + ', u = ' + u);
         /*while (checkCollision(b0, b1, b2, b3)) {            
@@ -1113,12 +1113,22 @@ Routes.prototype.ESP_trianglebased = function (track, callback, map) {
         track.esp_tri.curve_ = that.bezierCurves(that.partitionToCShape(track.esp_tri.path), map, obsts);
         //map.drawEncodedPolyline(L.PolylineUtil.encode(that.yetAnotherBezierCurve(that.additionalPoints(track.esp_tri.path), map)), 'Tri. Shortest path - Curve---', '#BB00BB');
         var bezier = that.bezierCurveszzz(track.esp_tri.path, map);
-        map.drawLatLngPolyline(bezier, 'Tri. Shortest path - Curve (Bezier)| P-s Num: ' + bezier.length + '; D: ' + that.calcDistLatLngs(bezier) + 'm; A: ' + that.calcAnglesSumLatLngs(bezier, map) + '°', '#BB00BB');
+        
+        map.drawLatLngPolyline(bezier, 'Tri. Shortest path - Curve (Bezier)| P-s Num: ' + bezier.length + 
+                '; D: ' + that.calcDistLatLngs(bezier) + 
+                'm; A: ' + that.calcAnglesSumLatLngs(bezier, map) + 
+                '°; DF: ' + that.calcFDistance(track, bezier, map), '#BB00BB');
+        
         //that.calcAnglesSumTrack(track);
         //that.smoothcurvejs(track.esp_tri.path, map);
         var hermite = that.smoothcurvejs(track.esp_tri.path, map);
-        map.drawLatLngPolyline(hermite, 'Tri. Shortest path - Curve Lib (Hermite 0.4)| P-s Num: ' + hermite.length + '; D: ' + that.calcDistLatLngs(hermite) + 'm; A: ' + that.calcAnglesSumLatLngs(hermite, map) + '°', '#123456');
-        //map.drawEncodedPolyline(L.PolylineUtil.encode(that.smoothcurvejs2(track.esp_tri.path, map)), 'Tri. Shortest path - Curve Lib2', '#654321');
+        
+        map.drawLatLngPolyline(hermite, 'Tri. Shortest path - Curve Lib (Hermite 0.4)| P-s Num: ' + hermite.length + 
+                '; D: ' + that.calcDistLatLngs(hermite) + 
+                'm; A: ' + that.calcAnglesSumLatLngs(hermite, map) + 
+                '°; DF: ' + that.calcFDistance(track, hermite, map), '#123456');
+        
+        //Logger.debug('distance: ' + that.calcFDistance(track, track.esp_tri.path, map));
         callback(obsts);       
     });
     
@@ -1638,11 +1648,55 @@ Routes.prototype.calcAnglesSumLatLngs = function (arr, map) {
         var len2squared = (p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y);
 
         var angle = 180 - Math.acos(dotprod / Math.sqrt(len1squared * len2squared)) * 180 / Math.PI;
+        if (isNaN(angle)) {
+            //Logger.debug(p0, p1, p2);
+            //Logger.debug(dotprod);
+            //Logger.debug(len1squared);
+            //Logger.debug(len2squared);
+        }
         //Logger.debug('angle in point: ' + (i + 1) + ' equals: ' + angle);
         sum += isNaN(angle) ? 0 : angle;
     }
     
     return sum.toFixedDown(3);
+};
+
+Routes.prototype.calcFDistance = function (track, curve, map) {
+    //Logger.debug(curve);
+    var waypoints = [];
+    for (var k = 0, len = track.points.length; k < len; k++) {
+        var point = track.points[k].coordinates.split(',').map(parseFloat);
+        waypoints.push(new L.LatLng(point[1], point[0]));
+    }
+    
+    //var maxDist = -1;
+    var distances = [];
+    var index = 1;
+    for (var i = 0; i < waypoints.length - 1; i++) {
+        var l1 = map.project(waypoints[i], 1),
+            l2 = map.project(waypoints[i + 1], 1);
+    
+        //Logger.debug('+++++++++++++++++++++++++++++++++');    
+        //Logger.debug(l1);
+        //Logger.debug(l2);
+        var localDistances = [];
+        localDistances.push(0);
+        for (; index < curve.length; index++) {
+            //Logger.debug(waypoints[i + 1], curve[index]);
+            if (waypoints[i + 1].equals(curve[index])) break;
+            
+            //Logger.debug('---------------------------------'); 
+            var p = map.project(curve[index], 1);
+            //Logger.debug(p);
+            localDistances.push(this.euclidian_p2e(p, l1, l2));
+        }
+        //Logger.debug(localDistances);
+        distances.push(Math.max.apply(Math, localDistances));
+    }
+    //Logger.debug('+++++++++++++++++++++++++++++++++'); 
+    //Logger.debug(distances);
+    
+    return Math.max.apply(Math, distances).toFixedDown(3);
 };
 
 Routes.prototype.smoothcurvejs = function (points, map) {
@@ -1798,4 +1852,38 @@ Routes.prototype.additionalPoints2 = function (points) {
     
     Logger.debug(newPoints);
     return newPoints;
+};
+
+Routes.prototype.euclidian_p2e = function (point, edge_s, edge_e) {
+    var A = point.x - edge_s.x,
+        B = point.y - edge_s.y,
+        C = edge_e.x - edge_s.x,
+        D = edge_e.y - edge_s.y;
+
+    var dot = A * C + B * D,
+            len_sq = C * C + D * D,
+            param = -1;
+
+    if (len_sq != 0) //in case of 0 length line
+        param = dot / len_sq;
+
+    var xx, yy;
+
+    if (param < 0) {
+        xx = edge_s.x;
+        yy = edge_s.y;
+    }
+    else if (param > 1) {
+        xx = edge_e.x;
+        yy = edge_e.y;
+    }
+    else {
+        xx = edge_s.x + param * C;
+        yy = edge_s.y + param * D;
+    }
+
+    var dx = point.x - xx;
+    var dy = point.y - yy;
+    
+    return Math.sqrt(dx * dx + dy * dy);
 };

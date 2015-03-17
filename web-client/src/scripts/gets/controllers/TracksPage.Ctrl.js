@@ -259,7 +259,10 @@ TracksPage.prototype.initPage = function() {
             var trackAlreadyShown = true;
             if (!track.onMap[MapClass.ROUTE_TYPE_RAW]) {
                 track.onMap[MapClass.ROUTE_TYPE_RAW] = {
-                    name: self._trackInfo.getRouteName(MapClass.ROUTE_TYPE_RAW) + 'P-s Num: ' + track.points.length + '; D: ' + self._routes.calcDistTrack(track) + 'm; A: ' + self._routes.calcAnglesSumTrack(track, self._mapCtrl) + '°',
+                    name: self._trackInfo.getRouteName(MapClass.ROUTE_TYPE_RAW) + 'P-s Num: ' + track.points.length + 
+                            '; D: ' + self._routes.calcDistTrack(track) + 
+                            'm; A: ' + self._routes.calcAnglesSumTrack(track, self._mapCtrl) + 
+                            '°',
                     color: MapClass.ROUTE_TYPE_RAW_COLOR
                 };
                 trackAlreadyShown = false;
@@ -278,20 +281,34 @@ TracksPage.prototype.initPage = function() {
             }, 0);*/
             setTimeout(function () {
                 // Experiments
-                /*self._routes.ESP_gridbased(track, function (obsts) {
+                self._routes.ESP_gridbased(track, function (obsts) {
                     self._mapCtrl.drawConvexHullObjects(obsts);
                     //self._mapCtrl.drawBoundingBox(obsts);
                     self._mapCtrl.drawValidPoints(track.esp.grid);
                     self._mapCtrl.drawPath(track.esp.path, 'Grid Shortest path - Points Num: ' + track.esp.path.length, '#0000FF');//self._mapCtrl.drawPath(track.esp.pp);
                     //self._mapCtrl.drawEncodedPolyline(track.esp.curve, 'Shortest path - Curve waypoints - fixed');
-                    self._mapCtrl.drawEncodedPolyline(track.esp.curve_, 'Grid Shortest path - Curve', '#0000BB');
+                    //self._mapCtrl.drawEncodedPolyline(track.esp.curve_, 'Grid Shortest path - Curve', '#0000BB');
+                    self._mapCtrl.drawLatLngPolyline(track.esp.curve_, 'Tri. Shortest path - Curve P-s Num: ' + track.esp.curve_.length + 
+                            '; D: ' + self._routes.calcDistLatLngs(track.esp.curve_) + 
+                            'm; A: ' + self._routes.calcAnglesSumLatLngs(track.esp.curve_, self._mapCtrl) + 
+                            '°; DF: ' + self._routes.calcFDistance(track, track.esp.curve_, self._mapCtrl), '#0000BB');
+                }, self._mapCtrl);
                     //self._mapCtrl.drawEncodedPolyline(track.esp.curve_s, 'Shortest path - Curve sections');
-                }, self._mapCtrl);*/
                 self._routes.ESP_trianglebased(track, function (obsts) {
                     self._mapCtrl.drawTriangulation(track.esp_tri.tri);
                     self._mapCtrl.drawObstacles(obsts);
-                    self._mapCtrl.drawPath(track.esp_tri.path, 'Tri. Shortest path - P-s Num: ' + track.esp_tri.path.length + '; D: ' + track.esp_tri.path_dist + 'm; A: ' + self._routes.calcAnglesSumLineSegs(track.esp_tri.path, self._mapCtrl) + '°', '#2E0854');                   
-                    self._mapCtrl.drawLatLngPolyline(track.esp_tri.curve_, 'Tri. Shortest path - Curve', '#7D26CD');
+                    
+                    self._mapCtrl.drawPath(track.esp_tri.path, 'Tri. Shortest path - P-s Num: ' + track.esp_tri.path.length + 
+                            '; D: ' + track.esp_tri.path_dist + 
+                            'm; A: ' + self._routes.calcAnglesSumLineSegs(track.esp_tri.path, self._mapCtrl) + 
+                            '°; DF: ' + self._routes.calcFDistance(track, track.esp_tri.path.map(function (elem) {
+                        return elem.coords;
+                    }), self._mapCtrl), '#2E0854');
+                    
+                    self._mapCtrl.drawLatLngPolyline(track.esp_tri.curve_, 'Tri. Shortest path - Curve P-s Num: ' + track.esp_tri.curve_.length + 
+                            '; D: ' + self._routes.calcDistLatLngs(track.esp_tri.curve_) + 
+                            'm; A: ' + self._routes.calcAnglesSumLatLngs(track.esp_tri.curve_, self._mapCtrl) + 
+                            '°; DF: ' + self._routes.calcFDistance(track, track.esp_tri.curve_, self._mapCtrl), '#7D26CD');
                 }, self._mapCtrl);
                 self._trackInfo.toggleOverlay();
             }, 0);

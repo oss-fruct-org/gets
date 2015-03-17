@@ -67,11 +67,12 @@ PointEdit.prototype.placePointInPointEdit = function(point) {
             point.extendedData[i].name !== 'link' && 
             point.extendedData[i].name !== 'description' && 
             point.extendedData[i].name !== 'time' && 
-            point.extendedData[i].name !== 'description' &&
             point.extendedData[i].name !== 'category_id' && 
             point.extendedData[i].name !== 'radius' && 
             point.extendedData[i].name !== 'index' &&
-            point.extendedData[i].name !== 'idx') {
+            point.extendedData[i].name !== 'idx' && 
+            point.extendedData[i].name !== 'audio' &&
+            point.extendedData[i].name !== 'photo') {
             extendedDataText += '<div class="form-group"><label>' + point.extendedData[i].name + '</label><input class="form-control" type="text" name="' + point.extendedData[i].name + '" value="' + point.extendedData[i].value + '" /></div>';
         }
     }

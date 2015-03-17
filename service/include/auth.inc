@@ -134,7 +134,8 @@ function auth_refresh_db_access($dbconn) {
 
     if (!$row) {
         // Create new user
-        $result = pg_query_params($dbconn, 'INSERT INTO users VALUES ($1, $2, $3) RETURNING users.id, users.login', $email, $email, $email);
+        $result = pg_query_params($dbconn, 'INSERT INTO users (email, login, password) VALUES ($1, $2, $3) RETURNING users.id, users.login', 
+            array($email, $email, $email));
         $row = pg_fetch_row($result);
     }
 

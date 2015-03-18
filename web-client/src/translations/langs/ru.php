@@ -13,6 +13,7 @@ $translations = array(
     'description' => 'Описание', 
     'url' => 'Ссылка', 
     'required-fields' => 'Обязательные поля', 
+    'map' => 'Карта',
     
     // Main tracks widget strings
     'add-track' => 'Добавить маршрут', 
@@ -42,12 +43,32 @@ $translations = array(
     'add-point' => 'Добавить точку', 
     'edit-track' => 'Редактировать маршрут', 
     'remove-track' => 'Удалить маршрут', 
-    'show-on-map' => 'Показать на карте', 
+    'show-on-map' => 'Показать на карте',    
     'point-list' => 'Список точек', 
+    'publish-track' => 'Опубликовать',
+    'unpublish-track' => 'Снять с публикации',
     'track-remove-text' => 'Вы уверены что хотите удалить этот маршрут? (Действие не может быть отменено)', 
     'track-remove-success' => 'Маршрут был успешно удален', 
     'put-point-in-point-info' => 'Поместить точку в окно «Информация о точке»',
-    
+    'track-publish-success' => 'Маршрут был успешно опубликован', 
+    'track-unpublish-success' => 'Маршрут был успешно снят с публикации',
+    // Show on the map options
+    'show-on-map-markers' => 'Только точки',
+    'show-on-map-raw-simple' => 'Простой маршрут',
+    'show-on-map-service' => 'Сервис Google Route',
+    'show-on-map-raw-curve' => 'Кривая на основе простого марш-та',
+    'show-on-map-service-curve' => 'Кривая на основе Google RS',
+    // Service route options
+    'route-parameters-mode' => 'Способ перемещения: ',
+    'walking-mode' => 'Пешком',
+    'driving-mode' => 'На машине',
+    'bicycling-mode' => 'На велосипеде',
+    'route-parameters-optimization' => 'Оптимизация: ',
+    'optimize-route' => 'Оптимизация маршрута',
+    'route-parameters-alternatives' => 'Альтернативыне маршруты: ',
+    'find-alternatives' => 'Искать альтернативы',
+    'request-route' => 'Построить маршрут',
+       
     // Point Info widget strings
     'point-info-title' => 'Информация о точке', 
     'edit-point' => 'Редактировать точку', 
@@ -81,7 +102,10 @@ $translations = array(
     'value' => 'Значение',
     'enter-value' => 'Введите значение (опционально)',
     'cancel' => 'Отменить',
-    'point-add-success' => 'Точка была успешно добавлена', 
+    'point-add-success' => 'Точка была успешно добавлена',
+    'coords-input-type-decimal' => 'Градусы',
+    'coords-input-type-degrees-m' => 'Градусы, минуты',
+    'coords-input-type-degrees-m-s' => 'Градусы, минуты, секунды',
     
     // Edit Point widget strings
     'edit-point-title' => 'Редактировать точку', 

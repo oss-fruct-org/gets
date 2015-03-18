@@ -20,4 +20,6 @@ define('REMOVE_POINT_METHOD_URL', 'http://' . GETS_SERVER_URL . 'deletePoint.php
 define('GET_USER_INFO', 'http://' . GETS_SERVER_URL . 'userInfo.php');
 define('USER_LOGIN', 'http://' . GETS_SERVER_URL . 'userLogin.php');
 define('UPDATE_POINT', 'http://' . GETS_SERVER_URL . 'updatePoint.php');
+define('PUBLISH', 'http://' . GETS_SERVER_URL . 'publish.php');
+define('UNPUBLISH', 'http://' . GETS_SERVER_URL . 'unpublish.php');
 ?>

@@ -35,15 +35,25 @@ if (!$dom->schemaValidate('schemes/createTrack.xsd')) {
     die();
 }
 
-$data_array = array();
 
+if (!defined('DEFAULT_CATEGORY_ID')) {
+    send_error(1, 'Server misconfigured: DEFAULT_CATEGORY_ID undefined');
+    die();
+}
+
+$data_array = array();
 $auth_token = get_request_argument($dom, 'auth_token');
 $description = get_request_argument($dom, 'description');
 $url = get_request_argument($dom, 'url');
 $name = get_request_argument($dom, 'name');
-$category_id = get_request_argument($dom, 'category_id', -1);
+$category_id = (int) get_request_argument($dom, 'category_id', DEFAULT_CATEGORY_ID);
 $lang = get_request_argument($dom, 'lang');
 $hname = get_request_argument($dom, 'hname');
+
+// Compatibility with clients that pass -1 assuming "null category"
+if ($category_id === -1) {
+    $category_id = DEFAULT_CATEGORY_ID;
+}
 
 $need_update = get_request_argument($dom, 'update', 'false') === 'true';
 
@@ -58,7 +68,13 @@ if ($prefix === 'tr_' || $prefix === 'tr+') {
     # Compatibility with old clients that pass track name in format "tr_"
     $track_id = $name;
 } else {
-    $username = auth_get_db_login($dbconn);
+    try {
+        $username = auth_get_db_login($dbconn);
+    } catch (Exception $e) {
+        send_error(1, $e->getMessage());
+        die();
+    }
+
     $track_id = "tr+${username}+${name}+${lang}";
 
     if (!$hname)
@@ -82,10 +98,6 @@ $data_array['url'] = $url;
 $data_array['name'] = $track_id;
 
 try {
-    if ($category_id > 0) {
-        require_category($dbconn, $category_id);
-    }
-
     $user_id = auth_get_db_id($dbconn);
     $existing_channel_id = get_channel_id($dbconn, $track_id);
 } catch (Exception $e) {
@@ -116,7 +128,8 @@ if ($existing_channel_id && $need_update) {
         die();
     }
 
-    $result_inserted_id = pg_fetch_row($result_insert)[0];
+    $row = pg_fetch_row($result_insert);
+    $result_inserted_id = $row[0];
 
     if (!pg_query_params($dbconn, 'INSERT INTO subscribe (channel_id, user_id) VALUES ($1, $2);', 
                 array($result_inserted_id, $user_id))) {

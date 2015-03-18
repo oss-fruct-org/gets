@@ -11,7 +11,9 @@ define('GEO2TAG_DB_STRING', 'host=geo2tag.cs.prv dbname=geo2tag user=geo2tag pas
 
 define('ALL_USERS_TRUSTED', true);
 
-define('GOOGLE_APP_NAME', 'gets-obstacle');
-define('GOOGLE_CLIENT_ID', '791672128240-dpo0ivbqq8o606vourt5feah1652215t.apps.googleusercontent.com');
-define('GOOGLE_SECRET_ID', '7v_w8UuKevk4oGIguqwu1bHw');
+define('GOOGLE_APP_NAME', 'GeTS-Service');
+define('GOOGLE_CLIENT_ID', '710658254828-tntn2h772v22ilii1qgsvlfgrijrbg6e.apps.googleusercontent.com');
+define('GOOGLE_SECRET_ID', 'y8fwnTyiEs-gsrCTLtfFyjXn');
+
+define('DEFAULT_CATEGORY_ID', 21);
 ?>

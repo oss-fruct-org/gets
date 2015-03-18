@@ -46,20 +46,25 @@ echo    '<div id="edit-point-page" class="action-menu-container hidden" data-pag
                                 <li><a href="#" role="button" class="btn-sm marked-list-item" data-item="center">' . getString('center-map', 'Center of the map') . '</a></li>
                                 <li><a href="#" role="button" class="btn-sm" data-item="location">' . getString('my-location', 'My location') . '</a></li>    
                             </ul>
-                        </div>                       
-                        <div class="col-md-12">
-                            <div class="form-group row">
-                                <div class="col-md-6">
-                                    <label for="edit-point-lat-input" class="control-label">' . getString('latitude','Latitude') . '</label>                                               
-                                    <input id="edit-point-lat-input" name="latitude" type="text" class="form-control" value="0.0" required />
+                        </div> 
+                        <div class="top-margin"></div>
+                        <label for="edit-point-lat-input" class="control-label">' . getString('latitude','Latitude') . ', ' . getString('longitude','Longitude') . '</label>
+                        <div class="input-group add-on top-margin">            
+                            <div class="input-group-btn">
+                                <div class="dropdown">
+                                    <button id="edit-point-coords-change-input" class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown"> 
+                                         &nbsp;<span class="glyphicon glyphicon-transfer"></span>
+                                    </button>
+                                    <ul id="edit-point-coords-input-type" class="dropdown-menu" role="menu">
+                                        <li><a href="#" role="button" class="btn-sm marked-list-item" data-item="decimal" data-title="' . getString('coords-dd', 'DD') . '">' . getString('coords-input-type-decimal', 'Degree decimal') . '</a></li>
+                                        <li><a href="#" role="button" class="btn-sm" data-item="degrees-m" data-title="' . getString('coords-dd-mm', 'DD MM') . '">' . getString('coords-input-type-degrees-m', 'Degree, minutes') . '</a></li>  
+                                        <li><a href="#" role="button" class="btn-sm" data-item="degrees-m-s" data-title="' . getString('coords-dd-mm-ss', 'DD MM SS') . '">' . getString('coords-input-type-degrees-m-s', 'Degree, minutes, seconds') . '</a></li>    
+                                    </ul>
                                 </div>
-                                <div class="col-md-6">
-                                    <label for="edit-point-lon-input" class="control-label">' . getString('longitude','Longitude') . '</label>                                               
-                                    <input id="edit-point-lon-input" name="longitude" type="text" class="form-control" value="0.0" required />
-                                </div>
-                                <input id="edit-point-alt-input" name="altitude" type="hidden" value="0.0" required>
                             </div>
-                        </div>
+                            <input id="edit-point-lat-lon-input" type="text" class="form-control" aria-describedby="edit-point-coords-change-input"/>
+                            <input id="edit-point-alt-input" name="altitude" type="hidden" value="0.0" required>
+                        </div>  
                     </div>
                     <div class="form-group">
                         <label for="edit-point-active-radius-input" class="block">' . getString('active-radius','Active radius (meters)') . ' *</label>

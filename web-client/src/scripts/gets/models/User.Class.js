@@ -13,6 +13,9 @@
  */
 function UserClass(windowObj) {
     this.email = null;
+    this.coreUser = null;
+    this.trustedUser = null;
+    this.adminUser = null;
     this.isAuthorized = false;
     if (!windowObj.hasOwnProperty('location')) {
         throw new GetsWebClientException('User Error', 'UserClass, windowObj argument is not a window object');
@@ -115,11 +118,11 @@ UserClass.prototype.fetchAuthorizationStatus = function() {
 };
 
 /**
- * Fetch user's email from the GeTS Server.
+ * Fetch user's info from the GeTS Server.
  * 
  * @throws {GetsWebClientException}
  */
-UserClass.prototype.fetchEmail = function() {
+UserClass.prototype.fetchInfo = function() {
     var getEmailRequest = $.ajax({
         url: GET_USER_INFO_ACTION,
         type: 'GET',
@@ -135,6 +138,9 @@ UserClass.prototype.fetchEmail = function() {
     
     var emailObj = JSON.parse(getEmailRequest.responseText);      
     this.email = emailObj.email;
+    this.coreUser = emailObj.core_user;
+    this.trustedUser = emailObj.trusted_user;
+    this.adminUser = emailObj.admin_user;
 };
 /**
  * Get users geo coordinates.
@@ -191,7 +197,51 @@ UserClass.prototype.isCoordsSet = function() {
  */
 UserClass.prototype.getEmail = function() {
     if (!this.email) {
-        this.fetchEmail();
+        this.fetchInfo();
     }
     return this.email;
+};
+
+/**
+ * Is core user.
+ */
+UserClass.prototype.isCoreUser = function() {
+    if (!this.coreUser) {
+        this.fetchInfo();
+    }
+    return this.coreUser;
+};
+
+/**
+ * Is trusted user.
+ */
+UserClass.prototype.isTrustedUser = function() {
+    if (!this.trustedUser) {
+        this.fetchInfo();
+    }
+    return this.trustedUser;
+};
+
+/**
+ * Is admin user.
+ */
+UserClass.prototype.isAdminUser = function() {
+    if (!this.adminUser) {
+        this.fetchInfo();
+    }
+    return this.adminUser;
+};
+
+/**
+ * Is admin user.
+ */
+UserClass.prototype.getUser = function() {
+    this.fetchInfo();
+    return {
+        email: this.email,
+        coreUser: this.coreUser,
+        trustedUser: this.trustedUser,
+        adminUser: this.adminUser,
+        isAuth: this.isAuthorized
+    };
 };

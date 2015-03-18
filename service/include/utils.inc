@@ -170,7 +170,7 @@ function send_result($code, $message, $content) {
 	echo $xml_response;
 }
 
-function add_place_mark(&$xml, $label, $description, $url, $datetime, $latitude, $longitude, $id, $access = null, $category_id = null) {
+function add_place_mark(&$xml, $label, $description, $url, $datetime, $latitude, $longitude, $altitude, $id, $access = null, $category_id = null) {
     // Try parse description json
     $description_json = json_decode($description, true);
     $url_json = json_decode($url, true);
@@ -235,7 +235,7 @@ function add_place_mark(&$xml, $label, $description, $url, $datetime, $latitude,
 
     $xml .= '</ExtendedData>';
 
-    $xml .= '<Point><coordinates>' . $longitude . ',' . $latitude . ',0.0' . '</coordinates></Point>';
+    $xml .= '<Point><coordinates>' . $longitude . ',' . $latitude . ',' . $altitude . '</coordinates></Point>';
     $xml .= '</Placemark>';
 }
 
@@ -260,6 +260,37 @@ function get_request_argument($dom, $field, $default_value = null) {
         return $default_value;
 }
 
+/**
+ * @param $dom DOMNode
+ * @return associative array of first level children
+ */
+function get_request_array($dom) {
+    $ret = array();
+    for ($node = $dom->firstChild; $node !== null; $node = $node->nextSibling) {
+        if ($node->nodeType == XML_ELEMENT_NODE
+                && $node->firstChild !== null
+                && $node->firstChild->nodeType == XML_TEXT_NODE) {
+            $ret[$node->nodeName] = $node->firstChild->nodeValue;
+        }
+    }
+    return $ret;
+}
+
+/**
+ * @param $dom DOMNode
+ * @param $tag string
+ * @return array of children with given name
+ */
+function get_request_plain_array($dom, $tag) {
+    $ret = array();
+    for ($node = $dom->firstChild; $node !== null; $node = $node->nextSibling) {
+        if ($node->nodeType == XML_ELEMENT_NODE && $node->firstChild !== null && $node->firstChild->nodeType == XML_TEXT_NODE && $node->nodeName === $tag) {
+            $ret[] = $node->firstChild->nodeValue;
+        }
+    }
+    return $ret;
+}
+
 function get_array_element($array, $field, $default_value = null) {
     if (array_key_exists($field, $array))
         return $array[$field];
@@ -268,11 +299,11 @@ function get_array_element($array, $field, $default_value = null) {
 }
 
 function safe_merge_arrays($array1, $array2) {
-    if (!$array1 && !$array2) {
+    if ($array1 === null && $array2 === null) {
         return null;
-    } else if (!$array1) {
+    } else if ($array1 === null) {
         return $array2;
-    } else if (!$array2) {
+    } else if ($array2 === null) {
         return $array1;
     } else {
         return array_merge($array2, $array1);
@@ -388,10 +419,14 @@ function safe_pg_insert($dbconn, $table, $data_array) {
  * Source: http://php.net/manual/ru/function.json-encode.php#105789
  */
 function unicode_json_encode($arr) {
-    //convmap since 0x80 char codes so it takes all multibyte codes (above ASCII 127). 
-    //So such characters are being "hidden" from normal json_encoding
-    array_walk_recursive($arr, 'unicode_callback');
-    return mb_decode_numericentity(json_encode($arr), array(0x80, 0xffff, 0, 0xffff), 'UTF-8');
+    if (defined(JSON_UNESCAPED_UNICODE)) {
+        return json_encode($arr, JSON_UNESCAPED_UNICODE);
+    } else {
+        //convmap since 0x80 char codes so it takes all multibyte codes (above ASCII 127). 
+        //So such characters are being "hidden" from normal json_encoding
+        array_walk_recursive($arr, 'unicode_callback');
+        return mb_decode_numericentity(json_encode($arr), array(0x80, 0xffff, 0, 0xffff), 'UTF-8');
+    }
 }
 
 function unicode_callback(&$item, $key) {
@@ -400,10 +435,8 @@ function unicode_callback(&$item, $key) {
     }
 }
 
-function parse_extended_data(DOMNodeList $description_element, DOMNodeList $extended_data_element) {
-    if ($description_element->length > 0) {
-        $description = $description_element->item(0)->nodeValue;
-
+function parse_extended_data($description, $input_extended_data_array) {
+    if ($description) {
         # If caller pass extended data in description, process it correctly
         $extended_data_array = json_decode($description, true);
         if (!$extended_data_array) {
@@ -416,13 +449,7 @@ function parse_extended_data(DOMNodeList $description_element, DOMNodeList $exte
         $description = null;
     }
 
-    if ($extended_data_element->length > 0) {
-        foreach ($extended_data_element->item(0)->childNodes as $node) {
-            $key = $node->nodeName;
-            $value = $node->nodeValue;
-            $extended_data_array[$key] = $value;
-        }
-    }
+    $extended_data_array = safe_merge_arrays($extended_data_array, $input_extended_data_array);
 
     if (!array_key_exists("description", $extended_data_array) && $description) {
         $extended_data_array["description"] = $description;
@@ -486,11 +513,11 @@ function require_category($dbconn, $category_id) {
 
 /**
  * Check if current user is admin
+ * Function requires authentication using auth_set_token
  * @param $dbconn resource
- * @throws Exception if user not admin
- * @return integer owner id of current project
+ * @return integer owner id of current project or zero if user is not admin
  */
-function require_user_admin($dbconn) {
+function is_user_admin($dbconn) {
     $user_login = auth_get_db_login($dbconn);
 
     if ($user_login === GEO2TAG_USER) {
@@ -511,13 +538,30 @@ function require_user_admin($dbconn) {
 
     $row = pg_fetch_row($response);
     if (!$row) {
-        throw new Exception("User required to be admin", 1);
+        return 0;
     }
 
     return $row[0];
 }
 
-function require_user_trusted($dbconn) {
+/**
+ * Check if current user is admin
+ * Function requires authentication using auth_set_token
+ * @param $dbconn resource
+ * @throws Exception if user not admin
+ * @return integer owner id of current project
+ */
+function require_user_admin($dbconn) {
+    $id = is_user_admin($dbconn);
+
+    if ($id <= 0) {
+        throw new Exception("User required to be admin", 1);
+    }
+
+    return $id;
+}
+
+function is_user_trusted($dbconn) {
     $user_login = auth_get_db_login($dbconn);
 
     if ((defined("ALL_USERS_TRUSTED") && ALL_USERS_TRUSTED == 'true')
@@ -540,11 +584,22 @@ function require_user_trusted($dbconn) {
 
     $row = pg_fetch_row($response);
     if (!$row) {
-        throw new Exception("User required to be trusted", 1);
+        return 0;
     }
 
     return $row[0];
 }
+
+function require_user_trusted($dbconn) {
+    $id = is_user_trusted($dbconn);
+
+    if ($id <= 0) {
+        throw new Exception("User required to be trusted", 1);
+    }
+
+    return $id;
+}
+
 
 /*
  * Check that user with $auth_token or public user subscribed to channel $channel_name
@@ -573,13 +628,20 @@ function require_channel_accessible($dbconn, $channel_name, $is_public) {
 
 /*
  * Check that current user owns channel $channel_name
+ * Admin users also has permissions
  * Returns: array (user_id, channel_id)
  */
 function require_channel_owned($dbconn, $channel_name) {
-    $email = auth_get_google_email();
-    $result_check = pg_query_params($dbconn, 'SELECT users.id, channel.id FROM channel 
+    if (is_user_admin($dbconn)) {
+	$result_check = pg_query_params($dbconn, 'SELECT users.id, channel.id FROM channel 
+            INNER JOIN users ON users.id = channel.owner_id 
+            WHERE channel.name=$1;', array($channel_name));
+    } else {
+	$email = auth_get_google_email();
+	$result_check = pg_query_params($dbconn, 'SELECT users.id, channel.id FROM channel 
             INNER JOIN users ON users.id = channel.owner_id 
             WHERE users.email=$1 AND channel.name=$2;', array($email, $channel_name));
+    }
 
     if (!($result_check_row = pg_fetch_row($result_check))) {
         throw new Exception("Channel ${channel_name} not owned", 1);
@@ -605,7 +667,45 @@ function date_gets_to_postgres($gets_date) {
 
 function date_postgres_to_gets($gets_date) {
     $date_parsed = date_create_from_format('Y-m-d H:i:s.u', $gets_date);
+    if (!$date_parsed) {
+        $date_parsed = date_create_from_format('Y-m-d H:i:s', $gets_date);
+    }
     return date_format($date_parsed, 'd m Y H:i:s.u');
 }
 
-?>
+// display error description in xml validation
+function libxml_display_error($error)
+{
+    $return = "";
+    switch ($error->level) {
+        case LIBXML_ERR_WARNING:
+            $return .= "Warning $error->code: ";
+            break;
+        case LIBXML_ERR_ERROR:
+            $return .= "Error $error->code: ";
+            break;
+        case LIBXML_ERR_FATAL:
+            $return .= "Fatal Error $error->code: ";
+            break;
+    }
+    $return .= trim($error->message);
+    if ($error->file) {
+        $return .=    " in $error->file";
+    }
+    $return .= " on line $error->line";
+    $return .= " on column $error->column";
+
+    return $return;
+}
+
+// gather all errors in xml validation
+function libxml_display_errors() {
+    $return = "<errors>";
+    $errors = libxml_get_errors();
+    foreach ($errors as $error) {
+        $return .= "<error>".libxml_display_error($error)."</error>";
+    }
+    libxml_clear_errors();
+    
+    return $return."</errors>";
+}

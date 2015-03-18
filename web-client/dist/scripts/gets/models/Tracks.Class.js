@@ -114,13 +114,15 @@ TracksClass.prototype.downloadTrackList = function (paramsObj, callback) {
         var xml = $.parseXML(jqXHR.responseText);
         var trackListItems = $(xml).find('track');
         $(trackListItems).each(function(index, value) {
+            //Logger.debug(value);
             var trackObj = {};
             trackObj.name = $(value).find('name').length ? $(value).find('name').text() : '';
             trackObj.hname = $(value).find('hname').length ? $(value).find('hname').text() : '';
             trackObj.description = $(value).find('description').length ? $(value).find('description').text() : '';
             trackObj.access = $(value).find('access').length ? $(value).find('access').text() : '';
             trackObj.categoryId = $(value).find('category_id').length ? $(value).find('category_id').text() : '';
-
+            trackObj.published = $(value).find('published').length ? ($(value).find('published').text() === 'true') : false;
+            Logger.debug(trackObj);
             tracksArray.push(trackObj);
         });
 
@@ -174,7 +176,7 @@ TracksClass.prototype.downloadTrackByName = function(paramsObj) {
     var trackPointArray = new Array();
     //Logger.debug(trackPlacemarkList);
     $(trackPlacemarkList).each(function(index, value) {
-        Logger.debug(value);
+        //Logger.debug(value);
         var pointObj = {};
         var pointExtendedData = [];
         
@@ -183,13 +185,13 @@ TracksClass.prototype.downloadTrackByName = function(paramsObj) {
         pointObj.name = $(value).find('name').length ? $(value).find('name').text() : '';
         pointObj.description = $(value).find("[name='description']").length ? $(value).find("[name='description']").text() : '';
         pointObj.url = $(value).find("[name='link']").length ? $(value).find("[name='link']").text() : '';
-        pointObj.audio = $(value).find("[name='audio']").length ? $(value).find("[name='audio']").text() : '';
-        pointObj.photo = $(value).find("[name='photo']").length ? $(value).find("[name='photo']").text() : '';
+        pointObj.audio = $(value).find("[name='audio']").length ? decodeURIComponent($(value).find("[name='audio']").text()) : '';
+        pointObj.photo = $(value).find("[name='photo']").length ? decodeURIComponent($(value).find("[name='photo']").text()) : '';
         pointObj.radius = $(value).find("[name='radius']").length ? $(value).find("[name='radius']").text() : '';
         pointObj.coordinates = $(value).find('coordinates').length ? $(value).find('coordinates').text() : '';
         
         $(value).find('Data').each(function (index, newValue) {
-            pointExtendedData.push({name: $(newValue).attr('name'), value: $(newValue).text()});
+            pointExtendedData.push({name: $(newValue).attr('name'), value: decodeURIComponent($(newValue).text())});
         });
         pointObj.extendedData = pointExtendedData;
 
@@ -202,6 +204,7 @@ TracksClass.prototype.downloadTrackByName = function(paramsObj) {
             newtrack.description = value.description;
             newtrack.access = value.access;
             newtrack.categoryId = value.categoryId;
+            newtrack.published = value.published;
             return false;
         }
     });
@@ -209,7 +212,7 @@ TracksClass.prototype.downloadTrackByName = function(paramsObj) {
     newtrack.name = paramsObj.name;
     newtrack.points = trackPointArray;
 
-    //Logger.debug(newtrack);
+    Logger.debug(newtrack);
     this.track = newtrack;
 };
 
@@ -320,11 +323,11 @@ TracksClass.prototype.removeTrack = function() {
 /**
  * Find point in a track which is stored in internal variable "track".
  * 
- * @param {String} pointName The name of a point.
- * @returns {Object} The first point with matched name, or null if there 
- * is no point with given name.
+ * @param {String} pointUUID The UUID of a point.
+ * @returns {Object} The first point with matched uuid, or null if there 
+ * is no point with given uuid.
  */
-TracksClass.prototype.findPoint = function(pointName) {
+TracksClass.prototype.findPoint = function(pointUUID) {
     if (!this.isTrackDownloaded()) {
         throw new GetsWebClientException('Tracks Error', 'findPoint, track is not loaded');
     }
@@ -332,7 +335,7 @@ TracksClass.prototype.findPoint = function(pointName) {
     var track = this.track;
     var point = null;   
     $(track.points).each(function (index, value) {
-        if (pointName.toLowerCase().trim() === value.name.toLowerCase().trim()) {
+        if (pointUUID.trim() === value.uuid.trim()) {
             point = value;
             point.access = track.access;
             point.track = track.name;
@@ -371,6 +374,52 @@ TracksClass.prototype.setNeedTrackListUpdate = function (needTrackListUpdate) {
 TracksClass.prototype.setNeedTrackUpdate = function (needTrackUpdate) {
     if (this.needTrackUpdate !== needTrackUpdate) {
         this.needTrackUpdate = needTrackUpdate;
+    }
+};
+
+TracksClass.prototype.publishTrack = function () {
+    if (!this.track) {
+        throw new GetsWebClientException('Tracks Error', 'publishTrack, there is no track to publish');
+    }
+    
+    var publishTrackRequest = $.ajax({
+        url: PUBLISH_ACTION,
+        type: 'POST',
+        async: false,
+        contentType: 'application/json',
+        dataType: 'xml',
+        data: JSON.stringify({track_name: this.track.name})
+    });
+    
+    publishTrackRequest.fail(function(jqXHR, textStatus) {
+        throw new GetsWebClientException('Tracks Error', 'publishTrack, publishTrackRequest failed ' + textStatus);
+    });
+
+    if ($(publishTrackRequest.responseText).find('code').text() !== '0') {
+        throw new GetsWebClientException('Tracks Error', 'publishTrack, ' + $(publishTrackRequest.responseText).find('message').text());
+    }
+};
+
+TracksClass.prototype.unPublishTrack = function () {
+    if (!this.track) {
+        throw new GetsWebClientException('Tracks Error', 'unPublishTrack, there is no track to unpublish');
+    }
+    
+    var unPublishTrackRequest = $.ajax({
+        url: UNPUBLISH_ACTION,
+        type: 'POST',
+        async: false,
+        contentType: 'application/json',
+        dataType: 'xml',
+        data: JSON.stringify({track_name: this.track.name})
+    });
+    
+    unPublishTrackRequest.fail(function(jqXHR, textStatus) {
+        throw new GetsWebClientException('Tracks Error', 'unPublishTrack, unPublishTrackRequest failed ' + textStatus);
+    });
+
+    if ($(unPublishTrackRequest.responseText).find('code').text() !== '0') {
+        throw new GetsWebClientException('Tracks Error', 'unPublishTrack, ' + $(unPublishTrackRequest.responseText).find('message').text());
     }
 };
 

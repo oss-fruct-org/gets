@@ -133,25 +133,23 @@ PointsClass.prototype.downLoadPoints = function(paramsObj, callback) {
             pointObj.description = $(pointListItems[i]).find("[name='description']").length ? $(pointListItems[i]).find("[name='description']").text() : '';
             pointObj.uuid = $(pointListItems[i]).find("[name='uuid']").length ? $(pointListItems[i]).find("[name='uuid']").text() : '';
             pointObj.access = $(pointListItems[i]).find("[name='access']").length ? $(pointListItems[i]).find("[name='access']").text() : '';
-            pointObj.photo = $(pointListItems[i]).find("[name='photo']").length ? $(pointListItems[i]).find("[name='photo']").text() : '';
-            pointObj.audio = $(pointListItems[i]).find("[name='audio']").length ? $(pointListItems[i]).find("[name='audio']").text() : '';
+            pointObj.photo = $(pointListItems[i]).find("[name='photo']").length ? decodeURIComponent($(pointListItems[i]).find("[name='photo']").text()) : '';
+            pointObj.audio = $(pointListItems[i]).find("[name='audio']").length ? decodeURIComponent($(pointListItems[i]).find("[name='audio']").text()) : '';
             pointObj.url = $(pointListItems[i]).find("[name='link']").length ? $(pointListItems[i]).find("[name='link']").text() : '';
             pointObj.coordinates = $(pointListItems[i]).find('coordinates').length ? $(pointListItems[i]).find('coordinates').text() : '';
             pointObj.category_id = $(pointListItems[i]).find("[name='category_id']").length ? $(pointListItems[i]).find("[name='category_id']").text() : '';
             pointObj.radius = $(pointListItems[i]).find("[name='radius']").length ? $(pointListItems[i]).find("[name='radius']").text() : '';
             
             $(pointListItems[i]).find('Data').each(function(index, newValue) {               
-                pointExtendedData.push({name: $(newValue).attr('name')/*.replace(/_/g, ' ')*/, value: $(newValue).text()});               
+                pointExtendedData.push({name: $(newValue).attr('name')/*.replace(/_/g, ' ')*/, value: decodeURIComponent($(newValue).text())});               
             });                                    
             pointObj.extendedData = pointExtendedData;
 
-            Logger.debug(pointObj);
             pointsArray.push(pointObj);
         }
 
         //Logger.debug(pointsArray);
         self.pointList = pointsArray;
-        Logger.debug(JSON.stringify(self.pointList));
         if (callback) {
             callback();
         }
@@ -198,6 +196,7 @@ PointsClass.prototype.addPoint = function (paramsObj, update, callback) {
          
     $(paramsObj).each(function (idx, value) {
         Logger.debug(idx, value);
+        if (value.name === 'altitude') return true;
         if (value.name === 'title') {
             newParamsObj.title = value.value;
         } else if (value.name === 'description') {
@@ -212,15 +211,16 @@ PointsClass.prototype.addPoint = function (paramsObj, update, callback) {
             newParamsObj.latitude = value.value;
         } else if (value.name === 'longitude') {
             newParamsObj.longitude = value.value;
-        } else if (value.name === 'altitude') {
-            newParamsObj.altitude = value.value;
         } else {
             if (value.value !== '') {
                 newParamsObj.extended_data = newParamsObj.extended_data || {};
-                newParamsObj.extended_data[value.name.replace(/ /g, '_')] = value.value;
+                newParamsObj.extended_data[value.name.replace(/ /g, '_')] = encodeURIComponent(value.value);
             }
         }
     });
+    
+    // Temprorary fix for altitude
+    newParamsObj.altitude = 0.0;
     
     if (channel) {
         newParamsObj.channel = channel;

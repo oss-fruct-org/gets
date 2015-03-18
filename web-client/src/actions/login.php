@@ -30,8 +30,19 @@ if (filter_input(INPUT_SERVER, 'REQUEST_METHOD') == 'POST') {
                 if (!$dom_email) {
                     die('Error: resource isn\'t XML document.');
                 }
+                //var_dump($dom_email->saveXML());
                 if ($dom_email->getElementsByTagName('code')->item(0)->nodeValue === '0') {
+                    //var_dump($dom_email->saveXML());
                     $_SESSION['email'] = $dom_email->getElementsByTagName('email')->item(0)->nodeValue;
+                    if ($dom_email->getElementsByTagName('isCoreUser')->length > 0) {
+                        $_SESSION['core_user'] = $dom_email->getElementsByTagName('isCoreUser')->item(0)->nodeValue;
+                    }
+                    if ($dom_email->getElementsByTagName('isTrustedUser')->length > 0) {
+                        $_SESSION['trusted_user'] = $dom_email->getElementsByTagName('isTrustedUser')->item(0)->nodeValue;
+                    }
+                    if ($dom_email->getElementsByTagName('isAdminUser')->length > 0) {
+                        $_SESSION['admin_user'] = $dom_email->getElementsByTagName('isAdminUser')->item(0)->nodeValue;
+                    }
                     echo $response_token;
                 }
             }

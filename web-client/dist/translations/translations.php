@@ -49,7 +49,7 @@ function handleLanguage() {
 
 
 /**
- * Check is GET param with key 'lang' set and if the answer is Yes, then 
+ * Check is GET param with key 'lang' set and if so, then 
  * set language according to this GET param value.
  */
 function handleGETParam() {

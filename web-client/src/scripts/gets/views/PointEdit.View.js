@@ -51,15 +51,14 @@ PointEdit.prototype.placePointInPointEdit = function(point) {
     
     $(this.editPoint).find('#edit-point-desc-input').val(point.description);              
   
-    $(this.editPoint).find('#edit-point-url-input').val(point.url);
+    $(this.editPoint).find('#edit-point-url-input').val(point.url === '{}' ? '' : point.url);
     $(this.editPoint).find('#edit-point-active-radius-input').val(point.radius);
     $(this.editPoint).find('#edit-point-picture-input-url').val(point.photo);
     $(this.editPoint).find('#edit-point-audio-input-url').val(point.audio);
     $(this.editPoint).find('#edit-point-active-radius-input').val(point.radius);//
     
     var coords = point.coordinates.split(',');
-    $(this.editPoint).find('#edit-point-lat-input').val(coords[1]);
-    $(this.editPoint).find('#edit-point-lon-input').val(coords[0]);
+    $(this.editPoint).find('#edit-point-lat-lon-input').val(coords[1] + ', ' + coords[0]);
     
     var extendedDataText = '';
     for (var i = 0, len = point.extendedData.length; i < len; i++) {
@@ -68,9 +67,12 @@ PointEdit.prototype.placePointInPointEdit = function(point) {
             point.extendedData[i].name !== 'link' && 
             point.extendedData[i].name !== 'description' && 
             point.extendedData[i].name !== 'time' && 
-            point.extendedData[i].name !== 'description' &&
             point.extendedData[i].name !== 'category_id' && 
-            point.extendedData[i].name !== 'radius') {
+            point.extendedData[i].name !== 'radius' && 
+            point.extendedData[i].name !== 'index' &&
+            point.extendedData[i].name !== 'idx' && 
+            point.extendedData[i].name !== 'audio' &&
+            point.extendedData[i].name !== 'photo') {
             extendedDataText += '<div class="form-group"><label>' + point.extendedData[i].name + '</label><input class="form-control" type="text" name="' + point.extendedData[i].name + '" value="' + point.extendedData[i].value + '" /></div>';
         }
     }
@@ -80,7 +82,7 @@ PointEdit.prototype.placePointInPointEdit = function(point) {
 /**
  * Show view
  */
-PointEdit.prototype.showView = function() {
+PointEdit.prototype.showView = function() {   
     $(this.editPoint).removeClass('hidden').addClass('show');
 };
 
@@ -116,6 +118,6 @@ PointEdit.prototype.setLatLng = function(lat, lng) {
 };
 
 PointEdit.prototype.removeCustomFields = function () {
-    $(this.addPoint).find('#edit-point-extended-data').html('');   
+    $(this.editPoint).find('#edit-point-extended-data').html('');   
 };
 

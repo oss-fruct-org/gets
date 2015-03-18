@@ -62,6 +62,7 @@ if ($space === SPACE_ALL && !$auth_token) {
 }
 
 $dbconn = pg_connect(GEO2TAG_DB_STRING);
+$geo2tag_user_escaped = pg_escape_string($dbconn, GEO2TAG_USER);
 
 // email where query
 $where_arr = array();
@@ -71,36 +72,35 @@ if ($space === SPACE_ALL || $space === SPACE_PRIVATE) {
         auth_set_token($auth_token);
         $private_email = auth_get_google_email();
         $private_email_escaped = pg_escape_string($dbconn, $private_email);
-        session_commit();
     } catch (GetsAuthException $ex) {
         send_error(1, $ex->getMessage());
         die();
     }
 
     $email_where_arr[] = "users.email='${private_email_escaped}'";
-    $access_row = "users.email='${private_email_escaped}' AS permission";
+    $permission_row = "BOOL_OR(users.email='${private_email_escaped}') AS permission";
 } else {
     $private_email = null;
-    $access_row = 'false AS permission';
+    $permission_row = 'false AS permission';
 }
 
 if ($space === SPACE_ALL || $space === SPACE_PUBLIC) {
-    $email_escaped = pg_escape_string($dbconn, GEO2TAG_EMAIL);
-    $email_where_arr[] = "users.email='${email_escaped}'";
+    $email_where_arr[] = "subscribe_users.login='$geo2tag_user_escaped'";
 }
 
-$query =  "SELECT DISTINCT ON (channel.name) channel.name, channel.description, channel.url, ${access_row} FROM channel ";
+$query =  "SELECT channel.name, channel.description, channel.url, ${permission_row},
+ BOOL_OR(subscribe_users.login='$geo2tag_user_escaped') AS published
+ FROM channel ";
 
 if ($is_radius_filter) {
     $query .= 'INNER JOIN tag ON tag.channel_id = channel.id ';
 }
 
 $query .= 'INNER JOIN subscribe ON channel.id = subscribe.channel_id ';
-$query .= 'INNER JOIN users ON subscribe.user_id=users.id ';
-
+$query .= 'INNER JOIN users ON users.id = channel.owner_id ';
+$query .= 'INNER JOIN users AS subscribe_users ON subscribe.user_id = subscribe_users.id ';
 $query .= 'INNER JOIN category ON safe_cast_to_json(channel.description)->>\'category_id\'=category.id::text ';
 $query .= 'INNER JOIN users AS project_users ON category.owner_id = project_users.id ';
-
 
 $email_where = '(' . implode(' OR ', $email_where_arr) . ')';
 
@@ -109,7 +109,7 @@ if ($category_name) {
     $category_name_escaped = pg_escape_string($dbconn, $category_name);
     $where_arr[] = "category.name='${category_name_escaped}'";
 } else {
-    $where_arr[] = "project_users.login='" . pg_escape_string($dbconn, GEO2TAG_USER) . "'";
+    $where_arr[] = "project_users.login='" . $geo2tag_user_escaped . "'";
 }
 
 $where_arr[] = "(substr(channel.name, 0, 4)='tr+' OR substr(channel.name, 0, 4)='tr_')";
@@ -119,15 +119,22 @@ if ($is_radius_filter) {
     $where_arr[] = "gets_geo_distance(tag.latitude, tag.longitude, ${latitude}, ${longitude}) < ${radius}";
 }
 
-$query .= 'WHERE ' . implode(' AND ', $where_arr) . ' ORDER BY channel.name ASC, permission DESC;';
+$query .= 'WHERE ' . implode(' AND ', $where_arr) . ' GROUP BY channel.name, channel.description, channel.url;';
 $result = pg_query($dbconn, $query);
+
+$user_is_admin = ($private_email !== null && is_user_admin($dbconn) > 0 ? true : false);
 
 $resp = '<tracks>';
 while ($row = pg_fetch_row($result)) {
     $channel_name = $row[0];
     $channel_desc = $row[1];
     $channel_url = $row[2];
-    $access = $row[3] == 'f' ? 'r' : 'rw';
+    if (!$user_is_admin)
+        $access = $row[3] == 'f' ? 'r' : 'rw';
+    else
+        $access = 'rw';
+
+    $published = $row[4] == 'f' ? 'false' : 'true';
 
     $channel_description = null;
     $channel_category_id = null;
@@ -162,6 +169,9 @@ while ($row = pg_fetch_row($result)) {
         $resp .= '<photoUrl>' . htmlspecialchars($channel_photo_url) . '</photoUrl>';
 
     $resp .= '<access>' . $access . '</access>';
+
+    $resp .= '<published>' . $published . '</published>';
+
     $resp .= '</track>';
 }
 

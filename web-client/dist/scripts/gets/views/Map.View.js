@@ -26,3 +26,4 @@ MapView.prototype.fitMap = function(viewPortWidth, viewPortHeight) {
         $(this.mapElement).width(viewPortWidth - 415).height(viewPortHeight - 50);
     }
 };
+

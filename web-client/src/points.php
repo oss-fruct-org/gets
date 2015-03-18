@@ -30,6 +30,7 @@ session_start();
         <script src="scripts/readmore.min.js"></script>
         <script src="scripts/bootstrap-slider.min.js"></script>
         <script src="scripts/leaflet.contextmenu.js"></script>
+        <script src="scripts/jquery.inputmask.bundle.min.js"></script>
         <script type="text/javascript" src="scripts/leaflet.markercluster.js"></script>
         <script src="scripts/gets/models/Categories.Class.js"></script>
         <script src="scripts/gets/models/Points.Class.js"></script>

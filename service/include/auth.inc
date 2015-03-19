@@ -95,6 +95,14 @@ function auth_get_google_email() {
     return $_SESSION['email'];
 }
 
+function auth_get_google_user_info() {
+    if (!isset($_SESSION['user_info'])) {
+        auth_refresh_google_access();
+    }
+    
+    return $_SESSION['user_info'];
+}
+
 function auth_get_db_login($dbconn) {
     if (!isset($_SESSION['db_login'])) {
         auth_refresh_db_access($dbconn);
@@ -240,14 +248,21 @@ function auth_refresh_google_access() {
 
     $service = new Google_PlusService($client);
     $person = $service->people->get('me');
-
+    
     $email = $person->emails[0]['value'];
+    $name = $person->name;
+    $image_url = $person->image->getUrl();
+    
     $access_token = $client->getAccessToken();
 
+    $user_info = array("image" => $image_url,
+        "first_name" => $name->getGivenName(),
+        "last_name" => $name->getFamilyName(),
+        "middle_name" => $name->getMiddleName());
+    
     $_SESSION['email'] = $email;
     $_SESSION['access_token'] = $access_token;
+    $_SESSION['user_info'] = $user_info;
 }
 
 class GetsAuthException extends Exception { }
-
-?>

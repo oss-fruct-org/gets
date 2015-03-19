@@ -258,11 +258,28 @@ function auth_refresh_google_access() {
     $user_info = array("image" => $image_url,
         "first_name" => $name->getGivenName(),
         "last_name" => $name->getFamilyName(),
-        "middle_name" => $name->getMiddleName());
+        "middle_name" => $name->getMiddleName(),
+        "name" => $person->displayName);
     
     $_SESSION['email'] = $email;
     $_SESSION['access_token'] = $access_token;
     $_SESSION['user_info'] = $user_info;
+}
+
+function auth_revoke() {
+    require_once 'GoogleClientAPI/src/Google_Client.php';
+    require_once 'GoogleClientAPI/src/contrib/Google_PlusService.php';
+    $gets_token = $_SESSION['refresh_token'];
+            
+    $client = auth_create_client();
+    session_unset();
+    session_destroy();
+
+    try {
+        $client->revokeToken($gets_token);
+    } catch (Google_AuthException $e) {
+        throw new GetsAuthException('Can\'t revoke google token', 1);
+    }
 }
 
 class GetsAuthException extends Exception { }

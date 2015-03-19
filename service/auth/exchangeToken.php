@@ -7,18 +7,12 @@ include_once('../include/methods_url.inc');
 include_once('../include/utils.inc');
 include_once('../include/auth.inc');
 include_once('../include/config.inc');
+include_once('../include/access_control.inc');
+
+header('Content-Type:text/xml');
 
 require_once '../include/GoogleClientAPI/src/Google_Client.php';
 require_once '../include/GoogleClientAPI/src/contrib/Google_PlusService.php';
-
-header('Content-Type:text/xml');
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    header('Access-Control-Allow-Origin: *');
-    header('Access-Control-Allow-Methods: POST, GET, PUT, DELETE');
-    header('Access-Control-Allow-Headers: X-Requested-With, Content-Type');
-} else {
-    header('Access-Control-Allow-Origin: *');
-}
 
 $xml_post = file_get_contents('php://input');
 if (!$xml_post) {
@@ -61,7 +55,6 @@ try {
     $google_access_token = $client->getAccessToken();
 
     $auth_token = auth_set_initial_token($google_access_token, $google_email);
-//    auth_refresh_geo2tag_access();
 
     $content = '<auth_token>' . $auth_token . '</auth_token>';
     send_result(0, 'success', $content);

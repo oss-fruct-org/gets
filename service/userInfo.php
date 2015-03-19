@@ -21,7 +21,7 @@ if (!$dom) {
     die();
 }
 
-if (!$dom->schemaValidate('schemes/userInfo.xsd')) {
+if (!$dom->schemaValidate('schemes/authToken.xsd')) {
     send_error(1, 'Error: not valid input XML document.');
     die();
 }
@@ -44,12 +44,14 @@ $user_is_trusted = (is_user_trusted($dbconn) > 0 ? true : false);
 $escaped_email = htmlspecialchars($email);
 $escaped_image = htmlspecialchars($user_info["image"]);
 
+$escaped_name = htmlspecialchars($user_info["name"]);
 $escaped_first_name = htmlspecialchars($user_info["first_name"]);
 $escaped_middle_name = htmlspecialchars($user_info["middle_name"]);
 $escaped_last_name = htmlspecialchars($user_info["last_name"]);
 
 $response = '<userInfo>';
 $response .= "<email>{$escaped_email}</email>";
+$response .= "<name>{$escaped_name}</name>";
 $response .= "<first_name>{$escaped_first_name}</first_name>";
 $response .= "<middle_name>{$escaped_middle_name}</middle_name>";
 $response .= "<last_name>{$escaped_last_name}</last_name>";

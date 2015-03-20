@@ -64,33 +64,44 @@ if ($space === SPACE_ALL && !$auth_token) {
 $dbconn = pg_connect(GEO2TAG_DB_STRING);
 $geo2tag_user_escaped = pg_escape_string($dbconn, GEO2TAG_USER);
 
-// email where query
-$where_arr = array();
-$email_where_arr = array();
-if ($space === SPACE_ALL || $space === SPACE_PRIVATE) {
-    try {
+try {
+    if ($auth_token) {
         auth_set_token($auth_token);
         $private_email = auth_get_google_email();
         $private_email_escaped = pg_escape_string($dbconn, $private_email);
-    } catch (GetsAuthException $ex) {
-        send_error(1, $ex->getMessage());
-        die();
-    }
+    }    
+} catch (GetsAuthException $ex) {
+    send_error(1, $ex->getMessage());
+    die();
+}
 
+// email 'where' query
+$where_arr = array();
+$email_where_arr = array();
+if ($space === SPACE_ALL || $space === SPACE_PRIVATE) {
     $email_where_arr[] = "users.email='${private_email_escaped}'";
-    $permission_row = "BOOL_OR(users.email='${private_email_escaped}') AS permission";
+    //$permission_row = "BOOL_OR(users.email='${private_email_escaped}') AS permission";
+    $permission_row = "BOOL_OR(users.id = channel.owner_id) AS permission";
+    $share_row = " (CASE WHEN BOOL_OR(share.id IS NOT NULL) AND BOOL_OR(users.id = channel.owner_id) THEN JSON_AGG(DISTINCT row(share.key, share.remain)) ELSE NULL END) AS share";
 } else {
-    $private_email = null;
     $permission_row = 'false AS permission';
+    $share_row = "null AS share";
 }
 
 if ($space === SPACE_ALL || $space === SPACE_PUBLIC) {
-    $email_where_arr[] = "subscribe_users.login='$geo2tag_user_escaped'";
+    $email_where_arr[] = "subscribe.user_id = project_users.id";
+    //$email_where_arr[] = "subscribe_users.login='$geo2tag_user_escaped'";
+    
+    if ($auth_token) {
+        // $email_where_arr[] = "subscribe_users.email='$private_email_escaped'";
+        $email_where_arr[] = "subscribe.user_id = users.id";
+    }
 }
 
 $query =  "SELECT channel.name, channel.description, channel.url, ${permission_row},
- BOOL_OR(subscribe_users.login='$geo2tag_user_escaped') AS published
- FROM channel ";
+    BOOL_OR(subscribe.user_id = project_users.id) AS published,
+    ${share_row}
+    FROM channel ";
 
 if ($is_radius_filter) {
     $query .= 'INNER JOIN tag ON tag.channel_id = channel.id ';
@@ -98,9 +109,12 @@ if ($is_radius_filter) {
 
 $query .= 'INNER JOIN subscribe ON channel.id = subscribe.channel_id ';
 $query .= 'INNER JOIN users ON users.id = channel.owner_id ';
-$query .= 'INNER JOIN users AS subscribe_users ON subscribe.user_id = subscribe_users.id ';
 $query .= 'INNER JOIN category ON safe_cast_to_json(channel.description)->>\'category_id\'=category.id::text ';
 $query .= 'INNER JOIN users AS project_users ON category.owner_id = project_users.id ';
+
+if ($space !== SPACE_PUBLIC) {
+    $query .= 'LEFT JOIN share ON share.channel_id = channel.id ';
+}
 
 $email_where = '(' . implode(' OR ', $email_where_arr) . ')';
 
@@ -108,9 +122,10 @@ $where_arr[] = $email_where;
 if ($category_name) {
     $category_name_escaped = pg_escape_string($dbconn, $category_name);
     $where_arr[] = "category.name='${category_name_escaped}'";
-} else {
-    $where_arr[] = "project_users.login='" . $geo2tag_user_escaped . "'";
 }
+
+$where_arr[] = "project_users.login='" . $geo2tag_user_escaped . "'";
+
 
 $where_arr[] = "(substr(channel.name, 0, 4)='tr+' OR substr(channel.name, 0, 4)='tr_')";
 
@@ -135,6 +150,8 @@ while ($row = pg_fetch_row($result)) {
         $access = 'rw';
 
     $published = $row[4] == 'f' ? 'false' : 'true';
+    
+    $share = $row[5];
 
     $channel_description = null;
     $channel_category_id = null;
@@ -171,6 +188,19 @@ while ($row = pg_fetch_row($result)) {
     $resp .= '<access>' . $access . '</access>';
 
     $resp .= '<published>' . $published . '</published>';
+    
+    if ($share) {        
+        $resp .= '<shares>';
+        $share_array = json_decode($share, true);
+
+        foreach ($share_array as $share_elem) {
+            $key = htmlspecialchars($share_elem["f1"]);
+            $remain = htmlspecialchars($share_elem["f2"]);
+            $resp .= "<share><key>$key</key><remain>$remain</remain></share>";
+        }
+        
+        $resp .= '</shares>';
+    }
 
     $resp .= '</track>';
 }

@@ -1,5 +1,6 @@
 CREATE TABLE share (
     id SERIAL PRIMARY KEY,
-    channel_id INTEGER REFERENCES channel(id) ON DELETE CASCADE,
-    key TEXT
+    channel_id INTEGER NOT NULL REFERENCES channel(id) ON DELETE CASCADE,
+    key TEXT UNIQUE NOT NULL,
+    remain INTEGER NOT NULL
 );

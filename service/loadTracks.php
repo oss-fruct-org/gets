@@ -78,11 +78,14 @@ try {
 // email 'where' query
 $where_arr = array();
 $email_where_arr = array();
+//$query_with = "public_user AS (SELECT id FROM users WHERE login='${geo2tag_user_escaped}')";
+$query_with = "";
+
 if ($space === SPACE_ALL || $space === SPACE_PRIVATE) {
-    $email_where_arr[] = "users.email='${private_email_escaped}'";
-    //$permission_row = "BOOL_OR(users.email='${private_email_escaped}') AS permission";
-    $permission_row = "BOOL_OR(users.id = channel.owner_id) AS permission";
-    $share_row = " (CASE WHEN BOOL_OR(share.id IS NOT NULL) AND BOOL_OR(users.id = channel.owner_id) THEN JSON_AGG(DISTINCT row(share.key, share.remain)) ELSE NULL END) AS share";
+    $email_where_arr[] = "channel.owner_id IN (SELECT id FROM private_user)";
+    $permission_row = "BOOL_OR(channel.owner_id IN (SELECT id FROM private_user)) AS permission";
+    $share_row = " (CASE WHEN BOOL_OR(share.id IS NOT NULL) AND BOOL_OR(channel.owner_id IN (SELECT id FROM private_user)) THEN JSON_AGG(DISTINCT row(share.key, share.remain)) ELSE NULL END) AS share";
+    $query_with = "WITH private_user AS (SELECT id FROM users WHERE email='${private_email_escaped}')";
 } else {
     $permission_row = 'false AS permission';
     $share_row = "null AS share";
@@ -91,14 +94,9 @@ if ($space === SPACE_ALL || $space === SPACE_PRIVATE) {
 if ($space === SPACE_ALL || $space === SPACE_PUBLIC) {
     $email_where_arr[] = "subscribe.user_id = project_users.id";
     //$email_where_arr[] = "subscribe_users.login='$geo2tag_user_escaped'";
-    
-    if ($auth_token) {
-        // $email_where_arr[] = "subscribe_users.email='$private_email_escaped'";
-        $email_where_arr[] = "subscribe.user_id = users.id";
-    }
 }
 
-$query =  "SELECT channel.name, channel.description, channel.url, ${permission_row},
+$query =  "${query_with} SELECT channel.name, channel.description, channel.url, ${permission_row},
     BOOL_OR(subscribe.user_id = project_users.id) AS published,
     ${share_row}
     FROM channel ";
@@ -108,12 +106,13 @@ if ($is_radius_filter) {
 }
 
 $query .= 'INNER JOIN subscribe ON channel.id = subscribe.channel_id ';
-$query .= 'INNER JOIN users ON users.id = channel.owner_id ';
+//$query .= 'INNER JOIN users ON users.id = channel.owner_id ';
 $query .= 'INNER JOIN category ON safe_cast_to_json(channel.description)->>\'category_id\'=category.id::text ';
 $query .= 'INNER JOIN users AS project_users ON category.owner_id = project_users.id ';
 
 if ($space !== SPACE_PUBLIC) {
     $query .= 'LEFT JOIN share ON share.channel_id = channel.id ';
+    $email_where_arr[] = "subscribe.user_id IN (SELECT id FROM private_user)";
 }
 
 $email_where = '(' . implode(' OR ', $email_where_arr) . ')';
@@ -127,7 +126,7 @@ if ($category_name) {
 $where_arr[] = "project_users.login='" . $geo2tag_user_escaped . "'";
 
 
-$where_arr[] = "(substr(channel.name, 0, 4)='tr+' OR substr(channel.name, 0, 4)='tr_')";
+$where_arr[] = "(channel.name LIKE 'tr+%' OR channel.name LIKE 'tr_%')";
 
 # Distance where
 if ($is_radius_filter) {
@@ -136,7 +135,6 @@ if ($is_radius_filter) {
 
 $query .= 'WHERE ' . implode(' AND ', $where_arr) . ' GROUP BY channel.name, channel.description, channel.url;';
 $result = pg_query($dbconn, $query);
-
 $user_is_admin = ($private_email !== null && is_user_admin($dbconn) > 0 ? true : false);
 
 $resp = '<tracks>';

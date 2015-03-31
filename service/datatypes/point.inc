@@ -79,7 +79,10 @@ class Point {
         $xml .= '<description>' . htmlspecialchars($this->description) . '</description>';
         $xml .= '<ExtendedData xmlns:gets="http://gets.cs.petrsu.ru/">';
         
-        $xml .= '<Data name="link"><value>' . htmlspecialchars($this->link) . '</value></Data>';
+        if ($this->link) {
+            $xml .= '<Data name="link"><value>' . htmlspecialchars($this->link) . '</value></Data>';
+        }
+        
         $xml .= '<Data name="time"><value>' . htmlspecialchars($this->time) . '</value></Data>';
         $xml .= '<Data name="uuid"><value>' . htmlspecialchars($this->uuid) . '</value></Data>';
 
@@ -95,7 +98,7 @@ class Point {
                 $xml .= "<Data name=\"$key\"><value>$value</value></Data>";
             }
 
-            if ($key == "uuid") {
+            if ($key === "uuid") {
                 $uuid_found = true;
             }
         }
@@ -124,14 +127,14 @@ class Point {
         $point->altitude = $row[4];
         
         $description_array = json_decode($row[5], true);
-        if ($description_array) {
+        if ($description_array !== null) {
             $point->addExtraArray($description_array);
         } else {
             $point->description = $row[5];
         }
         
         $url_array = json_decode($row[6], true);
-        if ($url_array) {
+        if ($url_array !== null) {
             $point->addExtraArray($url_array);
         } else {
             $point->link = $row[6];
@@ -168,7 +171,7 @@ class Point {
         $description = get_array_element($request_array, "description");
         
         $description_array = json_decode($description, true);
-        if ($description_array) {
+        if ($description_array !== null) {
             $point->addExtraArray($description_array);
         } else {
             $point->description = $description;

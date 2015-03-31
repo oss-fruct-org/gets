@@ -105,3 +105,7 @@ while ($row = pg_fetch_row($result)) {
 $xml .= '</categories>';
 
 send_result(0, 'success', $xml);
+
+include_once('include/php-ga.inc');
+
+?>

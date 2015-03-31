@@ -142,4 +142,5 @@ $track_id_escaped = htmlspecialchars($track_id);
 $response = "<track_id>${track_id_escaped}</track_id>";
 send_result(0, 'success', $response);
 
+include_once('include/php-ga.inc');
 ?>

@@ -73,4 +73,5 @@ $content .= '</category>';
 
 send_result(0, 'success', $content);
 
+include_once('include/php-ga.inc');
 ?>

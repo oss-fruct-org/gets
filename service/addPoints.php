@@ -73,4 +73,7 @@ function timeAndMilliseconds() {
 	$m = explode(' ', microtime());
     return array($m[1], (int)round($m[0]*1000,3));
 }
+
+include_once('include/php-ga.inc');
+
 ?>

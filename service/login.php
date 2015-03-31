@@ -64,4 +64,7 @@ if ($response_code != 'Ok') {
 
 $content = '<auth_token>' . $response_array['auth_token'] . '</auth_token>';
 send_result(0, 'success', $content);
+
+include_once('include/php-ga.inc');
+
 ?>

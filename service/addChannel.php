@@ -78,5 +78,7 @@ if (!pg_insert($dbconn, 'channel', $data_array)) {
     send_result(0, 'success', '');
 }
 
+include_once('include/php-ga.inc');
+
 ?>
 

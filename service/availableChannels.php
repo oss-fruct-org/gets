@@ -8,4 +8,7 @@ if (!empty($_POST)) {
 } else {
 	echo "Nothing";
 }
+
+include_once('include/php-ga.inc');
+
 ?>

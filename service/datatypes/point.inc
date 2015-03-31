@@ -4,7 +4,7 @@ require_once 'include/utils.inc';
 
 class Point {
     public static $photo_extra_keys = array("photo", "photoUrl", "icon", "iconUrl");
-    public static $url_extra_keys = array("photoUrl", "photo", "icon", "iconUrl", "audio", "audioUrl");
+    public static $url_extra_keys = array("photoUrl", "photo", "icon", "iconUrl", "audio", "audioUrl", "link");
     
     public $title;
     public $description = "";
@@ -43,6 +43,10 @@ class Point {
 
         if (count($this->photos) !== 0) {
             $url_field_array["photo"] = $this->photos;
+        }
+        
+        if ($this->link) {
+            $url_field_array["link"] = $this->link;
         }
         
         foreach ($this->extended_data as $key => $value) {
@@ -107,6 +111,45 @@ class Point {
         $xml .= '</Placemark>';
 
         return $xml;
+    }
+    
+    // time, label, latitude, longitude, altitude, description, url, id
+    public static function makeFromPgRow($row) {
+        $point = new Point();
+        
+        $point->time = date_postgres_to_gets($row[0]);
+        $point->title = $row[1];
+        $point->latitude = $row[2];
+        $point->longitude = $row[3];
+        $point->altitude = $row[4];
+        
+        $description_array = json_decode($row[5], true);
+        if ($description_array) {
+            $point->addExtraArray($description_array);
+        } else {
+            $point->description = $row[5];
+        }
+        
+        $url_array = json_decode($row[6], true);
+        if ($url_array) {
+            $point->addExtraArray($url_array);
+        } else {
+            $point->link = $row[6];
+        }
+        
+        if (!$point->uuid) {
+            $point->uuid = $row[7];
+        }
+        
+        if (array_key_exists(8, $row)) {
+            $point->category_id = (int) $row[8];
+        }
+        
+        if (array_key_exists(9, $row)) {
+            $point->access = $row[9] === 't';
+        }
+        
+        return $point;
     }
 
     public static function makeFromXmlRequest(DOMDocument $dom) {

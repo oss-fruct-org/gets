@@ -19,9 +19,11 @@ try {
 
     $dbconn = pg_connect(GEO2TAG_DB_STRING);
 
-    list($user_id, $channel_id) = require_channel_accessible($dbconn, $channel_name, $auth_token == null);
+    list($channel_id, $is_owned) = require_channel_accessible($dbconn, $channel_name, $auth_token == null);
 
-    $result_tag = pg_query_params($dbconn, 'SELECT time, label, latitude, longitude, altitude, description, url, id FROM tag WHERE tag.channel_id=$1 ORDER BY time;', array($channel_id));
+    $result_tag = pg_query_params($dbconn, 
+            'SELECT time, label, latitude, longitude, altitude, description, url, id '
+            . 'FROM tag WHERE tag.channel_id=$1 ORDER BY time;', array($channel_id));
 
     $xml = '<kml xmlns="http://www.opengis.net/kml/2.2">';
     $xml .= '<Document>';
@@ -32,6 +34,7 @@ try {
     // Output points
     while ($row = pg_fetch_row($result_tag)) {
         $point = Point::makeFromPgRow($row);
+        $point->access = $is_owned && $auth_token !== null;
         $xml .= $point->toKmlPlacemark();
     }
 

@@ -116,7 +116,7 @@ class Point {
         return $xml;
     }
     
-    // time, label, latitude, longitude, altitude, description, url, id
+    // time, label, latitude, longitude, altitude, description, url, id, access, category_id
     public static function makeFromPgRow($row) {
         $point = new Point();
         
@@ -144,12 +144,12 @@ class Point {
             $point->uuid = $row[7];
         }
         
-        if (array_key_exists(8, $row)) {
-            $point->category_id = (int) $row[8];
+        if (array_key_exists(9, $row)) {
+            $point->category_id = (int) $row[9];
         }
         
-        if (array_key_exists(9, $row)) {
-            $point->access = $row[9] === 't';
+        if (array_key_exists(8, $row)) {
+            $point->access = $row[8] === 't';
         }
         
         return $point;

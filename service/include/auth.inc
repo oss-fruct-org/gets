@@ -13,6 +13,10 @@ function auth_is_public_token($gets_token) {
     return substr_compare($gets_token, 'p:', 0, 2) === 0;
 }
 
+function auth_is_google_token($gets_token) {
+    return substr_compare($gets_token, 'g:', 0, 2) === 0;
+}
+
 function auth_extract_sub_token($gets_token) {
     return substr($gets_token, 2);
 }
@@ -52,29 +56,23 @@ function auth_set_initial_token($access_token, $email) {
     return $gets_token;
 }
 
-function auth_set_initial_public_token($login, $password, $email) {
-    $f = fopen('/dev/urandom', 'rb');
-    if ($f) {
-        $gets_token = 'p:' . sha1(fread($f, 16));
-        fclose($f);
-    } else {
-        $gets_token = 'p:' . sha1($login . $password . $email);
-    }
-
-    auth_set_token($gets_token);
-    $_SESSION['email'] = $email;
-    $_SESSION['login'] = $login;
-    $_SESSION['password'] = $password;
-    $_SESSION['qweqwe'] = 'asdasd';
+function auth_create_initial_test_token() {
+    $base = substr(sha1(rand()), 0, 10);
+    $email = $base . "@example.com";
+    $token = "t:" . $base;
     
-    return $gets_token;
+    auth_set_token($token);
+    $_SESSION['email'] = $email;
+    session_commit();
+    
+    return $token;
 }
 
 function auth_set_token($gets_token) {
     session_id(sha1(SESSION_SALT . $gets_token));
     session_start();
     $_SESSION['gets_token'] = $gets_token;
-    if (!auth_is_public_token($gets_token)) {
+    if (auth_is_google_token($gets_token)) {
         $_SESSION['refresh_token'] = substr($gets_token, 2);
     }
 }

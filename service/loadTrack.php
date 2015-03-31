@@ -76,3 +76,7 @@ $xml .= '</Document>';
 $xml .= '</kml>';
 
 send_result(0, 'success', $xml);
+
+include_once('include/php-ga.inc');
+
+?>

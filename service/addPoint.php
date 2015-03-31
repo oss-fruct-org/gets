@@ -84,3 +84,6 @@ if (!safe_pg_insert($dbconn, 'tag', $pg_array)) {
     send_result(0, 'success', $xml);
 }
 
+include_once('include/php-ga.inc');
+
+?>

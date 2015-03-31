@@ -2,7 +2,6 @@
 
 include_once('../include/methods_url.inc');
 include_once('../include/utils.inc');
-include_once('../include/public_token.inc');
 include_once('../include/auth.inc');
 require_once 'client.php';
 

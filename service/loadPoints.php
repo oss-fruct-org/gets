@@ -2,6 +2,7 @@
 include_once('include/methods_url.inc');
 include_once('include/utils.inc');
 include_once('include/public_token.inc');
+include_once('datatypes/point.inc');
 
 include_once('include/header.inc');
 
@@ -99,18 +100,8 @@ try {
 
     // Output points
     while ($row = pg_fetch_row($result)) {
-        $datetime = date_postgres_to_gets($row[0]);
-        $label = $row[1];
-        $latitude = $row[2];
-        $longitude = $row[3];
-        $altitude = $row[4];
-        $description = $row[5];
-        $url = $row[6];
-        $category_id = $row[8];
-        $access = $row[9] == 'f' ? 'r' : 'rw';
-        $id = $row[10];
-
-        add_place_mark($xml, $label, $description, $url, $datetime, $latitude, $longitude, $altitude, $id, $access, $category_id);
+        $point = Point::makeFromPgRow($row);
+        $xml .= $point->toKmlPlacemark();
     }
 
     $xml .= '</Document></kml>';

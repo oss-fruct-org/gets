@@ -213,6 +213,10 @@ class Point {
             $this->uuid = $extra_element;
         } else if ($extra_key === "description") {
             $this->description = $extra_element;
+        } else if ($extra_key === "link") {
+            $this->link = $extra_element;
+        } else if ($extra_key === "category_id") {
+            $this->category_id = (int) $extra_element;
         } else if (is_scalar($extra_element)) {
             $this->extended_data[$extra_key] = $extra_element;
         }

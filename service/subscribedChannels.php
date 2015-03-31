@@ -70,5 +70,7 @@ foreach ($response_array['channels'] as $channel) {
 $content .= '</channels>';
 
 send_result(0, 'success', $content);
+
+include_once('include/php-ga.inc');
 ?>
 

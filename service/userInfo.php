@@ -71,3 +71,5 @@ if ($user_is_trusted || strcmp($email,GEO2TAG_EMAIL) == 0 || $user_is_admin) {
 $response .= '</userInfo>';
 
 send_result(0, 'success', $response);
+
+include_once('include/php-ga.inc');

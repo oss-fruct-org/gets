@@ -45,3 +45,5 @@ try {
 } catch (Exception $e) {
     send_error($e->getCode(), $e->getMessage());
 }
+
+include_once('include/php-ga.inc');

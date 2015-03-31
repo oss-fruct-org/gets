@@ -167,3 +167,5 @@ while ($row = pg_fetch_row($select_res)) {
 }
 
 send_result(0, "Tag successfully updated", "$count");
+
+include_once('include/php-ga.inc');

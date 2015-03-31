@@ -62,4 +62,7 @@ $id = $id_element->item(0)->nodeValue;
 
 $content = '<category>'.$id.'</category>';
 send_result(0, 'success', $content);
+
+include_once('include/php-ga.inc');
+
 ?>

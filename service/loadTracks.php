@@ -180,3 +180,7 @@ $resp .= '</tracks>';
 pg_close($dbconn);
 
 send_result(0, 'success', $resp);
+
+include_once('include/php-ga.inc');
+
+?>

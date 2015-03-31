@@ -47,6 +47,8 @@ try {
         $xml .= '</Document></kml>';
 
         send_result(0, 'success', $xml);
+
+        include_once('include/php-ga.inc');
     }
 } catch (GetsAuthException $e) {
     send_error(1, "Can't revoke token");

@@ -25,3 +25,4 @@ before_script:
     - cp -f test/travis/config.inc service/include
 
 script: bash test/travis/test.sh
+

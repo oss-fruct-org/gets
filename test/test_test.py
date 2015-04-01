@@ -41,7 +41,22 @@ class TestTest(unittest.TestCase):
             ("altitude", "0"),
             ("time", "01 10 2014 17:33:47.630")
             )
-    
+
+    def make_test_point_request_ex(self, extended_data):
+        return gt.make_request(
+            ("auth_token", self.token),
+            ("category_id", "1"),
+            ("title", "test point"),
+            ("description", "test description"),
+            ("link", "http://example.com"),
+            ("latitude", "64"),
+            ("longitude", "31"),
+            ("altitude", "0"),
+            ("time", "01 10 2014 17:33:47.630"),
+            ("extended_data", extended_data)
+            )
+
+
     def assert_test_point_1(self, point, suffix):
         self.assertEqual(point.name, "test point " + suffix)
         self.assertEqual(point.description, "test description " + suffix)
@@ -111,8 +126,74 @@ class TestTest(unittest.TestCase):
         self.assertEqual(point.extended_data["test1"], "value1")
         self.assertEqual(point.extended_data["test2"], "value2")
 
-    
+    def test_update_point_by_title(self):
+        self.sign_in()
 
+        gt.request("addPoint.php", self.make_test_point_request_1("1"))
+        gt.request("addPoint.php", self.make_test_point_request_1("2"))
+        res = gt.request("updatePoint.php", gt.make_request(
+            ("auth_token", self.token),
+            ("name", "test point 1"),
+
+            ("title", "updated point 1")
+            ));
+        self.assertEqual(gt.get_code(res), 0)
+
+        points = gt.Point.from_xml(gt.get_content(self.load_points_1()))
+        self.assertEqual(len(points), 2)
+        
+        names = [point.name for point in points]
+        self.assertTrue("test point 2" in names)
+        self.assertTrue("updated point 1" in names)
+
+    def test_update_point_by_uuid_and_name(self):
+        self.sign_in()
+
+        res = gt.request("addPoint.php", self.make_test_point_request_1("1"))
+        gt.request("addPoint.php", self.make_test_point_request_1("1"))
+        gt.request("addPoint.php", self.make_test_point_request_1("2"))
+        point = gt.Point.from_xml(gt.get_content(res))[0]
+        
+        res = gt.request("updatePoint.php", gt.make_request(
+            ("auth_token", self.token),
+            ("uuid", point.uuid),
+            ("name", "test point 1"),
+
+            ("title", "updated point 1")
+            ));
+        self.assertEqual(gt.get_code(res), 0)
+
+        points = gt.Point.from_xml(gt.get_content(self.load_points_1()))
+        self.assertEqual(len(points), 3)
+
+        names = [point.name for point in points]
+        self.assertTrue("test point 2" in names)
+        self.assertTrue("updated point 1" in names)
+        self.assertTrue("test point 1" in names)
+
+    def test_update_extended_data(self):
+        self.sign_in()
+
+        res = gt.request("addPoint.php", self.make_test_point_request_ex([("ex1", "data1"), ("ex2", "data2")]))
+        point = gt.Point.from_xml(gt.get_content(res))[0]
+
+        res = gt.request("updatePoint.php", gt.make_request(
+            ("auth_token", self.token),
+            ("name", "test point"),
+
+            ("extended_data", [("ex3", "data3"), ("ex4", "data4")])
+            ));
+        self.assertEqual(gt.get_code(res), 0)
+
+        new_point = gt.Point.from_xml(gt.get_content(self.load_points_1()))[0]
+        self.assertEqual(new_point.name, "test point")
+        self.assertEqual(point.uuid, new_point.uuid)
+
+        self.assertFalse("ex1" in new_point.extended_data)
+        self.assertFalse("ex2" in new_point.extended_data)
+        self.assertTrue("ex3" in new_point.extended_data)
+        self.assertTrue("ex4" in new_point.extended_data)
+        self.assertTrue("uuid" not in new_point.extended_data)
 
 if __name__ == "__main__":
     unittest.main()

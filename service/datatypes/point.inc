@@ -21,6 +21,40 @@ class Point {
     public $extended_data = array();
     public $photos = array();
 
+    public function merge(Point $other) {
+        if ($other->title) {
+            $this->title = $other->title;
+        }
+        
+        if ($other->link) {
+            $this->link = $other->link;
+        }
+
+        if ($other->description) {
+            $this->description = $other->description;
+        }
+        
+        if ($other->latitude) {
+            $this->latitude = $other->latitude;
+        }
+        
+        if ($other->longitude) {
+            $this->longitude = $other->longitude;
+        }
+        
+        if ($other->altitude) {
+            $this->altitude = $other->altitude;
+        }
+        
+        if ($other->extended_data) {
+            $this->extended_data = $other->extended_data;
+        }
+        
+        if ($other->photos) {
+            $this->photos = $other->photos;
+        }
+    }
+    
     public function toPgArray($user_id, $channel_id) {
         $pg_array = array();
         $pg_array["label"] = $this->title;
@@ -28,8 +62,13 @@ class Point {
         $pg_array["longitude"] = $this->longitude;
         $pg_array["altitude"] = $this->altitude;
 
-        $pg_array["user_id"] = $user_id;
-        $pg_array["channel_id"] = $channel_id;
+        if ($user_id) {
+            $pg_array["user_id"] = $user_id;
+        }
+        
+        if ($channel_id) {
+            $pg_array["channel_id"] = $channel_id;
+        }
         
         $description_field_array = array();
         $url_field_array = array();

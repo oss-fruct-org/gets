@@ -393,6 +393,25 @@ function uuidv4()
 }
 
 /**
+ * Escapes value before insertion to database of needed
+ * @param resource $dbconn
+ * @param mixed $value
+ */
+function convert_database_value($dbconn, $value) {
+    if (is_bool($value)) {
+        return $value ? 'true' : 'false';
+    } else if (is_string($value)) {
+        return "'" . pg_escape_string($dbconn, $value) . "'";
+    } else if (is_numeric($value)) {
+        return "$value";
+    } else if (is_null($value)) {
+        return "null";
+    } else {
+        throw new Exception("Wrong type passed to safe_pg_insert");
+    }
+}
+
+/**
  * pg_insert without backslash escaping issues
  * @param $dbconn
  * @param $table
@@ -405,12 +424,35 @@ function safe_pg_insert($dbconn, $table, $data_array) {
 
     foreach ($data_array as $key => $value) {
         $names_array[] = $key;
-        $values_array[] = "'" . pg_escape_string($dbconn, $value) . "'";
+        $values_array[] = convert_database_value($dbconn, $value);
     }
 
     $values = implode(",", $values_array);
     $names = implode(",", $names_array);
     return pg_query($dbconn, "INSERT INTO $table ($names) VALUES ($values);");
+}
+
+/**
+ * pg_update without possible backslash escaping issues
+ */
+function safe_pg_update($dbconn, $table, $data_array, $condition) {
+    $sets_array = array();
+    $where_array = array("TRUE");
+    
+    foreach ($data_array as $key => $value) {
+        $value_escaped = convert_database_value($dbconn, $value);
+        $sets_array[] = "$key=$value_escaped";
+    }
+    
+    foreach ($condition as $key => $value) {
+        $value_escaped = convert_database_value($dbconn, $value);
+        $where_array[] = "$key=$value_escaped";
+    } 
+    
+    $sets_string = implode(",", $sets_array);
+    $where_string = implode(" AND ", $where_array);
+    
+    return pg_query($dbconn, "UPDATE $table SET $sets_string WHERE $where_string;");
 }
 
 /*

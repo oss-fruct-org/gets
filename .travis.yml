@@ -1,0 +1,27 @@
+language: php
+
+branches:
+    only:
+        - master
+        - testing
+
+addons:
+    postgresql: "9.3"
+    apt:
+        packages:
+            - python3
+
+php:
+    - 5.4
+
+before_script:
+    - psql -c 'create database geo2tag;' -U postgres
+    - psql -U postgres geo2tag < test/travis/base.pg
+    - psql -U postgres geo2tag < db/adminUsers.pg
+    - psql -U postgres geo2tag < db/category.pg
+    - psql -U postgres geo2tag < db/trustedUsers.pg
+    - psql -U postgres geo2tag < db/json.pg
+    - psql -U postgres geo2tag < db/dist.pg
+    - cp -f test/travis/config.inc service/include
+
+script: bash test/travis/test.sh

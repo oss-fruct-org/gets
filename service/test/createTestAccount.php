@@ -11,4 +11,14 @@ if (!defined("TESTING_MODE") || TESTING_MODE !== true) {
     die();
 }
 
-echo auth_create_initial_test_token();
+$token = auth_create_initial_test_token();
+$dbconn = pg_connect(GEO2TAG_DB_STRING);
+
+auth_refresh_db_access($dbconn);
+$user_id = auth_get_db_id($dbconn);
+
+if (isset($_GET["trusted"]) && $_GET["trusted"] === "true") {
+    pg_insert($dbconn, "trustedUsers", array("user_id" => $user_id, "owner_id" => 1));
+}
+
+echo $token;

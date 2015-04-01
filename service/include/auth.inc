@@ -62,7 +62,16 @@ function auth_create_initial_test_token() {
     $token = "t:" . $base;
     
     auth_set_token($token);
+    
+    $user_info = array("image" => "http://example.com",
+        "first_name" => $base,
+        "last_name" => $base,
+        "middle_name" => $base,
+        "name" => $base);
+
     $_SESSION['email'] = $email;
+    $_SESSION['user_info'] = $user_info;
+
     session_commit();
     
     return $token;

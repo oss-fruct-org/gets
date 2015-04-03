@@ -144,7 +144,8 @@ class Point {
 
         // Custom elements must be after 'Data'
         foreach ($this->photos as $photo_url) {
-            $xml .= "<gets:photo>$photo_url</gets:photo>";
+            $photo_url_escaped = htmlspecialchars($photo_url);
+            $xml .= "<gets:photo>${photo_url_escaped}</gets:photo>";
         }
         
         $xml .= '</ExtendedData>';

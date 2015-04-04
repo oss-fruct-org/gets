@@ -179,14 +179,17 @@ TracksClass.prototype.downloadTrackByName = function(paramsObj) {
         //Logger.debug(value);
         var pointObj = {};
         var pointExtendedData = [];
+        pointObj.photos = [];
         
         pointObj.index = $(value).find("[name='idx']").length ? $(value).find("[name='idx']").text() : '';
         pointObj.uuid = $(value).find("[name='uuid']").length ? $(value).find("[name='uuid']").text() : '';
         pointObj.name = $(value).find('name').length ? $(value).find('name').text() : '';
-        pointObj.description = $(value).find("[name='description']").length ? $(value).find("[name='description']").text() : '';
+        pointObj.description = $(value).find('description').length ? $(value).find('description').text() : '';
         pointObj.url = $(value).find("[name='link']").length ? $(value).find("[name='link']").text() : '';
         pointObj.audio = $(value).find("[name='audio']").length ? decodeURIComponent($(value).find("[name='audio']").text()) : '';
-        pointObj.photo = $(value).find("[name='photo']").length ? decodeURIComponent($(value).find("[name='photo']").text()) : '';
+        $(value).find("gets\\:photo").each(function (idx, val) {
+            pointObj.photos.push(decodeURIComponent($(val).text()));
+        });
         pointObj.radius = $(value).find("[name='radius']").length ? $(value).find("[name='radius']").text() : '';
         pointObj.coordinates = $(value).find('coordinates').length ? $(value).find('coordinates').text() : '';
         

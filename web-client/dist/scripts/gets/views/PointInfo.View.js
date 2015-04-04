@@ -13,7 +13,7 @@
  */
 function PointInfo(document, pointInfo) {
     this.document = document;
-    this.pointInfo = pointInfo;
+    this.pointInfo = pointInfo;   
 }
 
 /**
@@ -31,9 +31,10 @@ PointInfo.prototype.placePointInPointInfo = function(point, isAuth) {
     var descElement = $(this.pointInfo).find('#point-info-description');
     var urlElement = $(this.pointInfo).find('#point-info-url a');
     var audioElement = $(this.pointInfo).find('#point-info-audio');
-    var photoElement = $(this.pointInfo).find('#point-info-image img');
+    var photoElement = $(this.pointInfo).find('#point-info-image');
+    var noPhotoElement = $(this.pointInfo).find('#no-point-info-image');
     var extendedDataElement = $(this.pointInfo).find('#point-info-extended-data');
-
+    
     // Clear value of all elements
     $(nameElement).text('');
     $(coordsElementLat).text('');
@@ -42,7 +43,6 @@ PointInfo.prototype.placePointInPointInfo = function(point, isAuth) {
     $(descElement).html('');
     $(urlElement).attr('href', '').text('');
     $(audioElement).empty();
-    $(photoElement).attr('src', '');
     $(extendedDataElement).html('');
 
     // Then fill elemnts with new values 
@@ -69,10 +69,29 @@ PointInfo.prototype.placePointInPointInfo = function(point, isAuth) {
                 .appendTo(audioElement);
     }
 
-    if (point.photo !== '') {
-        $(photoElement).attr('src', point.photo);
+    $(photoElement).find('a').attr('href', '');
+    $(photoElement).find('img').attr('src', '');
+
+    if (point.photos.length > 0) {
+        $(noPhotoElement).removeClass('show').addClass('hidden');
+        $(photoElement).removeClass('hidden').addClass('show');
+                
+        this.photos = point.photos;
+        this.photoIndex = 0;
+        
+        $(photoElement).find('a').attr('href', this.photos[this.photoIndex]);
+        $(photoElement).find('img').attr('src', this.photos[this.photoIndex]);
+        
+        if (point.photos.length > 1) {
+            $(photoElement).find('#point-info-image-controls').removeClass('hidden').addClass('show');
+        } else {
+            $(photoElement).find('#point-info-image-controls').removeClass('show').addClass('hidden');
+        }
+    } else {
+        $(noPhotoElement).removeClass('hidden').addClass('show');
+        $(photoElement).removeClass('show').addClass('hidden');
     }
-    
+        
     var extendedDataText = '';
     for (var i = 0, len = point.extendedData.length; i < len; i++) {
         if (point.extendedData[i].name !== 'link' &&
@@ -116,6 +135,20 @@ PointInfo.prototype.showView = function() {
  */
 PointInfo.prototype.hideView = function() {
     $(this.pointInfo).removeClass('show').addClass('hidden');
+};
+
+PointInfo.prototype.nextImage = function() {
+    var photoElement = $(this.pointInfo).find('#point-info-image');
+    this.photoIndex = (this.photoIndex < this.photos.length - 1) ? this.photoIndex + 1 : 0;       
+    $(photoElement).find('a').attr('href', this.photos[this.photoIndex]);
+    $(photoElement).find('img').attr('src', this.photos[this.photoIndex]);
+};
+
+PointInfo.prototype.prevImage = function() {
+    var photoElement = $(this.pointInfo).find('#point-info-image');
+    this.photoIndex = (this.photoIndex > 0) ? this.photoIndex - 1 : this.photos.length - 1;       
+    $(photoElement).find('a').attr('href', this.photos[this.photoIndex]);
+    $(photoElement).find('img').attr('src', this.photos[this.photoIndex]);
 };
 
 

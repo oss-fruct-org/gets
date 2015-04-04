@@ -38,7 +38,7 @@ try {
     }
 
     if (pg_num_rows($result) == 0) {
-        send_error(1, 'Channel not published');
+        send_error(2, 'Channel not published');
     } else {
         send_result(0, 'success', "success");
     }
@@ -46,3 +46,5 @@ try {
 } catch (Exception $ex) {
     send_error($ex->getCode(), $ex->getMessage());
 }
+
+include_once('include/php-ga.inc');

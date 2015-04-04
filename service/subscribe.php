@@ -46,4 +46,5 @@ try {
 
 send_result(0, 'success', '');
 
+include_once('include/php-ga.inc');
 ?>

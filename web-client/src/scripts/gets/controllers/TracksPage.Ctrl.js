@@ -566,7 +566,7 @@ TracksPage.prototype.initPage = function() {
                 self._utils.uploadFile({
                     file: imageFile
                 }, function (url) {
-                    $(self.document).find('#edit-point-picture-input-url').val(url);
+                    $(self.document).find('.edit-point-picture-input-url').last().val(url);
                     $(self.document).find('#edit-point-picture-upload').removeClass('show').addClass('hidden');
                     $(self.document).find('#edit-point-picture-input-url').removeAttr('disabled');
                     self._pointAdd.toggleOverlay();
@@ -595,6 +595,34 @@ TracksPage.prototype.initPage = function() {
     $(this.document).on('click', '#edit-point-picture-input-file-cancel', function (e){
         $(self.document).find('#edit-point-picture-upload').removeClass('show').addClass('hidden');
         $(self.document).find('#edit-point-picture-input-url').removeAttr('disabled');
+    });
+    
+    // photos controls
+    $(this.document).on('click', '#point-info-image-prev', function (e){
+        e.preventDefault();
+        self._pointInfo.prevImage();
+    });
+    
+    $(this.document).on('click', '#point-info-image-next', function (e){
+        e.preventDefault();
+        self._pointInfo.nextImage();
+    });
+    
+    // handle add picture input
+    $(this.document).on('click', '#edit-point-picture-add-input', function (e){
+        e.preventDefault();
+        try {
+            self._pointAdd.addPictureInputField();
+        } catch (Exception) {
+            Logger.debug(Exception.toString());
+            MessageBox.showMessage(Exception.toString(), MessageBox.WARNING_MESSAGE);          
+        }       
+    });
+    
+    // handle delete picture input
+    $(this.document).on('click', '#edit-point-picture-input-delete', function (e){
+        e.preventDefault();
+        self._pointAdd.deletePictureInputField($(this).data('pictureIndex'));      
     });
     
     // upload audio show/hide handler

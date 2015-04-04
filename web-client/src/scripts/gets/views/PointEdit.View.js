@@ -53,7 +53,7 @@ PointEdit.prototype.placePointInPointEdit = function(point) {
   
     $(this.editPoint).find('#edit-point-url-input').val(point.url === '{}' ? '' : point.url);
     $(this.editPoint).find('#edit-point-active-radius-input').val(point.radius);
-    $(this.editPoint).find('#edit-point-picture-input-url').val(point.photo);
+    //$(this.editPoint).find('#edit-point-picture-input-url').val(point.photo);
     $(this.editPoint).find('#edit-point-audio-input-url').val(point.audio);
     $(this.editPoint).find('#edit-point-active-radius-input').val(point.radius);//
     
@@ -76,6 +76,16 @@ PointEdit.prototype.placePointInPointEdit = function(point) {
             extendedDataText += '<div class="form-group"><label>' + point.extendedData[i].name + '</label><input class="form-control" type="text" name="' + point.extendedData[i].name + '" value="' + point.extendedData[i].value + '" /></div>';
         }
     }
+    
+    var pLength = point.photos.length;
+    if (pLength > 0) {
+        $(this.editPoint).find('input.edit-point-picture-input-url').val(point.photos[0]);
+        for (var i = 1; i < pLength; i++) {
+            this.addPictureInputField();
+            $(this.editPoint).find('div.edit-point-picture-input-url input').last().val(point.photos[i]);
+        }
+    }
+    
     $(this.editPoint).find('#edit-point-extended-data').html(extendedDataText);
 };
 
@@ -93,6 +103,7 @@ PointEdit.prototype.hideView = function() {
     $(this.editPoint).removeClass('show').addClass('hidden');
     // Remove the temp marker, if it is on the map 
     $(this.editPoint).find('#edit-point-use-map').click();
+    this.deleteAllExtraPictureInputField();
 };
 
 /**
@@ -119,5 +130,30 @@ PointEdit.prototype.setLatLng = function(lat, lng) {
 
 PointEdit.prototype.removeCustomFields = function () {
     $(this.editPoint).find('#edit-point-extended-data').html('');   
+};
+
+PointEdit.prototype.addPictureInputField = function () {
+    var pictureInputs = $(this.editPoint).find('.edit-point-picture-input-url');
+       
+    if ($(pictureInputs).length >= 10)
+        throw new GetsWebClientException('Add Point Error', 'Too many pictures');
+    
+    var lastPictureInput = $(pictureInputs).last();
+    //Logger.debug(lastPictureInput);
+    $(lastPictureInput).after('\n\
+        <div class="input-group add-on top-margin edit-point-picture-input-url" data-picture-index="' + $(pictureInputs).length + '">\n\
+            <input name="photo" type="url" class="form-control">\n\
+            <div class="input-group-btn">\n\
+                <button id="edit-point-picture-input-delete" type="button" class="close" data-picture-index="' + $(pictureInputs).length + '">&nbsp;<span aria-hidden="true">&times;</span></button>\n\
+            </div>\n\
+        </div>');
+};
+
+PointEdit.prototype.deletePictureInputField = function (index) {
+    $(this.editPoint).find('div[data-picture-index="' + index + '"]').remove();
+};
+
+PointEdit.prototype.deleteAllExtraPictureInputField = function () {
+    $(this.editPoint).find('div.edit-point-picture-input-url').remove();
 };
 

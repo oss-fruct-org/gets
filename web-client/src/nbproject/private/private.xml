@@ -13,6 +13,13 @@
             <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/models/Map.Class.js</file>
             <file>file:/home/davidson/projects/gets/web-client/src/tracks.php</file>
             <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/controllers/Routes.js</file>
+            <file>file:/home/davidson/projects/gets/web-client/src/actions/utils/config.inc</file>
+            <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/controllers/PointsPage.Ctrl.js</file>
+            <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/views/PointInfo.View.js</file>
+            <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/models/Map.Class.js</file>
+            <file>file:/home/davidson/projects/gets/web-client/src/widgets/PointEdit.inc</file>
+            <file>file:/home/davidson/projects/gets/web-client/src/widgets/PointInfo.inc</file>
+            <file>file:/home/davidson/projects/gets/web-client/src/points.php</file>
             <file>file:/home/davidson/projects/gets/web-client/src/scripts/gets/controllers/TracksPage.Ctrl.js</file>
         </group>
     </open-files>

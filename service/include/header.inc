@@ -1,5 +1,8 @@
 <?php
 
+ini_set('session.use_cookies', 0);
+ini_set('session.use_trans_sid', 1);
+
 header('Content-Type:text/xml');
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     header('Access-Control-Allow-Origin: *');

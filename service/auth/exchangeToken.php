@@ -1,59 +1,30 @@
 <?php
 
-ini_set('session.use_cookies', 0);
-ini_set('session.use_trans_sid', 1);
-
 include_once('../include/methods_url.inc');
 include_once('../include/utils.inc');
 include_once('../include/auth.inc');
 include_once('../include/config.inc');
+include_once('../include/header.inc');
 
 require_once '../include/GoogleClientAPI/src/Google_Client.php';
 require_once '../include/GoogleClientAPI/src/contrib/Google_PlusService.php';
 
-header('Content-Type:text/xml');
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    header('Access-Control-Allow-Origin: *');
-    header('Access-Control-Allow-Methods: POST, GET, PUT, DELETE');
-    header('Access-Control-Allow-Headers: X-Requested-With, Content-Type');
-} else {
-    header('Access-Control-Allow-Origin: *');
-}
+try {
+    $dom = get_input_dom('../schemes/exchangeToken.xsd');
 
-$xml_post = file_get_contents('php://input');
-if (!$xml_post) {
-    send_error(1, 'Error: no input file');
-    die();
-}
+    $exchange_token = get_request_argument($dom, "exchange_token", null);
 
-libxml_use_internal_errors(true);
-$dom = new DOMDocument();
-$dom->loadXML($xml_post);
-
-if (!$dom) {
-    send_error(1, 'Error: resource isn\'t XML document.');
-    die();
-}
-
-if (!$dom->schemaValidate('../schemes/exchangeToken.xsd')) {
-    send_error(1, 'Error: not valid input XML document.');
-    die();
-}
-
-$exchange_token = get_request_argument($dom, "exchange_token", null);
-
-$client = new Google_Client();
-$client->setAccessType('offline');
-$client->setApplicationName(GOOGLE_APP_NAME);
-$client->setClientId(GOOGLE_CLIENT_ID);
-$client->setClientSecret(GOOGLE_SECRET_ID);
-$client->setScopes(array('https://www.googleapis.com/auth/plus.me',
+    $client = new Google_Client();
+    $client->setAccessType('offline');
+    $client->setApplicationName(GOOGLE_APP_NAME);
+    $client->setClientId(GOOGLE_CLIENT_ID);
+    $client->setClientSecret(GOOGLE_SECRET_ID);
+    $client->setScopes(array('https://www.googleapis.com/auth/plus.me',
             'https://www.googleapis.com/auth/plus.login',
             'https://www.googleapis.com/auth/drive',
             'https://www.googleapis.com/auth/userinfo.email'));
 
-$service = new Google_PlusService($client);
-try {
+    $service = new Google_PlusService($client);
     $client->authenticate($exchange_token);
 
     $person = $service->people->get('me');
@@ -61,10 +32,11 @@ try {
     $google_access_token = $client->getAccessToken();
 
     $auth_token = auth_set_initial_token($google_access_token, $google_email);
-    auth_refresh_geo2tag_access();
 
     $content = '<auth_token>' . $auth_token . '</auth_token>';
     send_result(0, 'success', $content);
-} catch (Exception $e) {
+} catch (GetsAuthException $e) {
     send_error(1, "Can't login in google");
+} catch (Exception $e) {
+    send_error($e->getCode(), $e->getMessage());
 }

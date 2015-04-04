@@ -186,15 +186,15 @@ TracksClass.prototype.downloadTrackByName = function(paramsObj) {
         pointObj.name = $(value).find('name').length ? $(value).find('name').text() : '';
         pointObj.description = $(value).find('description').length ? $(value).find('description').text() : '';
         pointObj.url = $(value).find("[name='link']").length ? $(value).find("[name='link']").text() : '';
-        pointObj.audio = $(value).find("[name='audio']").length ? decodeURIComponent($(value).find("[name='audio']").text()) : '';
+        pointObj.audio = $(value).find("[name='audio']").length ? $(value).find("[name='audio']").text() : '';
         $(value).find("gets\\:photo").each(function (idx, val) {
-            pointObj.photos.push(decodeURIComponent($(val).text()));
+            pointObj.photos.push($(val).text());
         });
         pointObj.radius = $(value).find("[name='radius']").length ? $(value).find("[name='radius']").text() : '';
         pointObj.coordinates = $(value).find('coordinates').length ? $(value).find('coordinates').text() : '';
         
         $(value).find('Data').each(function (index, newValue) {
-            pointExtendedData.push({name: $(newValue).attr('name'), value: decodeURIComponent($(newValue).text())});
+            pointExtendedData.push({name: $(newValue).attr('name'), value: $(newValue).text()});
         });
         pointObj.extendedData = pointExtendedData;
 

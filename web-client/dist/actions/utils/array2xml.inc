@@ -31,7 +31,7 @@ function traversArray($array, &$xml) {
             $xml .= is_string($key) ? "</$key>" : '';
         } else {
             // append to XML string
-            $xml .= "<$key>" . $value . "</$key>";
+            $xml .= "<$key>" . htmlspecialchars($value) . "</$key>";
         }
     }
 }

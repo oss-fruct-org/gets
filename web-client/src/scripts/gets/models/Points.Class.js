@@ -135,16 +135,16 @@ PointsClass.prototype.downLoadPoints = function(paramsObj, callback) {
             pointObj.uuid = $(pointListItems[i]).find("[name='uuid']").length ? $(pointListItems[i]).find("[name='uuid']").text() : '';
             pointObj.access = $(pointListItems[i]).find("[name='access']").length ? $(pointListItems[i]).find("[name='access']").text() : '';
             $(pointListItems[i]).find("gets\\:photo").each(function (idx, val) {
-                pointObj.photos.push(decodeURIComponent($(val).text()));
+                pointObj.photos.push($(val).text());
             });
-            pointObj.audio = $(pointListItems[i]).find("[name='audio']").length ? decodeURIComponent($(pointListItems[i]).find("[name='audio']").text()) : '';
+            pointObj.audio = $(pointListItems[i]).find("[name='audio']").length ? $(pointListItems[i]).find("[name='audio']").text() : '';
             pointObj.url = $(pointListItems[i]).find("[name='link']").length ? $(pointListItems[i]).find("[name='link']").text() : '';
             pointObj.coordinates = $(pointListItems[i]).find('coordinates').length ? $(pointListItems[i]).find('coordinates').text() : '';
             pointObj.category_id = $(pointListItems[i]).find("[name='category_id']").length ? $(pointListItems[i]).find("[name='category_id']").text() : '';
             pointObj.radius = $(pointListItems[i]).find("[name='radius']").length ? $(pointListItems[i]).find("[name='radius']").text() : '';
             
             $(pointListItems[i]).find('Data').each(function(index, newValue) {               
-                pointExtendedData.push({name: $(newValue).attr('name')/*.replace(/_/g, ' ')*/, value: decodeURIComponent($(newValue).text())});               
+                pointExtendedData.push({name: $(newValue).attr('name')/*.replace(/_/g, ' ')*/, value: $(newValue).text()});               
             });                                    
             pointObj.extendedData = pointExtendedData;
 
@@ -217,12 +217,12 @@ PointsClass.prototype.addPoint = function (paramsObj, update, callback) {
         } else if (value.name === 'photo') {
             newParamsObj.photos = newParamsObj.photos || [];
             newParamsObj.photos.push({
-                photo: encodeURIComponent(value.value)
+                photo: value.value
             });
         } else {
             if (value.value !== '') {
                 newParamsObj.extended_data = newParamsObj.extended_data || {};
-                newParamsObj.extended_data[value.name.replace(/ /g, '_')] = encodeURIComponent(value.value);
+                newParamsObj.extended_data[value.name.replace(/ /g, '_')] = value.value;
             }
         }
     });

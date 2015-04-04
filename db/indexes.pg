@@ -1,0 +1,2 @@
+CREATE INDEX tag_idx_channel_id ON tag (channel_id);
+CREATE INDEX tag_idx_user_id ON tag (user_id);

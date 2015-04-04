@@ -137,7 +137,7 @@ PointsClass.prototype.downLoadPoints = function(paramsObj, callback) {
             $(pointListItems[i]).find("gets\\:photo").each(function (idx, val) {
                 pointObj.photos.push($(val).text());
             });
-            pointObj.audio = $(pointListItems[i]).find("[name='audio']").length ? $(pointListItems[i].find("[name='audio']").text()) : '';
+            pointObj.audio = $(pointListItems[i]).find("[name='audio']").length ? $(pointListItems[i]).find("[name='audio']").text() : '';
             pointObj.url = $(pointListItems[i]).find("[name='link']").length ? $(pointListItems[i]).find("[name='link']").text() : '';
             pointObj.coordinates = $(pointListItems[i]).find('coordinates').length ? $(pointListItems[i]).find('coordinates').text() : '';
             pointObj.category_id = $(pointListItems[i]).find("[name='category_id']").length ? $(pointListItems[i]).find("[name='category_id']").text() : '';

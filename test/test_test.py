@@ -232,6 +232,10 @@ class TestTest(unittest.TestCase):
         "Issue #26: If point owned by category channel but doesn't have 'category_id' field, it can't be deleted"
 
         self.sign_in()
+
+        # Add channel without description to check safe_cast_to_json safety
+        gt.raw_query("insert into channel (name, description, owner_id) values ('empty-channel', 'no json', 2);"); 
+
         gt.request("addPoint.php", self.make_test_point_request_1("1"))
 
         new_desc = '{"description":"test", "uuid":"testuuid"}'

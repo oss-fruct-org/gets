@@ -185,7 +185,8 @@ class TestTest(unittest.TestCase):
             ));
         self.assertEqual(gt.get_code(res), 0)
 
-        new_point = gt.Point.from_xml(gt.get_content(self.load_points_1()))[0]
+        xml = gt.get_content(self.load_points_1())
+        new_point = gt.Point.from_xml(xml)[0]
         self.assertEqual(new_point.name, "test point")
         self.assertEqual(point.uuid, new_point.uuid)
 
@@ -193,7 +194,25 @@ class TestTest(unittest.TestCase):
         self.assertFalse("ex2" in new_point.extended_data)
         self.assertTrue("ex3" in new_point.extended_data)
         self.assertTrue("ex4" in new_point.extended_data)
-        self.assertTrue("uuid" not in new_point.extended_data)
+
+    def test_update_category_id_uuid(self):
+        "There must be impossible to update category id and uuid"
+        self.sign_in()
+        res = gt.request("addPoint.php", self.make_test_point_request_1("1"))
+        point = gt.Point.from_xml(gt.get_content(res))[0]
+
+        res = gt.request("updatePoint.php", gt.make_request(
+            ("auth_token", self.token),
+            ("name", "test point 1"),
+
+            ("extended_data", [("category_id", "2"), ("uuid", "qweasdzxc")])
+            ));
+
+        new_point = gt.Point.from_xml(gt.get_content(self.load_points_1()))[0]
+        
+        self.assertEqual(point.uuid, new_point.uuid)
+        self.assertEqual(point.category_id, new_point.category_id)
+
 
 if __name__ == "__main__":
     unittest.main()

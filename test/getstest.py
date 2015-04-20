@@ -2,6 +2,7 @@ import xml.etree.ElementTree as ET
 import urllib.request
 import getsconfig
 import uuid
+import psycopg2
 
 idx=0
 
@@ -66,6 +67,15 @@ def get_code(xml):
     else:
         return int(code_elem.text)
 
+def raw_query(sql):
+    try:
+        conn = psycopg2.connect(getsconfig.PG_STRING)
+        cur = conn.cursor()
+        cur.execute(sql)
+        conn.commit()
+    finally:
+        cur.close()
+        conn.close()
 
 class Point:
     def __init__(self, placemark):

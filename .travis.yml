@@ -1,8 +1,7 @@
 language: php
 
 notifications:
-      email: 
-          - ivashov@cs.petrsu.ru
+      email: ivashov@cs.petrsu.ru
 
 branches:
     only:
@@ -11,7 +10,9 @@ branches:
 
 addons:
     postgresql: "9.3"
-
+    apt:
+        packages:
+            - python3.4
 php:
     - 5.4
 

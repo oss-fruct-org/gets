@@ -237,11 +237,12 @@ class TestTest(unittest.TestCase):
         new_desc = '{"description":"test", "uuid":"testuuid"}'
         gt.raw_query("UPDATE tag SET description='" + new_desc + "';"); 
 
-        gt.request("deletePoint.php", gt.make_request(
+        res = gt.request("deletePoint.php", gt.make_request(
             ("auth_token", self.token),
             ("category_id", "1"),
             ("uuid", "testuuid"),
             ));
+        self.assertEqual(gt.get_code(res), 0)
 
         points = gt.Point.from_xml(gt.get_content(self.load_points_1()))
         self.assertEqual(len(points), 0)

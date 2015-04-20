@@ -49,7 +49,8 @@ if ($channel_name) {
     $channel_where = "channel.name='${channel_name_escaped}'";
 } else {
     $category_id_escaped = pg_escape_string($dbconn, $category_id);
-    $channel_where = "safe_cast_to_json(tag.description)->>'category_id'='${category_id_escaped}'";
+    $channel_where = "safe_cast_to_json(channel.description)->>'category_id'='${category_id_escaped}'"
+               . " OR safe_cast_to_json(tag.description)->>'category_id'='${category_id_escaped}'";
 }
 
 // e-mail

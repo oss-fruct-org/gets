@@ -213,6 +213,21 @@ class TestTest(unittest.TestCase):
         self.assertEqual(point.uuid, new_point.uuid)
         self.assertEqual(point.category_id, new_point.category_id)
 
+    def test_delete_by_uuid(self):
+        self.sign_in()
+        res = gt.request("addPoint.php", self.make_test_point_request_1("1"))
+        point = gt.Point.from_xml(gt.get_content(res))[0]
+
+        res = gt.request("deletePoint.php", gt.make_request(
+            ("auth_token", self.token),
+            ("category_id", "1"),
+            ("uuid", point.uuid),
+            ));
+        self.assertEqual(gt.get_code(res), 0)
+        
+        points = gt.Point.from_xml(gt.get_content(self.load_points_1()))
+        self.assertEqual(len(points), 0)
+
     def test_delete_by_category(self):
         "Issue #26: If point owned by category channel but doesn't have 'category_id' field, it can't be deleted"
 
@@ -224,6 +239,7 @@ class TestTest(unittest.TestCase):
 
         gt.request("deletePoint.php", gt.make_request(
             ("auth_token", self.token),
+            ("category_id", "1"),
             ("uuid", "testuuid"),
             ));
 

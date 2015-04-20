@@ -56,6 +56,8 @@ def request(method, data):
     response = do_request(method, data)
     return ET.fromstring(response)
 
+def to_string(xml):
+    return ET.tostring(xml, encoding="unicode")
 
 def get_content(xml):
     return xml.find("./content")

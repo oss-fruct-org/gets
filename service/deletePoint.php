@@ -43,14 +43,14 @@ $requested_json_fields = array('uuid', 'description');
 $dbconn = pg_connect(GEO2TAG_DB_STRING);
 auth_set_token($auth_token);
 
-// One of track_name or category_id must already be no-null after schema validation
+// One of track_name or category_id must already be not null after schema validation
 if ($channel_name) {
     $channel_name_escaped = pg_escape_string($dbconn, $channel_name);
     $channel_where = "channel.name='${channel_name_escaped}'";
 } else {
     $category_id_escaped = pg_escape_string($dbconn, $category_id);
     $channel_where = "(safe_cast_to_json(channel.description)->>'category_id'='${category_id_escaped}'"
-               . " OR safe_cast_to_json(tag.description)->>'category_id'='${category_id_escaped}')";
+    . " OR safe_cast_to_json(tag.description)->>'category_id'='${category_id_escaped}')";
 }
 
 // e-mail
@@ -88,7 +88,7 @@ $query = "DELETE FROM tag WHERE tag.id IN
     (SELECT tag.id FROM tag 
     INNER JOIN users ON users.id = tag.user_id 
     LEFT JOIN channel ON tag.channel_id = channel.id 
-    WHERE ${channel_where} AND users.email='${email_escaped}' AND ${condition_where});";
+    WHERE (${channel_where}) AND users.email='${email_escaped}' AND (${condition_where}));";
 
 if (!pg_query($dbconn, $query)) {
     send_error(1, "DB access error");

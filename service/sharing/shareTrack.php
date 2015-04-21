@@ -16,7 +16,6 @@ try {
     }
     
     auth_set_token($gets_token);
-    
     $dbconn = pg_connect(GEO2TAG_DB_STRING);
     
     // User must own track. Admin owns all tracks.

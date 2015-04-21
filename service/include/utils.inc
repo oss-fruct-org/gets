@@ -670,7 +670,7 @@ function require_channel_accessible($dbconn, $channel_name, $is_public) {
     return $result_check_row;
 }
 
-/*
+/**
  * Check that current user owns channel $channel_name
  * Admin users also has permissions
  * Returns: array (user_id, channel_id)
@@ -692,6 +692,29 @@ function require_channel_owned($dbconn, $channel_name) {
     }
 
     return $result_check_row;
+}
+
+/**
+ * Check is user owns share with given key
+ * @param type $dbconn database connection
+ * @param type $key share key
+ * @return boolean
+ */
+function check_key_owned($dbconn, $key) {
+    if (is_user_admin($dbconn)) {
+        return;
+    }
+    
+    $email = auth_get_google_email();
+    $result = pg_query_params($dbconn, "SELECT count(*) "
+            . "FROM share "
+            . "JOIN channel ON share.channel_id = channel.id "
+            . "JOIN users ON users.id = channel.owner_id "
+            . "AND users.email=$1;", array($email));
+    
+    $row = pg_fetch_row($result);
+    
+    return $row[0] > 0;
 }
 
 function get_channel_id($dbconn, $channel_name) {

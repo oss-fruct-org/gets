@@ -11,19 +11,32 @@ try {
     
     $auth_token = get_request_argument($dom, 'auth_token');
     $channel_name = get_request_argument($dom, 'name');
-
+    $key = get_request_argument($dom, 'key');
+    
     if ($auth_token) {
         auth_set_token($auth_token);
     }
 
     $dbconn = pg_connect(GEO2TAG_DB_STRING);
 
-    list($channel_id, $is_owned) = require_channel_accessible($dbconn, $channel_name, $auth_token == null);
-
-    $result_tag = pg_query_params($dbconn, 
-            'SELECT time, label, latitude, longitude, altitude, description, url, id '
-            . 'FROM tag WHERE tag.channel_id=$1 ORDER BY time;', array($channel_id));
-
+    if ($channel_name) {
+        list($channel_id, $is_owned) = require_channel_accessible($dbconn, $channel_name, $auth_token == null);
+        $result_tag = pg_query_params($dbconn, 
+                'SELECT time, label, latitude, longitude, altitude, description, url, id '
+                . 'FROM tag WHERE tag.channel_id=$1 ORDER BY time;', array($channel_id));
+    } else {
+        $is_owned = false;
+        $result_tag = pg_query_params($dbconn, 'SELECT tag.time, tag.label, tag.latitude, tag.longitude, tag.altitude, tag.description, tag.url, tag.id '
+                . 'FROM tag '
+                . 'JOIN channel ON channel.id = tag.channel_id '
+                . 'JOIN share ON channel.id = share.channel_id '
+                . 'WHERE share.key = $1 AND share.remain != 0 ORDER BY time;', array($key));
+        
+        if (pg_num_rows($result_tag) === 0) {
+            throw new Exception("Key invalid or expired", 1);
+        }
+    }
+    
     $xml = '<kml xmlns="http://www.opengis.net/kml/2.2">';
     $xml .= '<Document>';
     $xml .= '<name>' . $channel_name . '.kml</name>';

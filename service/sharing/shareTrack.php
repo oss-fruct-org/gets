@@ -24,7 +24,7 @@ try {
     
     // Generate key
     // TODO; check security and uniquiness
-    $key = sha1(rand() . $track_id . GOOGLE_SECRET_ID);
+    $key = sha1(time() . rand() . $track_id . GOOGLE_SECRET_ID);
     
     // Zero limit argument means no limit
     if ($limit === "unlimited" || $limit <= 0) {

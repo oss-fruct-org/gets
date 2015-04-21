@@ -22,23 +22,21 @@ try {
     
     $res_update = pg_query_params("UPDATE share SET remain = remain - 1 "
             . "FROM channel "
-            . "WHERE channel.id = share.channel_id AND share.key = $1 RETURNING remain, channel.name, channel.id;", array($key));
+            . "WHERE channel.id = share.channel_id AND share.key = $1 RETURNING remain, channel.name, channel.id, share.id;", array($key));
     
     $res_update_row = pg_fetch_row($res_update);
     if (!$res_update_row) {
         throw new Exception("Key invalid", 1);
     }
     
-    $remain = $res_update_row[0];
-    $channel_name = $res_update_row[1];
-    $channel_id = $res_update_row[2];
-
+    list($remain, $channel_name, $channel_id, $share_id) = $res_update_row;
     if ($remain == -1) {
         // Old remain value zero
         throw new Exception("Key expired", 2);
     }
     
-    $res_subscribe = pg_query_params("INSERT INTO subscribe (user_id, channel_id) VALUES ($1, $2)", array($user_id, $channel_id));
+    $res_subscribe = pg_query_params("INSERT INTO subscribe (user_id, channel_id, share_id) VALUES ($1, $2, $3)",
+            array($user_id, $channel_id, $share_id));
     if (!$res_subscribe) {
         throw new Exception("Channel already subscribed", 3);
     }

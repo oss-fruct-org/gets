@@ -193,6 +193,8 @@ while ($row = pg_fetch_row($result)) {
         foreach ($share_array as $share_elem) {
             $key = htmlspecialchars($share_elem["f1"]);
             $remain = htmlspecialchars($share_elem["f2"]);
+            if ($remain < -1) 
+                $remain = -1;
             $resp .= "<share><key>$key</key><remain>$remain</remain></share>";
         }
         
@@ -209,5 +211,3 @@ pg_close($dbconn);
 send_result(0, 'success', $resp);
 
 include_once('include/php-ga.inc');
-
-?>

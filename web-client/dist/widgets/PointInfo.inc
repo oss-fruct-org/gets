@@ -27,9 +27,23 @@ echo    '<div id="point-info-page" class="action-menu-container hidden" data-pag
                     <div class="emulate-tab"><label>' . getString('altitude','Altitude') . ': &nbsp;</label><div id="point-info-coords-alt" class="inline"></div></div>    
                 </div>
                 <div class="main-block">
-                    <label for="point-info-image">' . getString('picture','Picture') . '</label>
-                    <div id="point-info-image">
-                        <img class="info-image" alt="' . getString('no-image','No image') . '">
+                    <label for="point-info-image">' . getString('picture','Pictures') . '</label>
+                    <img id="no-point-info-image" class="show" alt="' . getString('no-image','No image') . '">
+                    <div id="point-info-image" class="well well-sm hidden">
+                        <a target="_blank"><img class="info-image"></a>
+                        <br>    
+                        <div id="point-info-image-controls" class="btn-group btn-group-justified show">
+                            <div class="btn-group">
+                                <a id="point-info-image-prev" class="btn btn-default" role="button">
+                                    <span class="glyphicon glyphicon-chevron-left"></span>
+                                </a>
+                            </div>
+                            <div class="btn-group">
+                                <a id="point-info-image-next" class="btn btn-default" href="#" role="button">
+                                    <span class="glyphicon glyphicon-chevron-right"></span>
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="main-block">

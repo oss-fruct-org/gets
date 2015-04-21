@@ -72,4 +72,6 @@ if ($count == 0) {
     send_result(0, "Channel successfully removed", $count);
 }
 
+include_once('include/php-ga.inc');
+
 ?>

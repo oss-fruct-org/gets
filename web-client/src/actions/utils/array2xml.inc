@@ -26,12 +26,12 @@ function array2xml($array, $wrap='params') {
 function traversArray($array, &$xml) {
     foreach ($array as $key=>$value) {
         if (is_array($value)) {
-            $xml .= "<$key>";
+            $xml .= is_string($key) ? "<$key>" : '';
             traversArray($value, $xml);
-            $xml .= "</$key>";
+            $xml .= is_string($key) ? "</$key>" : '';
         } else {
             // append to XML string
-            $xml .= "<$key>" . $value . "</$key>";
+            $xml .= "<$key>" . htmlspecialchars($value) . "</$key>";
         }
     }
 }

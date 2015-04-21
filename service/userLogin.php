@@ -89,4 +89,6 @@ $auth_token = auth_set_initial_token($google_access_token, $google_email);
 
 $content = '<auth_token>' . $auth_token . '</auth_token>';
 send_result(0, 'success', $content);
+
+include_once('include/php-ga.inc');
 ?>

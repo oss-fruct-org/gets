@@ -61,4 +61,7 @@ if ($response_code != 'Ok') {
 }
 
 send_result(0, 'success', '');
+
+include_once('include/php-ga.inc');
+
 ?>

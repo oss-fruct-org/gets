@@ -23,7 +23,6 @@ MessageView.prototype.WARNING_MESSAGE = 3;
 MessageView.prototype.showMessage = function(text, type) {
     // If message already exists, remove it
     var oldMessageBox = $(document).find('.message-box');
-    Logger.debug(oldMessageBox);
     if ($(oldMessageBox).length) {
         $(oldMessageBox).remove();
     }
@@ -43,7 +42,7 @@ MessageView.prototype.showMessage = function(text, type) {
         case this.ERROR_MESSAGE:
             $(messageBox).addClass('alert-danger');
             break;
-        case this.ERROR_MESSAGE:
+        case this.WARNING_MESSAGE:
             $(messageBox).addClass('alert-warning');
             break;
     }

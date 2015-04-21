@@ -76,13 +76,10 @@ echo    '<div id="edit-point-page" class="action-menu-container hidden" data-pag
                         <input id="edit-point-active-radius-input" name="radius" type="text" class="form-control" value="63" required />                       
                     </div>
                     <div class="form-group">
-                        <label for="edit-point-picture-input">' . getString('picture','Picture') . '<br>' . getString('paste-url-or','Paste URL or') . ' <a id="edit-point-picture-toggle-upload" href="#">' . getString('upload-file','upload file') . '</a></label>
-                        <button type="button" class="btn btn-default btn-xs" data-toggle="popover" title="Data upload" data-content="ddddd" data-container="#edit-point-page" data-placement="right" data-trigger="focus">
-                            <span class="glyphicon glyphicon-question-sign"></span>
-                        </button>
-                        <input id="edit-point-picture-input-url" name="photo" type="url" class="form-control">
+                        <label for="edit-point-picture-input">' . getString('picture','Picture') . '<br>' . getString('paste-url-or','Paste URL or') . ' <a id="edit-point-picture-toggle-upload" href="#">' . getString('upload-file','upload file') . '</a></label>                      
+                        <input name="photo" type="url" class="edit-point-picture-input-url form-control">
                         <br>
-                        <div id="edit-point-picture-upload" class="hidden">
+                        <div id="edit-point-picture-upload" class="hidden bottom-margin">
                             <input id="edit-point-picture-input-file" class="form-control" type="file" accept="image/*" /> 
                             <div class="btn-group btn-group-justified">
                                 <div class="btn-group">
@@ -102,12 +99,17 @@ echo    '<div id="edit-point-page" class="action-menu-container hidden" data-pag
                                 </div>
                             </div>
                         </div>
+                        <div class="text-center">
+                            <button id="edit-point-picture-add-input" class="btn btn-default" type="button">
+                                <span class="glyphicon glyphicon-plus"></span> ' . getString('add-picture','Add picture') . ' 
+                            </button>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="edit-point-audio-input">' . getString('audio-track','Audio track') . '<br>' . getString('paste-url-or','Paste URL or') . ' <a id="edit-point-audio-toggle-upload" href="#">' . getString('upload-file','upload file') . '</a></label>
                         <input id="edit-point-audio-input-url" name="audio" type="url" class="form-control">
                         <br>
-                        <div id="edit-point-audio-upload" class="hidden">
+                        <div id="edit-point-audio-upload" class="hidden main-block">
                             <input id="edit-point-audio-input-file" class="form-control" type="file" accept="audio/*" /> 
                             <div class="btn-group btn-group-justified">
                                 <div class="btn-group">

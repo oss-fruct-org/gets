@@ -56,7 +56,6 @@ try {
     send_result(0, 'success', $xml);
 } catch (GetsAuthException $e) {
     send_error(1, "Can't revoke token");
-    
 } catch (Exception $e) {
     send_error($e->getCode(), $e->getMessage());
 }

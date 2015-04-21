@@ -1,182 +1,282 @@
 #!/usr/bin/env python3
+
 import unittest
 import getstest as gt
 import getsconfig
 import uuid
 import xml.etree.ElementTree as ET
 
-class TestCreatePoint(unittest.TestCase):
-    def create_point(self, **args):
-        auth_token = getsconfig.TOKEN;
+class TestTest(unittest.TestCase):
 
-        name = gt.make_name()
-        description = "test_description"
-        url = "http://example.com"
-        time = "01 01 2000 00:00:00.000"
+    def setUp(self):
+        self.token = None
 
-        lat = 61.0
-        lon = 34.0
-        alt = 0.0
+        gt.do_get("test/resetDatabase.php");
+        pass
 
-        if 'auth_token' in args: auth_token = args['auth_token']
-        if 'description' in args: description = args['description']
-        if 'link' in args: url = args['link']
-        if 'name' in args: name = args['name']
-        if 'lat' in args: lat = args['lat']
-        if 'lon' in args: lon = args['lon']
+    def tearDown(self):
+        pass
 
-        req = gt.make_request(
-                ('auth_token', auth_token),
-                ('category_id', '1'),
-                ('title', name),
-                ('description', description),
-                ('link', url),
-                ('latitude', str(lat)),
-                ('longitude', str(lon)),
-                ('altitude', str(alt)),
-                ('time', time))
+    def sign_in(self):
+        self.token = gt.do_get("test/createTestAccount.php")
+
+    def load_points_1(self):
+        res = gt.request("loadPoints.php", gt.make_request(
+            ("auth_token", self.token),
+            ("category_id", "1"),
+            ("space", "private")
+            ))
+        return res
+
+
+    def make_test_point_request_1(self, suffix):
+        return gt.make_request(
+            ("auth_token", self.token),
+            ("category_id", "1"),
+            ("title", "test point " + suffix),
+            ("description", "test description " + suffix),
+            ("link", "http://example.com"),
+            ("latitude", "64"),
+            ("longitude", "31"),
+            ("altitude", "0"),
+            ("time", "01 10 2014 17:33:47.630")
+            )
+
+    def make_test_point_request_ex(self, extended_data):
+        return gt.make_request(
+            ("auth_token", self.token),
+            ("category_id", "1"),
+            ("title", "test point"),
+            ("description", "test description"),
+            ("link", "http://example.com"),
+            ("latitude", "64"),
+            ("longitude", "31"),
+            ("altitude", "0"),
+            ("time", "01 10 2014 17:33:47.630"),
+            ("extended_data", extended_data)
+            )
+
+
+    def assert_test_point_1(self, point, suffix):
+        self.assertEqual(point.name, "test point " + suffix)
+        self.assertEqual(point.description, "test description " + suffix)
+        self.assertEqual(point.link, "http://example.com")
+        self.assertEqual(point.category_id, 1)
+        self.assertAlmostEqual(point.latitude, 64)
+        self.assertAlmostEqual(point.longitude, 31)
+        self.assertAlmostEqual(point.altitude, 0)
+
+    def test_login(self):
+        self.assertTrue(True)
+        self.sign_in();
         
-        resp = gt.do_request("addPoint.php", req);
-        return resp
-
-    def check_point_exists(self, name):
-        return self.find_point(name) is not None
-
-    def get_extended_data(self, name):
-        ns = {"kml":"http://www.opengis.net/kml/2.2"}
-        point = self.find_point(name)
-
-        ret = {}
-        arr = point.findall('./kml:ExtendedData/kml:Data', ns)
-        for data in arr:
-            key = data.attrib['name']
-            value = data.find('./kml:value', ns).text
-            ret[key] = value
-
-        return ret
-
-    def find_point(self, name):
-        ns = {"kml":"http://www.opengis.net/kml/2.2"}
-        req = gt.make_request(('auth_token', getsconfig.TOKEN), ('latitude', "61"), ('longitude', "34"), ("radius", "10"), ("space", "private"))
-        resp = gt.do_request("loadPoints.php", req)
-
-        xml = gt.get_content(resp)
-        arr = xml.findall("./kml:kml/kml:Document/kml:Placemark", ns)
-
-        for point in arr:
-            point_name = point.find('kml:name', ns).text
-
-            if (point_name == name):
-                return point
-
-        return None
-
-
-    def test_wrong_token(self):
-        resp = self.create_point(auth_token=getsconfig.TOKEN + "q")
-        self.assertEqual(1, gt.get_code(resp))
-
+        res = gt.request("userInfo.php", gt.make_request(("auth_token", self.token)))
+        self.assertEqual(gt.get_code(res), 0)
+        
     def test_create_point(self):
-        resp = self.create_point()
-        self.assertEqual(0, gt.get_code(resp))
+        self.sign_in()
+
+        res = gt.request("addPoint.php", self.make_test_point_request_1("1"))
+        self.assertEqual(gt.get_code(res), 0)
+        point = gt.Point.from_xml(gt.get_content(res))[0]
+        self.assert_test_point_1(point, "1")
+        self.assertTrue(point.access)
+
+    def test_create_minimal_point(self):
+        self.sign_in()
+
+        res = gt.request("addPoint.php", gt.make_request(
+                        ("auth_token", self.token),
+                        ("category_id", "1"),
+                        ("title", "test point"),
+                        ("latitude", "64"),
+                        ("longitude", "31"),
+                        ))
+        self.assertEqual(gt.get_code(res), 0)
+        point = gt.Point.from_xml(gt.get_content(res))[0]
+
+        self.assertEqual(point.description, None)
+        self.assertAlmostEqual(point.altitude, 0)
+
+    def test_load_point(self):
+        self.sign_in()
+        gt.request("addPoint.php", self.make_test_point_request_1("1"))
+        res = self.load_points_1()
+        self.assertEqual(gt.get_code(res), 0)
+        point = gt.Point.from_xml(gt.get_content(res))[0]
+        self.assert_test_point_1(point, "1")
+        self.assertTrue(point.access)
+
+    def test_extended_data(self):
+        self.sign_in()
+        req = gt.make_request(
+                        ("auth_token", self.token),
+                        ("category_id", "1"),
+                        ("title", "test point"),
+                        ("latitude", "64"),
+                        ("longitude", "31"),
+                        ("extended_data", [
+                            ("test1", "value1"),
+                            ("test2", "value2")
+                        ]))
+
+        gt.request("addPoint.php", req)
+        res = self.load_points_1()
+        point = gt.Point.from_xml(gt.get_content(res))[0]
+        self.assertEqual(point.extended_data["test1"], "value1")
+        self.assertEqual(point.extended_data["test2"], "value2")
+
+    def test_update_point_by_title(self):
+        self.sign_in()
+
+        gt.request("addPoint.php", self.make_test_point_request_1("1"))
+        gt.request("addPoint.php", self.make_test_point_request_1("2"))
+        res = gt.request("updatePoint.php", gt.make_request(
+            ("auth_token", self.token),
+            ("name", "test point 1"),
+
+            ("title", "updated point 1")
+            ));
+        self.assertEqual(gt.get_code(res), 0)
+
+        points = gt.Point.from_xml(gt.get_content(self.load_points_1()))
+        self.assertEqual(len(points), 2)
         
-    def test_create_check(self):
-        name = gt.make_name()
-        resp = self.create_point(name=name)
-        self.assertEqual(0, gt.get_code(resp))
-        self.assertTrue(self.check_point_exists(name))
+        names = [point.name for point in points]
+        self.assertTrue("test point 2" in names)
+        self.assertTrue("updated point 1" in names)
 
-    def test_create_check_escape(self):
-        name = gt.make_name() + '\''
-        resp = self.create_point(name=name)
-        self.assertEqual(0, gt.get_code(resp))
-        self.assertTrue(self.check_point_exists(name))
+    def test_update_point_by_uuid_and_name(self):
+        self.sign_in()
 
-    def test_delete_point(self):
-        name = gt.make_name()
-        resp = self.create_point(name=name)
+        res = gt.request("addPoint.php", self.make_test_point_request_1("1"))
+        gt.request("addPoint.php", self.make_test_point_request_1("1"))
+        gt.request("addPoint.php", self.make_test_point_request_1("2"))
+        point = gt.Point.from_xml(gt.get_content(res))[0]
+        
+        res = gt.request("updatePoint.php", gt.make_request(
+            ("auth_token", self.token),
+            ("uuid", point.uuid),
+            ("name", "test point 1"),
 
-        name2 = gt.make_name()
-        resp = self.create_point(name=name2)
+            ("title", "updated point 1")
+            ));
+        self.assertEqual(gt.get_code(res), 0)
 
-        del_req = gt.make_request(('auth_token', getsconfig.TOKEN), ('category_id', "1"), ('name', name))
-        resp = gt.do_request("deletePoint.php", del_req);
-        self.assertEqual(0, gt.get_code(resp))
+        points = gt.Point.from_xml(gt.get_content(self.load_points_1()))
+        self.assertEqual(len(points), 3)
 
-        self.assertFalse(self.check_point_exists(name))
-        self.assertTrue(self.check_point_exists(name2))
+        names = [point.name for point in points]
+        self.assertTrue("test point 2" in names)
+        self.assertTrue("updated point 1" in names)
+        self.assertTrue("test point 1" in names)
+
+    def test_update_extended_data(self):
+        self.sign_in()
+
+        res = gt.request("addPoint.php", self.make_test_point_request_ex([("ex1", "data1"), ("ex2", "data2")]))
+        point = gt.Point.from_xml(gt.get_content(res))[0]
+
+        res = gt.request("updatePoint.php", gt.make_request(
+            ("auth_token", self.token),
+            ("name", "test point"),
+
+            ("extended_data", [("ex3", "data3"), ("ex4", "data4")])
+            ));
+        self.assertEqual(gt.get_code(res), 0)
+
+        xml = gt.get_content(self.load_points_1())
+        new_point = gt.Point.from_xml(xml)[0]
+        self.assertEqual(new_point.name, "test point")
+        self.assertEqual(point.uuid, new_point.uuid)
+
+        self.assertFalse("ex1" in new_point.extended_data)
+        self.assertFalse("ex2" in new_point.extended_data)
+        self.assertTrue("ex3" in new_point.extended_data)
+        self.assertTrue("ex4" in new_point.extended_data)
+
+    def test_update_category_id_uuid(self):
+        "There must be impossible to update category id and uuid"
+        self.sign_in()
+        res = gt.request("addPoint.php", self.make_test_point_request_1("1"))
+        point = gt.Point.from_xml(gt.get_content(res))[0]
+
+        res = gt.request("updatePoint.php", gt.make_request(
+            ("auth_token", self.token),
+            ("name", "test point 1"),
+
+            ("extended_data", [("category_id", "2"), ("uuid", "qweasdzxc")])
+            ));
+
+        new_point = gt.Point.from_xml(gt.get_content(self.load_points_1()))[0]
+        
+        self.assertEqual(point.uuid, new_point.uuid)
+        self.assertEqual(point.category_id, new_point.category_id)
 
     def test_delete_by_uuid(self):
-        name1 = gt.make_name()
-        desc1 = '{"uuid" : "aaa"}'
-        self.create_point(description=desc1, name=name1)
+        self.sign_in()
+        res = gt.request("addPoint.php", self.make_test_point_request_1("1"))
+        point = gt.Point.from_xml(gt.get_content(res))[0]
 
-        name2 = gt.make_name()
-        desc2 = '{"uuid" : "bbb"}'
+        res = gt.request("deletePoint.php", gt.make_request(
+            ("auth_token", self.token),
+            ("category_id", "1"),
+            ("uuid", point.uuid),
+            ));
+        self.assertEqual(gt.get_code(res), 0)
+        
+        points = gt.Point.from_xml(gt.get_content(self.load_points_1()))
+        self.assertEqual(len(points), 0)
 
-        self.create_point(description=desc2, name=name2)
-        self.assertTrue(self.check_point_exists(name1))
-        self.assertTrue(self.check_point_exists(name2))
+    def test_delete_by_category(self):
+        "Issue #26: If point owned by category channel but doesn't have 'category_id' field, it can't be deleted"
 
-        del_req = gt.make_request(('auth_token', getsconfig.TOKEN), ('category_id', "1"), ('uuid', 'aaa'))
-        resp = gt.do_request("deletePoint.php", del_req);
-        self.assertEqual(0, gt.get_code(resp))
+        self.sign_in()
 
-        self.assertFalse(self.check_point_exists(name1))
-        self.assertTrue(self.check_point_exists(name2))
+        # Add channel without description to check safe_cast_to_json safety
+        gt.raw_query("insert into channel (name, description, owner_id) values ('empty-channel', 'no json', 2);"); 
 
-    def test_delete_by_coordinate(self):
-        name1 = gt.make_name()
-        self.create_point(name=name1, lat="31", lon="34")
+        gt.request("addPoint.php", self.make_test_point_request_1("1"))
 
-        name2 = gt.make_name()
-        self.create_point(name=name2, lat="31", lon="35")
+        # Check second point will not be deleted
+        gt.request("addPoint.php", self.make_test_point_request_1("2"))
 
-        del_req = gt.make_request(('auth_token', getsconfig.TOKEN), ('category_id', "1"), ('latitude', '31'))
-        resp = gt.do_request("deletePoint.php", del_req);
-        self.assertEqual(0, gt.get_code(resp))
-         
-        self.assertFalse(self.check_point_exists(name1))
-        self.assertFalse(self.check_point_exists(name2))
+        new_desc = '{"description":"test", "uuid":"testuuid"}'
+        gt.raw_query("UPDATE tag SET description='" + new_desc + "' WHERE label='test point 1';"); 
 
-    def test_extended_data(self):
-        name = gt.make_name()
-        desc = '{"uuid" : "aaa"}'
-        self.create_point(name=name, description=desc)
+        res = gt.request("deletePoint.php", gt.make_request(
+            ("auth_token", self.token),
+            ("category_id", "1"),
+            ("uuid", "testuuid"),
+            ("name", "test point 1"),
+            ));
+        self.assertEqual(gt.get_code(res), 0, "Response: " + gt.to_string(res))
 
-        ext = self.get_extended_data(name)
-        self.assertFalse('description' in ext, "Ext data was " + str(ext))
-        self.assertTrue('uuid' in ext)
+        points = gt.Point.from_xml(gt.get_content(self.load_points_1()))
+        self.assertEqual(len(points), 1)
 
-    def test_optional_fields(self):
-        auth_token = getsconfig.TOKEN;
-        name = gt.make_name()
-        time = "01 01 2000 00:00:00.000"
-        lat = 61.0
-        lon = 34.0
-        alt = 0.0
+    def test_update_by_category(self):
+        "Issue #26: If point owned by category channel but doesn't have 'category_id' field, it can't be updated"
+        self.sign_in()
 
-        req = gt.make_request(
-                ('auth_token', auth_token),
-                ('category_id', '1'),
-                ('title', name),
-                ('latitude', str(lat)),
-                ('longitude', str(lon)),
-                ('altitude', str(alt)),
-                ('time', time))
-        resp = gt.do_request("addPoint.php", req)
+        gt.request("addPoint.php", self.make_test_point_request_1("1"))
+        gt.request("addPoint.php", self.make_test_point_request_1("2"))
 
-        self.assertEqual(0, gt.get_code(resp), "Response was " + resp)
-        self.assertTrue(self.check_point_exists(name))
+        new_desc = '{"description":"test", "uuid":"testuuid"}'
+        gt.raw_query("UPDATE tag SET description='" + new_desc + "' WHERE label='test point 2';");
 
-    def test_extended_data(self):
-        auth_token = getsconfig.TOKEN;
-        name = gt.make_name()
+        res = gt.request("updatePoint.php", gt.make_request(
+            ("auth_token", self.token),
+            ("category_id", "1"),
+            ("title", "new title"),
+            ));
+        self.assertEqual(gt.get_code(res), 0, "Response: " + gt.to_string(res))
 
-        req = "<request><params><auth_token>{}</auth_token><category_id>1</category_id><title>{}</title><description>desc1</description><latitude>61.0</latitude><longitude>34.0</longitude><altitude>0.0</altitude><time>01 01 2000 00:00:00.000</time><extended_data><uuid>qwe</uuid><description>desc2</description><test>asd</test></extended_data></params></request>".format(auth_token, name)
-        resp = gt.do_request("addPoint.php", req)
+        points = gt.Point.from_xml(gt.get_content(self.load_points_1()))
+        self.assertEqual(len(points), 2)
 
-        self.assertEqual(0, gt.get_code(resp), "Request was " + req)
+        self.assertEqual(points[0].name, "new title")
+        self.assertEqual(points[1].name, "new title")
 
 if __name__ == "__main__":
     unittest.main()

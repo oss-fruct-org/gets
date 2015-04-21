@@ -702,7 +702,7 @@ function require_channel_owned($dbconn, $channel_name) {
  */
 function check_key_owned($dbconn, $key) {
     if (is_user_admin($dbconn)) {
-        return;
+        return true;
     }
     
     $email = auth_get_google_email();
@@ -710,7 +710,7 @@ function check_key_owned($dbconn, $key) {
             . "FROM share "
             . "JOIN channel ON share.channel_id = channel.id "
             . "JOIN users ON users.id = channel.owner_id "
-            . "AND users.email=$1;", array($email));
+            . "AND users.email=$1 AND share.key=$2;", array($email, $key));
     
     $row = pg_fetch_row($result);
     

@@ -255,5 +255,28 @@ class TestTest(unittest.TestCase):
         points = gt.Point.from_xml(gt.get_content(self.load_points_1()))
         self.assertEqual(len(points), 1)
 
+    def test_update_by_category(self):
+        "Issue #26: If point owned by category channel but doesn't have 'category_id' field, it can't be updated"
+        self.sign_in()
+
+        gt.request("addPoint.php", self.make_test_point_request_1("1"))
+        gt.request("addPoint.php", self.make_test_point_request_1("2"))
+
+        new_desc = '{"description":"test", "uuid":"testuuid"}'
+        gt.raw_query("UPDATE tag SET description='" + new_desc + "' WHERE label='test point 2';");
+
+        res = gt.request("updatePoint.php", gt.make_request(
+            ("auth_token", self.token),
+            ("category_id", "1"),
+            ("title", "new title"),
+            ));
+        self.assertEqual(gt.get_code(res), 0, "Response: " + gt.to_string(res))
+
+        points = gt.Point.from_xml(gt.get_content(self.load_points_1()))
+        self.assertEqual(len(points), 2)
+
+        self.assertEqual(points[0].name, "new title")
+        self.assertEqual(points[1].name, "new title")
+
 if __name__ == "__main__":
     unittest.main()

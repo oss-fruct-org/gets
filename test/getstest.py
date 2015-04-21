@@ -38,6 +38,7 @@ def make_request(*p):
 
     return ET.tostring(request, encoding="unicode")
 
+
 def do_request(method, data):
     url = getsconfig.SERVER + "/" + method
     req = urllib.request.Request(url=url, data=data.encode('utf-8'))

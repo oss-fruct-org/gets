@@ -6,7 +6,7 @@ import getsconfig
 import uuid
 import xml.etree.ElementTree as ET
 
-class TestTest(unittest.TestCase):
+class TestPoint(unittest.TestCase):
 
     def setUp(self):
         self.token = None

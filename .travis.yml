@@ -12,12 +12,11 @@ addons:
     postgresql: "9.3"
     apt:
         packages:
-            - python3.4
+            - python3
 php:
     - 5.4
 
 before_script:
-    - pip3 install psycopg2
     - psql -c 'create database geo2tag;' -U postgres
     - psql -U postgres geo2tag < test/travis/base.pg
     - psql -U postgres geo2tag < db/adminUsers.pg

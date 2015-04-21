@@ -2,7 +2,8 @@ import xml.etree.ElementTree as ET
 import urllib.request
 import getsconfig
 import uuid
-import psycopg2
+import os
+import subprocess
 
 idx=0
 
@@ -70,14 +71,8 @@ def get_code(xml):
         return int(code_elem.text)
 
 def raw_query(sql):
-    try:
-        conn = psycopg2.connect(getsconfig.PG_STRING)
-        cur = conn.cursor()
-        cur.execute(sql)
-        conn.commit()
-    finally:
-        cur.close()
-        conn.close()
+    subprocess.call(["/usr/bin/psql", getsconfig.PG_STRING, "-E", "--quiet", "-c", sql])
+    pass
 
 class Point:
     def __init__(self, placemark):

@@ -238,18 +238,22 @@ class TestTest(unittest.TestCase):
 
         gt.request("addPoint.php", self.make_test_point_request_1("1"))
 
+        # Check second point will not be deleted
+        gt.request("addPoint.php", self.make_test_point_request_1("2"))
+
         new_desc = '{"description":"test", "uuid":"testuuid"}'
-        gt.raw_query("UPDATE tag SET description='" + new_desc + "';"); 
+        gt.raw_query("UPDATE tag SET description='" + new_desc + "' WHERE label='test point 1';"); 
 
         res = gt.request("deletePoint.php", gt.make_request(
             ("auth_token", self.token),
             ("category_id", "1"),
             ("uuid", "testuuid"),
+            ("name", "test point 1"),
             ));
-        self.assertEqual(gt.get_code(res), 0)
+        self.assertEqual(gt.get_code(res), 0, "Response: " + gt.to_string(res))
 
         points = gt.Point.from_xml(gt.get_content(self.load_points_1()))
-        self.assertEqual(len(points), 0)
+        self.assertEqual(len(points), 1)
 
 if __name__ == "__main__":
     unittest.main()

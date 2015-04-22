@@ -14,7 +14,7 @@
                             <xs:element type="xs:string" name="category_id" minOccurs="0" maxOccurs="1"/>
                             <xs:element type="xs:string" name="lang" minOccurs="0" maxOccurs="1"/>
                             <xs:element type="xs:string" name="photoUrl" minOccurs="0" maxOccurs="1"/>
-                        </xs:all>>
+                        </xs:all>
                     </xs:complexType>
                 </xs:element>
             </xs:sequence>

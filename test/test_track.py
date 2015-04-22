@@ -57,6 +57,18 @@ class TestTrack(unittest.TestCase):
         self.assert_code(res, 0)
 
         self.assertEqual(res.find(".//tracks/track/name").text, track_name)
+
+    def test_duplicated_names(self):
+        self.sign_in()
+
+        res = gt.request("createTrack.php", self.make_test_track_request("1"))
+        self.assert_code(res, 0)
+
+        res = gt.request("createTrack.php", self.make_test_track_request("1"))
+        self.assert_code(res, 0)
+
+        res = self.load_private_tracks();
+        self.assertEqual(len(res.findall(".//tracks/track")), 2)
         
 if __name__ == "__main__":
     unittest.main()

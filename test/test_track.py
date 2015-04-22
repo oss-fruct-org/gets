@@ -24,8 +24,20 @@ class TestTrack(unittest.TestCase):
     def assert_code(self, res, expected_code):
         self.assertEqual(gt.get_code(res), expected_code)
 
-    def content(res):
-        return res['content']
+    def load_private_tracks(self):
+        return gt.request("loadTracks.php", gt.make_request(
+            ("auth_token", self.token),
+            ("space", "private"),
+            ))
+
+    def make_test_track_request(self, suffix):
+        return gt.make_request(
+                ("auth_token", self.token),
+                ("name", "test track " + suffix),
+                ("description", "test description " + suffix),
+                ("url", "http://example.com"),
+                ("category_id", "1"),
+                ("lang", "ru_RU"))
 
     def test_create_track(self):
         self.sign_in()
@@ -41,20 +53,10 @@ class TestTrack(unittest.TestCase):
         self.assert_code(res, 0)
         track_name = res.find(".//track_id").text
 
-        res = gt.request("loadTracks.php", gt.make_request(
-                ("auth_token", self.token),
-                ("space", "private"),
-            ))
-
+        res = self.load_private_tracks();
         self.assert_code(res, 0)
 
         self.assertEqual(res.find(".//tracks/track/name").text, track_name)
         
-
-
-
-
-
-
 if __name__ == "__main__":
     unittest.main()

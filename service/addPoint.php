@@ -51,7 +51,7 @@ try {
         include_once('include/php-ga.inc');
     }
 } catch (GetsAuthException $e) {
-    send_error(1, "Can't revoke token");
+    send_error(1, "Google login error");
 } catch (Exception $e) {
     send_error($e->getCode(), $e->getMessage());
 }

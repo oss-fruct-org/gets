@@ -67,7 +67,7 @@ try {
     $desc_array['description'] = $description;
     $desc_array['category_id'] = $category_id;
     $desc_array['lang'] = $lang;
-    $desc_array['hname'] = $hname;
+    $desc_array['hname'] = $name;
     if ($photoUrl) {
         $desc_array["photo"] = $photoUrl;
     }

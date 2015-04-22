@@ -22,6 +22,7 @@ before_script:
     - psql -U postgres geo2tag < db/adminUsers.pg
     - psql -U postgres geo2tag < db/category.pg
     - psql -U postgres geo2tag < db/trustedUsers.pg
+    - psql -U postgres geo2tag < db/share.pg
     - psql -U postgres geo2tag < db/json.pg
     - psql -U postgres geo2tag < db/dist.pg
     - cp -f test/travis/config.inc service/include

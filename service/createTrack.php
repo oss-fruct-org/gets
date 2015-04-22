@@ -62,6 +62,8 @@ try {
 
     $desc_array = array();
     
+    require_category($dbconn, $category_id);
+
     $desc_array['description'] = $description;
     $desc_array['category_id'] = $category_id;
     $desc_array['lang'] = $lang;

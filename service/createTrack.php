@@ -116,10 +116,14 @@ try {
     pg_query("COMMIT;");
     send_result(0, 'success', $response);
 } catch (GetsAuthException $e) {
-    pg_query("ROLLBACK;");
+    if ($dbconn) {
+        pg_query($dbconn, "ROLLBACK;");
+    }
     send_error(1, "Google login error");
 } catch (Exception $e) {
-    pg_query("ROLLBACK;");
+    if ($dbconn) {
+        pg_query($dbconn, "ROLLBACK;");
+    }
     send_error($e->getCode(), $e->getMessage());
 }
 

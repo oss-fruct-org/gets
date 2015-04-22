@@ -11,7 +11,7 @@
                             <xs:element type="xs:string" name="hname" minOccurs="0" maxOccurs="1"/>
                             <xs:element type="xs:string" name="description" minOccurs="0" maxOccurs="1"/>
                             <xs:element type="xs:string" name="url" minOccurs="0" maxOccurs="1"/>
-                            <xs:element type="xs:string" name="category_id" minOccurs="0" maxOccurs="1"/>
+                            <xs:element type="xs:integer" name="category_id" minOccurs="0" maxOccurs="1"/>
                             <xs:element type="xs:string" name="lang" minOccurs="0" maxOccurs="1"/>
                             <xs:element type="xs:string" name="photoUrl" minOccurs="0" maxOccurs="1"/>
                         </xs:all>

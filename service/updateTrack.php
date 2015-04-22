@@ -11,7 +11,7 @@ try {
     $dom = get_input_dom('schemes/updateTrack.xsd');
 
     $auth_token = get_request_argument($dom, 'auth_token');
-    $track_id = get_request_argument($dom, 'auth_token');
+    $track_id = get_request_argument($dom, 'track_id');
     
     $description = get_request_argument($dom, 'description');
     $url = get_request_argument($dom, 'url');
@@ -74,7 +74,7 @@ try {
     
     $new_description = unicode_json_encode($old_desc_array);
     
-    $result = pg_query_params("UPDATE channel SET description=$1, url=$2 WHERE channel.id = $3;", array($new_description, $old_url));
+    $result = pg_query_params("UPDATE channel SET description=$1, url=$2 WHERE channel.id = $3;", array($new_description, $old_url, $channel_id));
     if (!$result) {
         throw new Exception("Database error", 1);
     }

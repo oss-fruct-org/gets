@@ -156,16 +156,13 @@ while ($row = pg_fetch_row($result)) {
     $channel_hname = null;
 
     $desc_arr = json_decode($channel_desc, true);
-    $url_arr = json_decode($channel_url, true);
 
-    $extra_arr = safe_merge_arrays($desc_arr, $url_arr);
-
-    if ($extra_arr) {
-        $channel_description = get_array_element($extra_arr, 'description');
-        $channel_category_id = get_array_element($extra_arr, 'category_id');
-        $channel_lang = get_array_element($extra_arr, 'lang');
-        $channel_hname = get_array_element($extra_arr, 'hname');
-        $channel_photo_url = get_array_element($extra_arr, "photo");
+    if ($desc_arr) {
+        $channel_description = get_array_element($desc_arr, 'description');
+        $channel_category_id = get_array_element($desc_arr, 'category_id');
+        $channel_lang = get_array_element($desc_arr, 'lang');
+        $channel_hname = get_array_element($desc_arr, 'hname');
+        $channel_photo_url = get_array_element($desc_arr, "photo");
     }
 
     $resp .= '<track>';
@@ -181,6 +178,10 @@ while ($row = pg_fetch_row($result)) {
 
     if ($channel_photo_url)
         $resp .= '<photoUrl>' . htmlspecialchars($channel_photo_url) . '</photoUrl>';
+
+    if ($channel_url)
+        $resp .= '<url>' . htmlspecialchars($channel_url) . '</url>';
+
 
     $resp .= '<access>' . $access . '</access>';
 

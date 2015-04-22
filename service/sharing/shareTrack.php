@@ -8,7 +8,7 @@ include_once('../include/header.inc');
 try {
     $dom = get_input_dom('schemes/shareTrack.xsd');
     $gets_token = get_request_argument($dom, "auth_token", null);
-    $track_id = get_request_argument($dom, "name", null);
+    $track_id = get_request_argument($dom, "track_id", null);
     $limit = (int) get_request_argument($dom, "limit", "unlimited");
 
     if (!check_track_id($track_id)) {

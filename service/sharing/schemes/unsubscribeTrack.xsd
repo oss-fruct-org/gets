@@ -7,7 +7,7 @@
                     <xs:complexType>
                         <xs:sequence>
                             <xs:element type="xs:string" name="auth_token" minOccurs="1" maxOccurs="1"/>
-                            <xs:element type="xs:string" name="name" minOccurs="1" maxOccurs="1"/>
+                            <xs:element type="xs:string" name="track_id" minOccurs="1" maxOccurs="1"/>
                         </xs:sequence>
                     </xs:complexType>
                 </xs:element>

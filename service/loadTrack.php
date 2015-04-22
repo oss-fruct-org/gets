@@ -10,8 +10,15 @@ try {
     $dom = get_input_dom('schemes/loadTrack.xsd');
     
     $auth_token = get_request_argument($dom, 'auth_token');
+    
     $channel_name = get_request_argument($dom, 'name');
+    $track_id = get_request_argument($dom, 'track_id');
+    
     $key = get_request_argument($dom, 'key');
+    
+    if ($track_id) {
+        $channel_name = $track_id;
+    }
     
     if ($auth_token) {
         auth_set_token($auth_token);

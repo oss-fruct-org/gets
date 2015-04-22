@@ -8,7 +8,10 @@
                         <xs:sequence>
                             <xs:element type="xs:string" name="auth_token" minOccurs="0" maxOccurs="1"/>
                             <xs:choice minOccurs="1"> 
+                                <!-- track_id and name are the same, but name is deprecated -->
+                                <xs:element type="xs:string" name="track_id"/>
                                 <xs:element type="xs:string" name="name"/>
+                                
                                 <xs:element type="xs:string" name="key"/>
                             </xs:choice>
                         </xs:sequence>

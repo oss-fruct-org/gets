@@ -10,7 +10,7 @@ $dbconn = null;
 try {
     $dom = get_input_dom('schemes/unsubscribeTrack.xsd');
     $gets_token = get_request_argument($dom, "auth_token", null);
-    $channel_name = get_request_argument($dom, "name", null);
+    $channel_name = get_request_argument($dom, "track_id", null);
 
     auth_set_token($gets_token);
 

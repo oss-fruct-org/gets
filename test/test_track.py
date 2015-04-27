@@ -45,6 +45,25 @@ class TestTrack(unittest.TestCase):
             ("space", "private"),
             ))
 
+    def load_track(self, track_id, token = None):
+        if (token is None):
+            token = self.token
+
+        return gt.request("loadTrack.php", gt.make_request(
+            ("auth_token", token),
+            ("track_id", track_id),
+            ))
+
+    def load_track_by_key(self, key, token = None):
+        if (token is None):
+            token = self.token
+
+        return gt.request("loadTrack.php", gt.make_request(
+            ("auth_token", token),
+            ("key", key),
+            ))
+
+
     def make_test_track_request(self, suffix):
         return gt.make_request(
                 ("auth_token", self.token),
@@ -196,6 +215,63 @@ class TestTrack(unittest.TestCase):
             else:
                 self.assert_code(res, 2)
 
-        
+    def test_load_shared_track(self):
+        token1 = self.sign_in()
+
+        res = gt.request("createTrack.php", self.make_test_track_request("1"))
+        track_id = res.find(".//track_id").text
+
+        res = gt.request("sharing/shareTrack.php", gt.make_request(
+            ("auth_token", token1),
+            ("track_id", track_id),
+            ("limit", "unlimited")))
+        key = res.find(".//key").text
+            
+        token2 = self.sign_in()
+        res = self.load_track(track_id, token2);
+        self.assert_code(res, 1)
+ 
+        res = gt.request("sharing/subscribeTrack.php", gt.make_request(
+             ("auth_token", token2),
+             ("key", key)))
+        self.assert_code(res, 0)
+
+        res = self.load_track(track_id, token2);
+        self.assert_code(res, 0)
+
+    def test_load_shared_track_by_key(self):
+        "This test fails because GeTS returns error if track is empty"
+
+        token1 = self.sign_in()
+
+        res = gt.request("createTrack.php", self.make_test_track_request("1"))
+        track_id = res.find(".//track_id").text
+
+        res = gt.request("sharing/shareTrack.php", gt.make_request(
+            ("auth_token", token1),
+            ("track_id", track_id),
+            ("limit", "unlimited")))
+        key = res.find(".//key").text
+
+        token2 = self.sign_in()
+
+        # Check track can't be loaded by name
+        res = self.load_track(track_id, token2);
+        self.assert_code(res, 1)
+
+        # Check track can be loaded by key
+        res = self.load_track_by_key(key, token2);
+        self.assert_code(res, 0)
+
+        res = gt.request("sharing/unshareTrack.php", gt.make_request(
+            ("auth_token", token1),
+            ("key", key)))
+
+        # Check track can't be loaded by the same key
+        res = self.load_track_by_key(key, token2);
+        self.assert_code(res, 1)
+
+    def test_cant_share_not_owned_track(self):
+        pass
 if __name__ == "__main__":
     unittest.main()

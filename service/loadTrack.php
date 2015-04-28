@@ -33,10 +33,11 @@ try {
                 . 'FROM tag WHERE tag.channel_id=$1 ORDER BY time;', array($channel_id));
     } else {
         $is_owned = false;
-        $result_tag = pg_query_params($dbconn, 'SELECT tag.time, tag.label, tag.latitude, tag.longitude, tag.altitude, tag.description, tag.url, tag.id '
-                . 'FROM tag '
-                . 'JOIN channel ON channel.id = tag.channel_id '
-                . 'JOIN share ON channel.id = share.channel_id '
+        $result_tag = pg_query_params($dbconn, 'SELECT DISTINCT '
+                . 'tag.time, tag.label, tag.latitude, tag.longitude, tag.altitude, tag.description, tag.url, tag.id '
+                . 'FROM channel '
+                . 'LEFT JOIN tag ON channel.id = tag.channel_id '
+                . 'LEFT JOIN share ON channel.id = share.channel_id '
                 . 'WHERE share.key = $1 AND share.remain != 0 ORDER BY time;', array($key));
         
         if (pg_num_rows($result_tag) === 0) {
@@ -52,6 +53,11 @@ try {
 
     // Output points
     while ($row = pg_fetch_row($result_tag)) {
+        if ($row[7] === NULL) {
+            // Key query returns null string if channel found but has no points
+            // and empty set if channel not found
+            break;
+        }
         $point = Point::makeFromPgRow($row);
         $point->access = $is_owned && $auth_token !== null;
         $xml .= $point->toKmlPlacemark();

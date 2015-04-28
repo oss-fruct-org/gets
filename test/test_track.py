@@ -173,6 +173,8 @@ class TestTrack(unittest.TestCase):
         def_values = {
                 "description" : "test description 1",
                 "url" : "http://example.com/1",
+                "name" : "test track 1",
+
                 "category_id" : "1",
                 "lang" : "ru_RU",
                 "photoUrl" : "http://example.com/1.png"
@@ -181,6 +183,8 @@ class TestTrack(unittest.TestCase):
         values = {
                 "description" : "test track desc 1",
                 "url" : "http://example.com/11",
+                "name" : "test track 2",
+
                 "category_id" : "1",
                 "lang" : "en_GB",
                 "photoUrl" : "http://example.com/2.png"
@@ -215,14 +219,16 @@ class TestTrack(unittest.TestCase):
                 ex_value = values[key]
             else:
                 ex_value = def_values[key]
+
+            if key == "name":
+                key = "hname"
             
             self.assertEqual(res.find(".//tracks/track/" + key).text, ex_value, "For key " + key + " " + str(fields))
 
     def test_update_track(self):
-        all_fields = ["description", "url", "category_id", "lang", "photoUrl"]
+        all_fields = ["description", "url", "name", "category_id", "lang", "photoUrl"]
         for fields in itertools.combinations(all_fields, 3):
             self.do_test_update_track(fields)
-        
 
     def test_duplicated_names(self):
         self.sign_in()

@@ -44,7 +44,7 @@ try {
     pg_query("COMMIT;");
     
     $channel_name_escaped = htmlspecialchars($channel_name);
-    send_result(0, 'success', "<name>$channel_name_escaped</name>");
+    send_result(0, 'success', "<track_id>$channel_name_escaped</track_id>");
 } catch (Exception $e) {
     if ($dbconn !== null) {
         pg_query("ROLLBACK;");

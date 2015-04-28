@@ -79,7 +79,7 @@ try {
         throw new Exception("Database error", 1);
     }
     
-    send_result(0, 'success', $response);
+    send_result(0, 'success', "success");
 } catch (GetsAuthException $e) {
     send_error(1, "Google login error");
 } catch (Exception $e) {

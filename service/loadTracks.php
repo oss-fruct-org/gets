@@ -18,7 +18,7 @@ if (ends_with(__FILE__, "Tracks.php")) {
 }
 
 try {
-    $dom = get_input_dom('schemes/loadTracks.xsd');
+    $dom = get_input_dom('schemes/loadChannels.xsd');
 
     $auth_token = get_request_argument($dom, 'auth_token');
     $category_name = get_request_argument($dom, 'category_name');

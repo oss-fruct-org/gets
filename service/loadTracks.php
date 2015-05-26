@@ -7,7 +7,7 @@ include_once('include/channels.inc');
 
 include_once('include/header.inc');
 
-if (ends_with(__FILE__, "Tracks.php")) {
+if (ends_with($_SERVER['SCRIPT_FILENAME'], "Tracks.php")) {
     $type = CHANNEL_TRACK;
     $tag = "track";
     $root_tag = "tracks";

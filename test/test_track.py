@@ -390,5 +390,42 @@ class TestTrack(unittest.TestCase):
         token2 = self.sign_in()
         self.share_track(track_id, 5, token2, 1)
 
+    def test_delete_track(self):
+        self.sign_in()
+
+        # create track
+        track_id = self.create_track("1")
+
+        res = self.load_private_tracks()
+        self.assert_track_count(res, 1)
+
+        # delete track
+        res = gt.request("deleteTrack.php", gt.make_request(
+                ("auth_token", self.token),
+                ("name", track_id)))
+
+        self.assert_code(res, 0)
+
+        res = self.load_private_tracks()
+        self.assert_track_count(res, 0)
+
+    def test_delete_not_owned_track(self):
+        self.sign_in()
+
+        track_id = self.create_track("1")
+
+        self.sign_in()
+        res = gt.request("deleteTrack.php", gt.make_request(
+            ("auth_token", self.token),
+            ("name", track_id)))
+
+        self.assert_code(res, 1)
+
+
+
+
+    def test_track_order(self):
+        pass
+
 if __name__ == "__main__":
     unittest.main()

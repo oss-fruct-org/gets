@@ -741,6 +741,7 @@ function ends_with($haystack, $needle) {
 /**
  * Check that channel id represents track
  * 
+ * @deprecated
  * @param string $track_id
  * @return boolean yes/no
  */

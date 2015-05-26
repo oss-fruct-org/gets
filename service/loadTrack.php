@@ -3,72 +3,40 @@ include_once('include/methods_url.inc');
 include_once('include/utils.inc');
 include_once('include/auth.inc');
 include_once('datatypes/point.inc');
+include_once('include/channels.inc');
 
 include_once('include/header.inc');
 
+if (ends_with(__FILE__, "Track.php")) {
+    $type = CHANNEL_TRACK;
+} else {
+    $type = CHANNEL_POLYGON;
+}
+
 try {
-    $dom = get_input_dom('schemes/loadTrack.xsd');
+    $dom = get_input_dom($type === CHANNEL_TRACK ? 'schemes/loadTrack.xsd' : 'schemes/loadPolygon.xsd');
     
     $auth_token = get_request_argument($dom, 'auth_token');
     
-    $channel_name = get_request_argument($dom, 'name');
-    $track_id = get_request_argument($dom, 'track_id');
-    
-    $key = get_request_argument($dom, 'key');
-    
-    if ($track_id) {
-        $channel_name = $track_id;
-    }
-    
-    if ($auth_token) {
-        auth_set_token($auth_token);
-    }
-
-    $dbconn = pg_connect(GEO2TAG_DB_STRING);
-
-    if ($channel_name) {
-        list($channel_id, $is_owned) = require_channel_accessible($dbconn, $channel_name, $auth_token == null);
-        $result_tag = pg_query_params($dbconn, 
-                'SELECT time, label, latitude, longitude, altitude, description, url, id '
-                . 'FROM tag WHERE tag.channel_id=$1 ORDER BY time;', array($channel_id));
-    } else {
-        $is_owned = false;
-        $result_tag = pg_query_params($dbconn, 'SELECT DISTINCT '
-                . 'tag.time, tag.label, tag.latitude, tag.longitude, tag.altitude, tag.description, tag.url, tag.id '
-                . 'FROM channel '
-                . 'LEFT JOIN tag ON channel.id = tag.channel_id '
-                . 'LEFT JOIN share ON channel.id = share.channel_id '
-                . 'WHERE share.key = $1 AND share.remain != 0 ORDER BY time;', array($key));
+    if ($type === CHANNEL_TRACK) {
+        // One of two arguments must be defined
+        $channel_name = get_request_argument($dom, 'name');
+        $track_id = get_request_argument($dom, 'track_id');
         
-        if (pg_num_rows($result_tag) === 0) {
-            throw new Exception("Key invalid or expired", 1);
+        if ($track_id) {
+            $channel_name = $track_id;
         }
-    }
-    
-    $xml = '<kml xmlns="http://www.opengis.net/kml/2.2">';
-    $xml .= '<Document>';
-    $xml .= '<name>' . $channel_name . '.kml</name>';
-    $xml .= '<open>1</open>';
-    $xml .= '<Style id="styleDocument"><LabelStyle><color>ff0000cc</color></LabelStyle></Style>';
-
-    // Output points
-    while ($row = pg_fetch_row($result_tag)) {
-        if ($row[7] === NULL) {
-            // Key query returns null string if channel found but has no points
-            // and empty set if channel not found
-            break;
-        }
-        $point = Point::makeFromPgRow($row);
-        $point->access = $is_owned && $auth_token !== null;
-        $xml .= $point->toKmlPlacemark();
+    } else {
+        $channel_name = get_request_argument($dom, "polygon_id");    
     }
 
-    $xml .= '</Document>';
-    $xml .= '</kml>';
+    $key = get_request_argument($dom, 'key');
+
+    $xml = load_channel($type, $auth_token, $channel_name, $key);
 
     send_result(0, 'success', $xml);
 } catch (GetsAuthException $e) {
-    send_error(1, "Can't revoke token");
+    send_error(1, "Gets authentication error");
 } catch (Exception $e) {
     send_error($e->getCode(), $e->getMessage());
 }

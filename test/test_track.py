@@ -37,6 +37,36 @@ class TestTrack(unittest.TestCase):
     def assert_track_count(self, tracks_res, ex_count):
         self.assertEqual(len(tracks_res.findall(".//tracks/track")), ex_count)
 
+    def assert_point_count(self, points_res, ex_count):
+        ns = {"kml":"http://www.opengis.net/kml/2.2"}
+        self.assertEqual(len(points_res.findall(".//kml:kml/kml:Document/kml:Placemark", ns)), ex_count)
+
+    def create_point(self, track_id, lat, lon, name):
+        req = gt.make_request(
+            ("auth_token", self.token),
+            ("channel", track_id),
+            ("title", name),
+            ("latitude", str(lat)),
+            ("longitude", str(lon)),
+            ("altitude", "0"),
+            ("time", "01 10 2014 17:33:47.630")
+            )
+
+        res = gt.request("addPoint.php", req) 
+        self.assertEqual(gt.get_code(res), 0)
+
+
+    def load_points(self, lat, lon, radius, category_id):
+        return gt.request("loadPoints.php", gt.make_request(
+            ("auth_token", self.token),
+            ("latitude", str(lat)),
+            ("longitude", str(lon)),
+            ("radius", str(radius)),
+            ("category_id", str(category_id)),
+            ("space", "private")
+            ))
+
+
     def load_private_tracks(self, token = None):
         if (token is None):
             token = self.token
@@ -421,8 +451,29 @@ class TestTrack(unittest.TestCase):
 
         self.assert_code(res, 1)
 
+    def test_track_content_by_coord(self):
+        self.sign_in()
 
+        track_id = self.create_track("1")
+        
+        self.create_point(track_id, 61.78708, 34.348217, "Petrozavodsk")
+        self.create_point(track_id, 59.93374, 30.305241, "Piter")
+        self.create_point(track_id, 61.378663, 30.964425, "Valaam")
+        self.create_point(track_id, 60.197331, 24.89997, "Helsinki")
 
+        res = self.load_points(61.34, 34.35, 2000, 1)
+        self.assert_code(res, 0)
+        self.assert_point_count(res, 4)
+
+        res = self.load_points(61.34, 34.35, 100, 1)
+        self.assert_point_count(res, 1)
+
+        res = self.load_points(61.34, 34.35, 500, 1)
+        self.assert_point_count(res, 3)
+
+        res = self.load_points(6.34, 34.35, 5, 1)
+        self.assert_code(res, 0)
+        self.assert_point_count(res, 0)
 
     def test_track_order(self):
         pass

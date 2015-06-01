@@ -465,7 +465,175 @@ PointsPage.prototype.initPage = function() {
             }
         }
     });
+
+
+    // Vote for point (positive) handler   
+    $(this.document).on('click', '#point-info-vote-like', function(e) {
+        e.preventDefault();
+        
+        var userVotePositive = self._points.getUserVotePositive();
+        var userVoteNegative = self._points.getUserVoteNegative();
+      
+        // Positive vote and no negative vote
+        if(userVotePositive && !userVoteNegative) {
+             //MessageBox.showMessage('You have already voted for this point, but you can change your mind (click "Dislike")', MessageBox.SUCCESS_MESSAGE);
+             try {
+                // Delete user's vote on positive vote and change button's icon
+                self._points.deleteVoteForPoint('1'); 
+                self._pointInfo.changeVoteButtonClass('#point-info-vote-like', 'glyphicon-star', 'glyphicon-star-empty');
+                
+               // MessageBox.showMessage('Your vote was deleted', MessageBox.SUCCESS_MESSAGE); 
+                
+                // Get and show points' info with new rating from server
+                var formData = $(self.document).find('#point-main-form').serializeArray();
+                self._points.downLoadPoints(formData, function () {
+                        var pointList = self._points.getPointList();
+                      
+                // Show new points' info        
+                self.showPointInfo();
+            });           
+            } catch (Exception) {
+                MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
+            }
+        }
+        
+        // No positive vote and negative vote
+        if(!userVotePositive && userVoteNegative) {            
+            try {
+                // Change user's vote on positive vote and change buttons' icons
+                self._points.changeVoteForPoint('1'); 
+                self._pointInfo.changeVoteButtonClass('#point-info-vote-like', 'glyphicon-star-empty', 'glyphicon-star');
+                self._pointInfo.changeVoteButtonClass('#point-info-vote-dislike', 'glyphicon-star', 'glyphicon-star-empty');
+                
+              //  MessageBox.showMessage('Your vote was changed on "Like"', MessageBox.SUCCESS_MESSAGE); 
+                
+                // Get and show points' info with new rating from server
+                var formData = $(self.document).find('#point-main-form').serializeArray();
+                self._points.downLoadPoints(formData, function () {
+                        var pointList = self._points.getPointList();
+                      
+                // Show new points' info        
+                self.showPointInfo();
+            });           
+            } catch (Exception) {
+                MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
+            }
+        }
+         // No positive vote and no negative vote
+        if(!userVotePositive && !userVoteNegative) {
+            try {
+                // Accept user's positive vote and change buttons' icons
+                self._points.voteForPoint('1');
+                self._pointInfo.changeVoteButtonClass('#point-info-vote-like', 'glyphicon-star-empty', 'glyphicon-star');
+                userVotePositive = self._points.getUserVotePositive();
+
+                    if(userVotePositive === 'voted first') {
+                      //  MessageBox.showMessage('Voted success ("Like")', MessageBox.SUCCESS_MESSAGE);
+                    }    
+
+                // Get and show points' info with new rating from server 
+                var formData = $(self.document).find('#point-main-form').serializeArray();
+                self._points.downLoadPoints(formData, function () {
+                        var pointList = self._points.getPointList();
+                      
+                    // Show new points' info 
+                    self.showPointInfo();
+                });
+        
+            } catch (Exception) {
+                
+                MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
+            }
+            
+        }
+        
+    });
     
+
+     // Vote for point (negative) handler
+    $(this.document).on('click', '#point-info-vote-dislike', function(e) {
+        e.preventDefault();
+
+    var userVotePositive = self._points.getUserVotePositive();
+    var userVoteNegative = self._points.getUserVoteNegative();
+            
+        // No positive vote and negative vote
+        if(userVoteNegative && !userVotePositive) {
+             //MessageBox.showMessage('You have already voted for this point, but you can change your mind (click "Like")', MessageBox.SUCCESS_MESSAGE);
+              try {
+                // Delete user's vote on positive vote and change button's icon
+                self._points.deleteVoteForPoint('2'); 
+                self._pointInfo.changeVoteButtonClass('#point-info-vote-dislike', 'glyphicon-star', 'glyphicon-star-empty');
+                
+              //  MessageBox.showMessage('Your vote was deleted', MessageBox.SUCCESS_MESSAGE); 
+                
+                // Get and show points' info with new rating from server
+                var formData = $(self.document).find('#point-main-form').serializeArray();
+                self._points.downLoadPoints(formData, function () {
+                        var pointList = self._points.getPointList();
+                      
+                // Show new points' info        
+                self.showPointInfo();
+            });           
+            } catch (Exception) {
+                MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
+            }
+
+        }
+
+        // Positive vote and no negative vote
+        if(userVotePositive && !userVoteNegative) {
+            try {
+                // Change user's vote on negative vote and change buttons' icons
+                self._points.changeVoteForPoint('-1');
+                self._pointInfo.changeVoteButtonClass('#point-info-vote-dislike', 'glyphicon-star-empty', 'glyphicon-star');
+                self._pointInfo.changeVoteButtonClass('#point-info-vote-like', 'glyphicon-star', 'glyphicon-star-empty');
+                
+              //  MessageBox.showMessage('Your vote changed on "Dislike"', MessageBox.SUCCESS_MESSAGE);
+               
+                // Get and show points' info with new rating from server
+                var formData = $(self.document).find('#point-main-form').serializeArray();
+                self._points.downLoadPoints(formData, function () {
+                        var pointList = self._points.getPointList();
+                     
+                        // Show new points' info 
+                    self.showPointInfo();
+                });
+        
+            } catch (Exception) {
+                MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
+            }
+        }
+        
+             // No positive vote and no negative vote
+        if(!userVotePositive && !userVoteNegative) {
+            try {
+                // Accept user's negative vote and change buttons' icons
+                self._points.voteForPoint('-1');
+                self._pointInfo.changeVoteButtonClass('#point-info-vote-dislike', 'glyphicon-star', 'glyphicon-star-empty');
+                
+                userVoteNegative = self._points.getUserVoteNegative();
+
+                    if(userVoteNegative === 'voted first') {
+                             //MessageBox.showMessage('Voted success ("Dislike")', MessageBox.SUCCESS_MESSAGE);
+                    }
+
+                // Get and show points' info with new rating from server     
+                var formData = $(self.document).find('#point-main-form').serializeArray();
+                self._points.downLoadPoints(formData, function () {
+                        var pointList = self._points.getPointList();
+                   
+                    // Show new points' info 
+                    self.showPointInfo();
+                });
+        
+            } catch (Exception) {
+                MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
+            }
+        }
+    });
+    
+
     this.downloadPointsHandler();
     // get user's coordinates
     if (this.window.navigator.geolocation) {
@@ -525,9 +693,37 @@ PointsPage.prototype.showPointInfo = function() {
             throw new GetsWebClientException('Track Page Error', 'showPointInfo, hash parameter point uuid undefined');
         }
         this._points.findPointInPointList(pointUUID);
-        
+      
         Logger.debug(this._points.getPoint());
-        this._pointInfo.placePointInPointInfo(this._points.getPoint(), this._user.isLoggedIn());
+        
+        var userVote = null;
+
+        if (this._user.isLoggedIn()) {
+            this._points.getUserVote();
+            userVote = this._points.getVote();    
+        }
+
+        // Clear positive and negative votes 
+        this._points.setUserVoteNegative(null);
+        this._points.setUserVotePositive(null);
+
+        // Set user's vote for point (positive vote)    
+        if (this._points.userVote === 1) {
+            this._points.setUserVoteNegative(null);
+            this._points.setUserVotePositive('already voted');
+        }
+        // Set user's vote for point (negative vote)  
+        if (this._points.userVote === 2) {
+            this._points.setUserVoteNegative('already voted');
+            this._points.setUserVotePositive(null);
+        }
+        // Set user's vote for point (no vote (user hasn't voted yet))  
+        if (this._points.userVote === 3) {
+            this._points.setUserVoteNegative(null);
+            this._points.setUserVotePositive(null);
+          }
+
+        this._pointInfo.placePointInPointInfo(this._points.getPoint(), this._user.isLoggedIn(), userVote);
         
         this.currentView.hideView();
         this.currentView = this._pointInfo;
@@ -609,12 +805,14 @@ PointsPage.prototype.downloadPointsHandler = function() {
 
         this._points.downLoadPoints(formData, function () {
             var pointList = that._points.getPointList();
+
             that._mapCtrl.removePointsFromMap();
             that._pointsMain.placePointsInPointList(pointList);
             that._mapCtrl.placePointsOnMap(pointList, {
                 url: '#form=' + PointsPage.POINT_INFO + '&point_uuid=',
                 text: $(that._pointInfo.getView()).data('putpoint')
             });
+            
             that._pointsMain.hideOverlay();
         });
     } catch (Exception) {

@@ -22,4 +22,8 @@ define('USER_LOGIN', 'http://' . GETS_SERVER_URL . 'userLogin.php');
 define('UPDATE_POINT', 'http://' . GETS_SERVER_URL . 'updatePoint.php');
 define('PUBLISH', 'http://' . GETS_SERVER_URL . 'publish.php');
 define('UNPUBLISH', 'http://' . GETS_SERVER_URL . 'unpublish.php');
+define('VOTE_FOR_POINT_METHOD_URL', 'http://' . GETS_SERVER_URL . 'voteForTag.php');
+define('GET_VOTE_FOR_POINT_METHOD_URL', 'http://' . GETS_SERVER_URL . 'getUserVote.php');
+define('CHANGE_VOTE_FOR_POINT_METHOD_URL', 'http://' . GETS_SERVER_URL . 'changeVoteForTag.php');
+define('DELETE_VOTE_FOR_POINT_METHOD_URL', 'http://' . GETS_SERVER_URL . 'deleteVoteForTag.php');
 ?>

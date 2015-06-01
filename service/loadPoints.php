@@ -2,14 +2,12 @@
 include_once('include/methods_url.inc');
 include_once('include/utils.inc');
 include_once('datatypes/point.inc');
-
 include_once('include/header.inc');
 
 try {
     $dom = get_input_dom('schemes/loadPoints.xsd');
     $gets_token = get_request_argument($dom, "auth_token", null);
-    
-    
+ 
     $auth_token = get_request_argument($dom, 'auth_token');
     $category_id = get_request_argument($dom, 'category_id');
     $space_arg = get_request_argument($dom, 'space');
@@ -54,7 +52,7 @@ try {
         }
 
         $email_where_arr[] = "users.email='${private_email_escaped}'";
-        $access_row = "users.email='${private_email_escaped}' AS permission";
+        $access_row = "users.email='${private_email_escaped}'"; 
     } else {
         $private_email = null;
         $access_row = 'false AS permission';
@@ -65,17 +63,35 @@ try {
         $email_where_arr[] = "users.email='${email_escaped}'";
     }
 
-    $query = "SELECT DISTINCT ON(tag.id) tag.time, tag.label, tag.latitude, tag.longitude, 
-                                      tag.altitude, tag.description, tag.url, tag.id, ${access_row}, category.id FROM tag ";
+
+    // rating and load points query
+    $query  = "WITH rating_channels_positive AS (SELECT subscribe.channel_id FROM subscribe INNER JOIN channel ON channel.id=subscribe.channel_id 
+                WHERE subscribe.user_id = 91 AND channel.name LIKE 'vote+%+positive'), "; 
+
+    $query .= "rating_channels_negative AS (SELECT subscribe.channel_id FROM subscribe INNER JOIN channel ON channel.id=subscribe.channel_id 
+                WHERE subscribe.user_id = 91 AND channel.name LIKE 'vote+%+negative'), ";
+
+    $query .= "rating_tags_positive AS (SELECT tag.id, tag.latitude, tag.longitude, tag.altitude, tag.label FROM tag 
+                INNER JOIN rating_channels_positive ON tag.channel_id = rating_channels_positive.channel_id), ";
+
+    $query .= "rating_tags_negative AS (SELECT tag.id, tag.latitude, tag.longitude, tag.altitude, tag.label FROM tag 
+                INNER JOIN rating_channels_negative ON tag.channel_id = rating_channels_negative.channel_id), ";
+    
+    if ($access_row == 'false AS permission') {
+        $query .= "response_tags AS (SELECT DISTINCT ON(tag.id) tag.time, tag.label, tag.latitude, tag.longitude, tag.altitude, 
+                    tag.description, tag.url, tag.id as tid, category.id as cat FROM tag ";
+    } else {
+        $query .= "response_tags AS (SELECT DISTINCT ON(tag.id) tag.time, tag.label, tag.latitude, tag.longitude, tag.altitude, 
+                    tag.description, tag.url, tag.id as tid, ${access_row} as acc, category.id as cat FROM tag ";
+    }
+
     $query .= 'INNER JOIN channel ON tag.channel_id = channel.id ';
     $query .= 'INNER JOIN subscribe ON channel.id = subscribe.channel_id ';
     $query .= 'INNER JOIN users ON subscribe.user_id=users.id ';
-
     $query .= 'INNER JOIN category ON safe_cast_to_json(channel.description)->>\'category_id\'=category.id::text ';
     $query .= 'INNER JOIN users AS project_users ON category.owner_id = project_users.id ';
-
+    
     $email_where = '(' . implode(' OR ', $email_where_arr) . ')';
-
     $where_arr[] = $email_where;
     if ($category_id) {
         $where_arr[] = "category.id=${category_id}";
@@ -85,10 +101,58 @@ try {
 
     // Distance 'where'
     if ($is_radius_filter) {
-        $where_arr[] = "gets_geo_distance(tag.latitude, tag.longitude, ${latitude}, ${longitude}) < ${radius}";
+        $where_arr[] = " gets_geo_distance(tag.latitude, tag.longitude, ${latitude}, ${longitude}) < ${radius}";
     }
 
-    $query .= 'WHERE ' . implode(' AND ', $where_arr) . ' ORDER BY tag.id ASC, permission DESC;';
+    $query .= 'WHERE ' . implode(' AND ', $where_arr);
+    $query .= " AND channel.name NOT LIKE '%+positive' AND channel.name NOT LIKE '%+negative'), ";
+
+    if ($access_row == 'false AS permission') {
+        $query .= 'response_tags_positive AS (SELECT response_tags.time, response_tags.label, response_tags.latitude, 
+                   response_tags.longitude, response_tags.altitude, response_tags.description, response_tags.url, response_tags.tid, 
+                   response_tags.cat, COUNT(rating_tags_positive.latitude) as positive_count FROM rating_tags_positive ';
+
+        $query .= 'RIGHT JOIN response_tags USING (latitude, longitude, altitude) GROUP BY response_tags.latitude, response_tags.longitude,
+                   response_tags.altitude, response_tags.label, response_tags.time, response_tags.description, response_tags.url, 
+                   response_tags.cat, response_tags.tid), ';
+    } else {
+        $query .= 'response_tags_positive AS (SELECT response_tags.time, response_tags.label, response_tags.latitude, response_tags.longitude, 
+                   response_tags.altitude, response_tags.description, response_tags.url, response_tags.tid, response_tags.acc, response_tags.cat, 
+                   COUNT(rating_tags_positive.latitude) as positive_count FROM rating_tags_positive ';
+        $query .= 'RIGHT JOIN response_tags USING (latitude, longitude, altitude) GROUP BY response_tags.latitude, response_tags.longitude,
+                   response_tags.altitude, response_tags.label, response_tags.time, response_tags.description, response_tags.url, 
+                   response_tags.cat, response_tags.acc, response_tags.tid), ';       
+    }
+
+    if ($access_row == 'false AS permission') {
+        $query .= 'response_tags_negative AS (SELECT response_tags.time, response_tags.label, response_tags.latitude, response_tags.longitude, 
+                   response_tags.altitude, response_tags.description, response_tags.url, response_tags.tid, response_tags.cat, 
+                   COUNT(rating_tags_negative.latitude) as negative_count FROM rating_tags_negative ';
+
+        $query .= 'RIGHT JOIN response_tags USING (latitude, longitude, altitude) GROUP BY response_tags.latitude, response_tags.longitude,
+                   response_tags.altitude, response_tags.label, response_tags.time, response_tags.description, response_tags.url, 
+                   response_tags.cat, response_tags.tid) ';
+    } else {
+        $query .= 'response_tags_negative AS (SELECT response_tags.time, response_tags.label, response_tags.latitude, response_tags.longitude, 
+                   response_tags.altitude, response_tags.description, response_tags.url, response_tags.tid, response_tags.acc, response_tags.cat, 
+                   COUNT(rating_tags_negative.latitude) as negative_count FROM rating_tags_negative ';
+        $query .= 'RIGHT JOIN response_tags USING (latitude, longitude, altitude) GROUP BY response_tags.latitude, response_tags.longitude,
+                    response_tags.altitude, response_tags.label, response_tags.time, response_tags.description, response_tags.url, 
+                    response_tags.cat, response_tags.acc, response_tags.tid) ';
+    }
+
+    if ($access_row == 'false AS permission') {
+        $query .= 'SELECT response_tags_positive.time, response_tags_positive.label, response_tags_positive.latitude, response_tags_positive.longitude, 
+                    response_tags_positive.altitude, response_tags_positive.description, response_tags_positive.url, response_tags_positive.tid,
+                    response_tags_positive.positive_count, response_tags_negative.negative_count, response_tags_positive.cat
+                    FROM response_tags_positive INNER JOIN response_tags_negative USING (latitude, longitude)';  
+    } else {
+        $query .= 'SELECT response_tags_positive.time, response_tags_positive.label, response_tags_positive.latitude, response_tags_positive.longitude, 
+                    response_tags_positive.altitude, response_tags_positive.description, response_tags_positive.url, response_tags_positive.tid,
+                    response_tags_positive.positive_count, response_tags_negative.negative_count, response_tags_positive.cat, response_tags_positive.acc
+                    FROM response_tags_positive INNER JOIN response_tags_negative USING (latitude, longitude)';  
+    }
+
     $result = pg_query($dbconn, $query);
 
     $xml = '<kml xmlns="http://www.opengis.net/kml/2.2">';
@@ -107,9 +171,10 @@ try {
 
     send_result(0, 'success', $xml);
 
-    include_once('include/php-ga.inc');
+    //include_once('include/php-ga.inc');
 } catch (GetsAuthException $e) {
     send_error(1, "Can't revoke token");
 } catch (Exception $e) {
     send_error($e->getCode(), $e->getMessage());
 }
+?>

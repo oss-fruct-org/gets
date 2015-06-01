@@ -22,7 +22,29 @@ function PointInfo(document, pointInfo) {
  * @param {Object} point Object contains point info.
  * @param {Boolean} isAuth Variable indicates is user authorized.
  */
-PointInfo.prototype.placePointInPointInfo = function(point, isAuth) {
+PointInfo.prototype.placePointInPointInfo = function(point, isAuth, userVote) {
+    
+     // Set "star-empty" buttons' icons 
+        this.changeVoteButtonClass('#point-info-vote-like', 'glyphicon-star-empty', 'glyphicon-star-empty');
+        this.changeVoteButtonClass('#point-info-vote-dislike', 'glyphicon-star-empty', 'glyphicon-star-empty');
+
+        // Show user's vote for point (positive vote)    
+        if (userVote === 1) {
+            this.changeVoteButtonClass('#point-info-vote-like', 'glyphicon-star-empty', 'glyphicon-star');
+        }
+
+        // Show user's vote for point (negative vote)  
+        if (userVote === 2) {
+            this.changeVoteButtonClass('#point-info-vote-dislike', 'glyphicon-star-empty', 'glyphicon-star');
+           
+        }
+
+        // Show user's vote for point (no vote (this user hasn't voted yet))  
+        if (userVote === 3) {
+            this.changeVoteButtonClass('#point-info-vote-like', 'glyphicon-star-empty', 'glyphicon-star-empty');
+            this.changeVoteButtonClass('#point-info-vote-dislike', 'glyphicon-star-empty', 'glyphicon-star-empty');  
+          }
+
     // Get all elements
     var nameElement = $(this.pointInfo).find('#point-info-name');
     var coordsElementLat = $(this.pointInfo).find('#point-info-coords-lat');
@@ -103,20 +125,35 @@ PointInfo.prototype.placePointInPointInfo = function(point, isAuth) {
 
     var pointsInfoEdit = $('#point-info-edit');
     var pointsInfoRemove = $('#point-info-remove');
+    var pointsVotePositive = $('#point-info-vote-like');
+    var pointsVoteNegative = $('#point-info-vote-dislike');
     
     $(pointsInfoEdit).attr('href', '#form=point_edit' + (point.track ? ('&track_id=' + point.track) : '') + '&point_uuid=' + point.uuid);
 
-    if (!isAuth || point.access === 'r') {
+    if ((!isAuth) || point.access === 'r') {
         $(pointsInfoEdit).on('click', function(e) {
             e.preventDefault();
         });
         $(pointsInfoEdit).addClass('disabled');
         $(pointsInfoRemove).addClass('disabled');
+        
     } else {
         $(pointsInfoEdit).off('click');        
-        $(pointsInfoEdit).removeClass('disabled');
-        $(pointsInfoRemove).removeClass('disabled');
+        $(pointsInfoEdit).addClass('disabled');
+        $(pointsInfoRemove).addClass('disabled');
+        
     }
+
+     if (!isAuth) {
+        $(pointsVotePositive).addClass('disabled');
+        $(pointsVoteNegative).addClass('disabled');       
+    } else {        
+        $(pointsVotePositive).removeClass('disabled');
+        $(pointsVoteNegative).removeClass('disabled');
+        
+    }
+
+
 };
 
 PointInfo.prototype.getView = function() {
@@ -151,5 +188,8 @@ PointInfo.prototype.prevImage = function() {
     $(photoElement).find('img').attr('src', this.photos[this.photoIndex]);
 };
 
-
+PointInfo.prototype.changeVoteButtonClass = function(button_id, oldClass, newClass) {
+    $(button_id).find('span').removeClass(oldClass);
+    $(button_id).find('span').addClass(newClass);
+};
 

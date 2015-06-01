@@ -12,6 +12,9 @@
  */
 function PointsClass() {
     this.pointList = null;
+    this.userVote = null;
+    this.userVotePositive = null;
+    this.userVoteNegative = null;
     this.point = null;
     this.needPointListUpdate = false;
     this.needPointUpdate = false;
@@ -345,6 +348,233 @@ PointsClass.prototype.removePoint = function (callback) {
     }
 };
 
+/**
+ * Vote for point 
+ * 
+ * @param {String} vote user's vote (positive or negative).   
+ */
+
+PointsClass.prototype.voteForPoint = function (vote, callback) {
+    var point = this.getPoint();
+    if (point.latitude === 0) {
+        throw new GetsWebClientException('Points Error', 'voteForPoint, getPoint - no point');
+    }
+
+    var request = {};
+    var coords = point.coordinates.split(',');
+    request.latitude = coords[1];
+    request.longitude = coords[0];
+    request.altitude = coords[2];
+    request.vote = vote;
+  
+    var voteForPointRequest = $.ajax({
+        url: VOTE_FOR_POINT_ACTION,
+        type: 'POST',
+        async: false,
+        contentType: 'application/json',
+        dataType: 'xml',
+        data: JSON.stringify(request)
+    });
+    
+    point_uiid = point.uuid;
+    voteForPointRequest.fail(function(jqXHR, textStatus) {
+        throw new GetsWebClientException('Points Error', 'voteForPoint, voteForPointRequest failed ' + textStatus);
+    });
+    
+    if (($(voteForPointRequest.responseText).find('vote').text() === 'already voted') && (vote === '1')) {
+       this.userVotePositive = 'already voted';
+    }   
+    if (($(voteForPointRequest.responseText).find('vote').text() === 'already voted') && (vote === '-1')) {
+       this.userVoteNegative = 'already voted';
+    }   
+
+    if (($(voteForPointRequest.responseText).find('vote').text() === 'voted first')  && (vote === '1')) {
+       this.userVotePositive = 'voted first';
+    }   
+
+    if (($(voteForPointRequest.responseText).find('vote').text() === 'voted first')  && (vote === '-1')) {
+       this.userVoteNegative = 'voted first';
+    }  
+
+    if ($(voteForPointRequest.responseText).find('code').text() !== '0') {
+        throw new GetsWebClientException('Points Error', ' ' + $(voteForPointRequest.responseText).find('message').text());
+    }   
+    
+    if (callback) {
+        callback();
+    }
+    
+};
+
+/**
+ * Get user's vote for point 
+ * 
+ * 
+ */
+
+PointsClass.prototype.getUserVote = function () {
+    var point = this.getPoint();
+    if (!point) {
+        throw new GetsWebClientException('Points Error', 'getUserVote, no point');
+    }
+    
+    var request = {};
+    var coords = point.coordinates.split(',');
+    request.latitude = coords[1];
+    request.longitude = coords[0];
+    request.altitude = coords[2];
+  
+    var getUserVoteRequest = $.ajax({
+        url: GET_USER_VOTE_ACTION,
+        type: 'POST',
+        async: false,
+        contentType: 'application/json',
+        dataType: 'xml',
+        data: JSON.stringify(request)
+    });
+    
+    getUserVoteRequest.fail(function(jqXHR, textStatus) {
+        if (textStatus !== "User doesn't authorize") {
+            throw new GetsWebClientException('Points Error', 'getUserVoteRequest failed ' + textStatus);  
+        } 
+    });
+   
+    getUserVoteRequest.fail(function(jqXHR, textStatus) {
+        throw new GetsWebClientException('Points Error', 'getUserVoteRequest failed ' + textStatus);
+    });
+
+    if ($(getUserVoteRequest.responseText).find('code').text() !== '0') {
+        throw new GetsWebClientException('Channel Error', 'getUserVoteRequest, ' + $(getUserVoteRequest.responseText).find('message').text());
+    }
+
+        //Logger.debug(jqXHR.responseText);
+        var channelTypeElement = null;
+        channelTypeElement = $(getUserVoteRequest.responseText).find('type').length ? $(getUserVoteRequest.responseText).find('type').text() : '';
+
+        var channelType = null;
+
+    if(channelTypeElement === 'positive') {
+        channelType = 1;
+    }
+    else if(channelTypeElement === 'negative') {
+          channelType = 2;
+    }
+    else if(channelTypeElement === 'no vote') {
+        channelType = 3;
+    }
+     
+    this.userVote = channelType;
+   
+};
+      
+/**
+ * Change user's vote for point 
+ * 
+ * 
+ */
+
+PointsClass.prototype.changeVoteForPoint = function (vote, callback) {
+    var point = this.getPoint();
+    if (!point) {
+        throw new GetsWebClientException('Points Error', 'changeVoteForPoint, no point');
+    }
+    
+    var request = {};
+    var coords = point.coordinates.split(',');
+    request.latitude = coords[1];
+    request.longitude = coords[0];
+    request.altitude = coords[2];
+    request.vote = vote;
+  
+    var changeVoteForPointRequest = $.ajax({
+        url: CHANGE_VOTE_ACTION,
+        type: 'POST',
+        async: false,
+        contentType: 'application/json',
+        dataType: 'xml',
+        data: JSON.stringify(request)
+    });
+    
+    changeVoteForPointRequest.fail(function(jqXHR, textStatus) {
+        throw new GetsWebClientException('Points Error', 'changeVoteForPoint, changeVoteForPointRequest failed ' + textStatus);
+    });
+    
+    if (($(changeVoteForPointRequest.responseText).find('vote').text() !== null) && (vote =='1')) {
+       this.userVotePositive = 'voted';
+       this.userVoteNegative = null;
+    }   
+    if (($(changeVoteForPointRequest.responseText).find('vote').text() !== null) && (vote =='-1')) {
+       this.userVoteNegative = 'voted';
+       this.userVotePositive = null;
+    }   
+    
+    if ($(changeVoteForPointRequest.responseText).find('code').text() !== '0') {
+        throw new GetsWebClientException('Points Error', ' ' + $(changeVoteForPointRequest.responseText).find('message').text());
+    }   
+    
+    if (callback) {
+        callback();
+    }
+    
+};
+
+/**
+ * Delete user's vote for point 
+ * 
+ * 
+ */
+
+PointsClass.prototype.deleteVoteForPoint = function (userVote, callback) {
+
+/*
+    var userVote = this.getVote();
+    if (!userVote) {
+        throw new GetsWebClientException('Points Error', 'deleteVoteForPoint, no userVote');
+    }
+*/
+    var point = this.getPoint();
+    if (!point) {
+        throw new GetsWebClientException('Points Error', 'deleteVoteForPoint, no point');
+    }
+    
+    var request = {};
+    var coords = point.coordinates.split(',');
+    request.latitude = coords[1];
+    request.longitude = coords[0];
+    request.altitude = coords[2];
+    request.user_vote = userVote;
+    
+    var deleteVoteForPointRequest = $.ajax({
+        url: DELETE_VOTE_ACTION,
+        type: 'POST',
+        async: false,
+        contentType: 'application/json',
+        dataType: 'xml',
+        data: JSON.stringify(request)
+    });
+    
+    deleteVoteForPointRequest.fail(function(jqXHR, textStatus) {
+        throw new GetsWebClientException('Points Error', 'deleteVoteForPoint, deleteVoteForPointRequest failed ' + textStatus);
+    });
+    
+    if (($(deleteVoteForPointRequest.responseText).find('code').text() === '0') && (userVote === '1')) {
+       this.userVotePositive = null;
+    } 
+
+    if (($(deleteVoteForPointRequest.responseText).find('code').text() === '0') && (userVote === '2')) {
+       this.userVoteNegative = null;
+    }    
+    
+    if ($(deleteVoteForPointRequest.responseText).find('code').text() !== '0') {
+        throw new GetsWebClientException('Points Error', ' ' + $(deleteVoteForPointRequest.responseText).find('message').text());
+    }   
+    
+    if (callback) {
+        callback();
+    }
+    
+};
+
 PointsClass.prototype.findPointInPointList = function(uuid) {
     if (!uuid || !this.pointList) {
         return;
@@ -355,6 +585,17 @@ PointsClass.prototype.findPointInPointList = function(uuid) {
             return this.point;
         }
     }
+};
+
+
+PointsClass.prototype.setUserVoteNegative = function(status) {
+        this.userVoteNegative = status;
+        return this.userVoteNegative;  
+};
+
+PointsClass.prototype.setUserVotePositive = function(status) {
+        this.userVotePositive = status;
+        return this.userVotePositive;  
 };
 
 /**
@@ -376,3 +617,20 @@ PointsClass.prototype.getPoint = function() {
 PointsClass.prototype.setPoint = function(point) {
     this.point = point;
 };
+
+PointsClass.prototype.getUserVoteNegative = function() {
+        return this.userVoteNegative;  
+};
+
+PointsClass.prototype.getVote = function() {
+     if (!this.userVote) {
+        throw new GetsWebClientException('Points Error', 'getVote, vote undefined or null');
+    }
+        return this.userVote;  
+};
+
+PointsClass.prototype.getUserVotePositive = function() {
+        return this.userVotePositive;  
+};
+
+

@@ -685,6 +685,7 @@ PointsPage.prototype.showPointsMain = function() {
 };
 
 PointsPage.prototype.showPointInfo = function() {
+	
     try {
         this._headerView.changeOption($(this._pointInfo.getView()).data('pagetitle'), 'glyphicon-chevron-left', '#form=main');
         

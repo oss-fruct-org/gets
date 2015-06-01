@@ -1,0 +1,2482 @@
+diff --git a/service/changeVoteForTag.php b/service/changeVoteForTag.php
+new file mode 100644
+index 0000000..1c227bc
+--- /dev/null
++++ b/service/changeVoteForTag.php
+@@ -0,0 +1,107 @@
++<?php 
++include_once('include/auth.inc');
++include_once('include/voting.inc');
++include_once('include/methods_url.inc');
++include_once('include/utils.inc');
++include_once('include/public_token.inc');
++include_once('include/config.inc');
++
++//error_reporting(E_ALL);
++//ini_set("display_errors", 1);
++
++header('Content-Type:text/xml');
++if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
++    header('Access-Control-Allow-Origin: *');
++    header('Access-Control-Allow-Methods: POST, GET, PUT, DELETE');
++    header('Access-Control-Allow-Headers: X-Requested-With, Content-Type');
++} else {
++    header('Access-Control-Allow-Origin: *');
++}
++
++$xml_post = file_get_contents('php://input');
++if (!$xml_post) {
++    send_error(1, 'Error: no input file');
++    die();
++}
++
++libxml_use_internal_errors(true);
++$dom = new DOMDocument();
++$dom->loadXML($xml_post);
++
++if (!$dom) {
++    send_error(1, 'Error: resource isn\'t XML document.');
++    die();
++}
++
++if (!$dom->schemaValidate('schemes/changeVoteForTag.xsd')) {
++    send_error(1, 'Error: not valid input XML document.');
++    die();
++}
++
++$auth_token_element = $dom->getElementsByTagName('auth_token');
++$vote_id_element = $dom->getElementsByTagName('vote');
++$latitude_element = $dom->getElementsByTagName('latitude');
++$longitude_element = $dom->getElementsByTagName('longitude');
++$altitude_element = $dom->getElementsByTagName('altitude');
++
++$auth_token = $auth_token_element->item(0)->nodeValue;
++$vote = $vote_id_element->item(0)->nodeValue;
++$latitude = $latitude_element->item(0)->nodeValue;
++$longitude = $longitude_element->item(0)->nodeValue;
++$altitude = $altitude_element->item(0)->nodeValue;
++
++
++//recieve user's id
++auth_set_token($auth_token);
++$dbconn = pg_connect(GEO2TAG_DB_STRING);
++
++try {
++     $user_db_id = auth_get_db_id($dbconn);
++} catch (Exception $ex) {
++    send_error(1, $ex->getMessage());
++    die();
++}
++
++$user_id = (int) $user_db_id;
++
++$voting_channel_positive = 'vote+'. $user_id . '+positive';
++$voting_channel_negative = 'vote+' . $user_id . '+negative';
++
++// recieve channels' id
++
++try {
++$positive_channel_id = get_channel_id($dbconn, $voting_channel_positive);
++} catch (Exception $ex) {
++    send_error(1, $ex->getMessage());
++    die();
++}
++
++try {
++$negative_channel_id = get_channel_id($dbconn, $voting_channel_negative);
++} catch (Exception $ex) {
++    send_error(1, $ex->getMessage());
++    die();
++}
++
++$channel_array = array();
++$channel_array[0] = $positive_channel_id;
++$channel_array[1] = $negative_channel_id;
++$channel_array[2] = $user_id;
++
++// write tag 
++try {
++$change_vote_for_point = change_vote($dbconn, $latitude, $longitude, $altitude, $channel_array, $vote);
++} catch (Exception $ex) {
++    send_error(1, $ex->getMessage());
++    die();
++}
++
++$xml = '<vote>';
++
++$xml_vote = htmlspecialchars($change_vote_for_point);
++
++
++$xml .= "${xml_vote}</vote>";
++ 
++send_result(0, 'success', $xml);
++?>
+diff --git a/service/datatypes/point.inc b/service/datatypes/point.inc
+index b07dcb8..f51e8b2 100644
+--- a/service/datatypes/point.inc
++++ b/service/datatypes/point.inc
+@@ -14,6 +14,10 @@ class Point {
+     public $altitude = 0;
+     public $time;
+     public $uuid;
++    public $rating = 0;
++    public $rating_positive = 0;
++    public $rating_negative = 0;
++
+     
+     public $access = true;
+     public $category_id;
+@@ -124,7 +128,9 @@ class Point {
+         
+         $xml .= '<Data name="time"><value>' . htmlspecialchars($this->time) . '</value></Data>';
+         $xml .= '<Data name="uuid"><value>' . htmlspecialchars($this->uuid) . '</value></Data>';
+-
++	    $xml .= '<Data name="rating"><value>' . htmlspecialchars($this->rating) . '</value></Data>';
++	    $xml .= '<Data name="rating_positive"><value>' . htmlspecialchars($this->rating_positive) . '</value></Data>';
++	    $xml .= '<Data name="rating_negative"><value>' . htmlspecialchars($this->rating_negative) . '</value></Data>';
+         $xml .= '<Data name="access"><value>' . ($this->access ? "rw" : "r") . '</value></Data>';
+         
+         if ($this->category_id) {
+@@ -184,12 +190,16 @@ class Point {
+             $point->uuid = $row[7];
+         }
+         
+-        if (array_key_exists(9, $row)) {
+-            $point->category_id = (int) $row[9];
++	    $point->rating_positive = $row[8];
++        $point->rating_negative = $row[9];
++	    $point->rating = $row[8]-$row[9];
++
++        if (array_key_exists(10, $row)) {
++            $point->category_id = (int) $row[10];
+         }
+         
+-        if (array_key_exists(8, $row)) {
+-            $point->access = $row[8] === 't';
++        if (array_key_exists(11, $row)) {
++            $point->access = $row[11] === 't';
+         }
+         
+         return $point;
+diff --git a/service/deleteVoteForTag.php b/service/deleteVoteForTag.php
+new file mode 100644
+index 0000000..db66f7e
+--- /dev/null
++++ b/service/deleteVoteForTag.php
+@@ -0,0 +1,103 @@
++<?php 
++include_once('include/auth.inc');
++include_once('include/voting.inc');
++include_once('include/methods_url.inc');
++include_once('include/utils.inc');
++include_once('include/public_token.inc');
++include_once('include/config.inc');
++
++//error_reporting(E_ALL);
++//ini_set("display_errors", 1);
++
++header('Content-Type:text/xml');
++if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
++    header('Access-Control-Allow-Origin: *');
++    header('Access-Control-Allow-Methods: POST, GET, PUT, DELETE');
++    header('Access-Control-Allow-Headers: X-Requested-With, Content-Type');
++} else {
++    header('Access-Control-Allow-Origin: *');
++}
++
++$xml_post = file_get_contents('php://input');
++if (!$xml_post) {
++    send_error(1, 'Error: no input file');
++    die();
++}
++
++libxml_use_internal_errors(true);
++$dom = new DOMDocument();
++$dom->loadXML($xml_post);
++
++if (!$dom) {
++    send_error(1, 'Error: resource isn\'t XML document.');
++    die();
++}
++
++if (!$dom->schemaValidate('schemes/deleteVoteForTag.xsd')) {
++    send_error(1, 'Error: not valid input XML document.');
++    die();
++}
++
++$auth_token_element = $dom->getElementsByTagName('auth_token');
++$user_vote_element = $dom->getElementsByTagName('user_vote');
++$latitude_element = $dom->getElementsByTagName('latitude');
++$longitude_element = $dom->getElementsByTagName('longitude');
++$altitude_element = $dom->getElementsByTagName('altitude');
++
++$auth_token = $auth_token_element->item(0)->nodeValue;
++$user_vote = $user_vote_element->item(0)->nodeValue;
++$latitude = $latitude_element->item(0)->nodeValue;
++$longitude = $longitude_element->item(0)->nodeValue;
++$altitude = $altitude_element->item(0)->nodeValue;
++
++//recieve user's id
++auth_set_token($auth_token);
++$dbconn = pg_connect(GEO2TAG_DB_STRING);
++
++try {
++     $user_db_id = auth_get_db_id($dbconn);
++} catch (Exception $ex) {
++    send_error(1, $ex->getMessage());
++    die();
++}
++
++$user_id = (int) $user_db_id;
++
++$channel_array = array();
++
++// recieve channels' id
++if ($user_vote == '1') {
++    $voting_channel_positive = 'vote+'. $user_id . '+positive';
++try {
++    $positive_channel_id = get_channel_id($dbconn, $voting_channel_positive);
++} catch (Exception $ex) {
++    send_error(1, $ex->getMessage());
++    die();
++}  
++  
++$channel_array[] = $positive_channel_id;
++} 
++else if ($user_vote == '2') {
++    $voting_channel_negative = 'vote+' . $user_id . '+negative';
++try {
++    $negative_channel_id = get_channel_id($dbconn, $voting_channel_negative);
++} catch (Exception $ex) {
++    send_error(1, $ex->getMessage());
++    die();
++}
++    
++$channel_array[] = $negative_channel_id;
++}
++
++$channel_array[] = $user_id;
++
++// delete tag 
++try {
++    $delete_vote_for_point = delete_vote($dbconn, $latitude, $longitude, $altitude, $channel_array);
++} catch (Exception $ex) {
++    send_error(1, $ex->getMessage());
++    die();
++}
++ 
++send_result(0, 'success', $delete_vote_for_point);
++?>
+diff --git a/service/getUserVote.php b/service/getUserVote.php
+new file mode 100644
+index 0000000..16802e9
+--- /dev/null
++++ b/service/getUserVote.php
+@@ -0,0 +1,108 @@
++<?php 
++include_once('include/auth.inc');
++include_once('include/voting.inc');
++include_once('include/methods_url.inc');
++include_once('include/utils.inc');
++include_once('include/public_token.inc');
++include_once('include/config.inc');
++
++//error_reporting(E_ALL);
++//ini_set("display_errors", 1);
++
++header('Content-Type:text/xml');
++if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
++    header('Access-Control-Allow-Origin: *');
++    header('Access-Control-Allow-Methods: POST, GET, PUT, DELETE');
++    header('Access-Control-Allow-Headers: X-Requested-With, Content-Type');
++} else {
++    header('Access-Control-Allow-Origin: *');
++}
++
++$xml_post = file_get_contents('php://input');
++if (!$xml_post) {
++    send_error(1, 'Error: no input file');
++    die();
++}
++
++libxml_use_internal_errors(true);
++$dom = new DOMDocument();
++$dom->loadXML($xml_post);
++
++if (!$dom) {
++    send_error(1, 'Error: resource isn\'t XML document.');
++    die();
++}
++
++if (!$dom->schemaValidate('schemes/getUserVote.xsd')) {
++    send_error(1, 'Error: not valid input XML document.');
++    die();
++}
++
++$auth_token_element = $dom->getElementsByTagName('auth_token');
++$latitude_element = $dom->getElementsByTagName('latitude');
++$longitude_element = $dom->getElementsByTagName('longitude');
++$altitude_element = $dom->getElementsByTagName('altitude');
++
++$auth_token = $auth_token_element->item(0)->nodeValue;
++$latitude = $latitude_element->item(0)->nodeValue;
++$longitude = $longitude_element->item(0)->nodeValue;
++$altitude = $altitude_element->item(0)->nodeValue;
++
++//recieve user's id
++auth_set_token($auth_token);
++$dbconn = pg_connect(GEO2TAG_DB_STRING);
++
++try {
++     $user_db_id = auth_get_db_id($dbconn);
++} catch (Exception $ex) {
++    send_error(1, $ex->getMessage());
++    die();
++}
++
++$user_id = (int) $user_db_id;
++
++$query = "SELECT channel.name FROM channel INNER JOIN tag ON channel.id = tag.channel_id ";
++$query .= "WHERE tag.latitude = ${latitude} AND tag.longitude = ${longitude} ";
++$query .= "AND tag.altitude = ${altitude} AND tag.user_id = ${user_id} AND (channel.name LIKE '%+positive' "; 
++$query .= "OR channel.name LIKE '%+negative')";
++
++
++if (!pg_query($dbconn, $query)) {
++   send_error(1, "Can't select tag (getUserVote)");
++   die();
++} else {
++   $result = pg_query($dbconn, $query);
++}
++
++$row = pg_fetch_row($result);
++
++if (!$row) {
++
++$xml_type = htmlspecialchars('no vote');
++$xml = "<type>${xml_type}</type>";
++
++send_result(0, 'success', $xml);
++}
++
++else {
++
++if(strstr($row[0], 'pos')) { 
++
++$channel_type = 'positive';
++
++} 
++
++if(strstr($row[0], 'neg')) {
++ 
++$channel_type = 'negative';
++
++}
++
++
++$xml_type = htmlspecialchars($channel_type);
++$xml = "<type>${xml_type}</type>";
++
++send_result(0, 'success', $xml);
++
++}
++?>
+diff --git a/service/include/GoogleAuth.php b/service/include/GoogleAuth.php
+index 78d85a2..0dc7664 100644
+--- a/service/include/GoogleAuth.php
++++ b/service/include/GoogleAuth.php
+@@ -6,12 +6,14 @@ require_once 'config.php';
+ require_once 'config.inc';
+ 
+ //http://oss.fruct.org/projects/gets/service/include/GoogleAuth.php
++/*
+ if (defined("AUTH_REDIRECT_URL")) {
+     $redirectUri = AUTH_REDIRECT_URL;
+ } else {
+     $redirectUri = 'http://' . GETS_SERVER_URL .'/include/GoogleAuth.php';
+ }
+-//$redirectUri = 'http://' . $_SERVER['HTTP_HOST'] . '/service/include/GoogleAuth.php';
++*/
++$redirectUri = 'http://gets.cs.petrsu.ru/gets-rating/gets/service/include/GoogleAuth.php';
+ 
+ $client = new Google_Client();
+ $client->setAccessType('offline');
+diff --git a/service/include/config.inc b/service/include/config.inc
+index 1af59eb..b5c812d 100644
+--- a/service/include/config.inc
++++ b/service/include/config.inc
+@@ -1,19 +1,19 @@
+ <?php
+ define('GEO2TAG_SERVER_URL', 'geo2tag.cs.prv');
+-define('GETS_SERVER_URL', 'oss.fruct.org/projects/gets/service');
+-define('GETS_SCRIPTS_URL', 'geo2tag.cs.prv/gets/geo2tag.php');
+-define('UPLOAD_URL', 'http://oss.fruct.org/projects/gets/service/files/postFile.php');
++define('GETS_SERVER_URL', 'gets.cs.petrsu.ru/gets-rating/gets/service');
++define('GETS_SCRIPTS_URL', 'gets.cs.petrsu.ru/gets-rating/gets/scripts/geo2tag.php');
++define('UPLOAD_URL', 'http://gets.cs.petrsu.ru/gets-rating/gets/service/files/postFile.php');
+ 
+-define('GEO2TAG_USER', 'gets2');
+-define('GEO2TAG_PASSWORD', 'getsPWD');
+-define('GEO2TAG_EMAIL', 'manager@cs.karelia.ru');
+-define('GEO2TAG_DB_STRING', 'host=geo2tag.cs.prv dbname=geo2tag user=geo2tag');
++define('GEO2TAG_USER', 'userRating');
++define('GEO2TAG_PASSWORD', 'ratingPWD');
++define('GEO2TAG_EMAIL', 'ness1769@gmail.com');
++define('GEO2TAG_DB_STRING', 'host=geo2tag.cs.prv dbname=geo2tag user=geo2tag password=geo2tag');
+ 
+ define('ALL_USERS_TRUSTED', false);
+ 
+-define('GOOGLE_APP_NAME', 'GeTS-Service');
+-define('GOOGLE_CLIENT_ID', '710658254828-tntn2h772v22ilii1qgsvlfgrijrbg6e.apps.googleusercontent.com');
+-define('GOOGLE_SECRET_ID', 'y8fwnTyiEs-gsrCTLtfFyjXn');
++define('GOOGLE_APP_NAME', 'GeTS-Rating');
++define('GOOGLE_CLIENT_ID', '1016406931035-9g9nb85k45j53anfs5c96jrb42k1t86r.apps.googleusercontent.com');
++define('GOOGLE_SECRET_ID', 'cOSyuhP1XC3z4Z0Go9HQX2Je');
+ 
+ define('DEFAULT_CATEGORY_ID', 21);
+ ?>
+diff --git a/service/include/voting.inc b/service/include/voting.inc
+new file mode 100644
+index 0000000..6a7abb9
+--- /dev/null
++++ b/service/include/voting.inc
+@@ -0,0 +1,255 @@
++<?php
++define('GEO2TAG_USER_INFO_URL', 'http://gets.cs.petrsu.ru/gets-rating/gets/service/userInfo.php');
++include_once('include/methods_url.inc');
++include_once('include/utils.inc');
++include_once('include/config.inc');
++
++define(POSITIVE_VOTE, '1');
++define(NEGATIVE_VOTE, '-1');
++
++//error_reporting(E_ALL);
++//ini_set("display_errors", 1);
++
++ini_set('session.use_cookies', 0);
++ini_set('session.use_trans_sid', 1);
++
++function add_voting_channels($dbconn, $channel_data_array, $user_id)   {          
++  
++  $voting_channel_name_positive = 'vote+' . $user_id . '+positive';
++  $voting_channel_name_negative = 'vote+' . $user_id . '+negative'; 
++  
++   //check if channels already exist (returning channel's id)
++  $existing_positive_channel_id = get_channel_id($dbconn, $voting_channel_name_positive);
++  $existing_negative_channel_id = get_channel_id($dbconn, $voting_channel_name_negative);
++
++// check positive and negative voting channels
++if ($existing_positive_channel_id && $existing_negative_channel_id) {
++    $voting_channel_data = array();
++    $voting_channel_data[] = $existing_positive_channel_id;
++    $voting_channel_data[] = $existing_negative_channel_id;
++    $voting_channel_data[] = $user_id;
++
++    return $voting_channel_data;
++
++} else if (!$existing_positive_channel_id && !$existing_negative_channel_id) {
++
++    //add voting channels   
++   $query = 'INSERT INTO channel (name, description, url, owner_id) VALUES ($1, $2, $3, $4), ($5, $6, $7, $8) RETURNING channel.id';
++   $result = pg_query_params($dbconn, $query, array($voting_channel_name_positive, $channel_data_array['description'], $channel_data_array['url'], $channel_data_array['owner_id'], $voting_channel_name_negative, $channel_data_array['description'], $channel_data_array['url'], $channel_data_array['owner_id']));
++
++   $voting_channel_data = array();
++
++   while($row = pg_fetch_row($result)){
++   	$voting_channel_data[] = $row[0];
++   }
++
++   $voting_channel_data[] = $user_id;
++
++return $voting_channel_data;
++}
++
++}
++
++
++function write_tag_in_voting_channel($dbconn, $latitude, $longitude, $altitude, $added_ch_array, $vote) {
++
++// select tag from DB
++$query = "SELECT * FROM tag "; 
++$query .= 'INNER JOIN channel ON tag.channel_id = channel.id ';
++$query .= 'INNER JOIN subscribe ON channel.id = subscribe.channel_id ';
++$query .= 'INNER JOIN users ON subscribe.user_id=users.id ';
++$query .= "WHERE tag.latitude = ${latitude} AND tag.longitude = ${longitude}
++ AND tag.altitude = ${altitude} AND users.id='91'";
++
++if (!pg_query($dbconn, $query)) {
++    send_error(1, "Can't select tag");
++    die();
++} else {
++   $result = pg_query($dbconn, $query);
++}
++
++$row = pg_fetch_row($result);
++
++    $tag_data_array = array();
++    $tag_data_array['time'] = $row[1];
++    $tag_data_array['altitude'] = $row[2];
++    $tag_data_array['latitude'] = $row[3];
++    $tag_data_array['longitude'] = $row[4];
++    $tag_data_array['label'] = $row[5];
++    $tag_data_array['description'] = $row[6];
++    $tag_data_array['url'] = $row[7];
++    $tag_data_array['user_id'] = $added_ch_array[2];
++
++    $tag_user_id = $added_ch_array[2];
++
++     if ($vote == POSITIVE_VOTE) {
++         $tag_channel_id = $added_ch_array[0];
++         $tag_data_array['channel_id'] = $tag_channel_id;
++     }
++     else if ($vote == NEGATIVE_VOTE) {
++        $tag_channel_id = $added_ch_array[1];
++        $tag_data_array['channel_id'] = $tag_channel_id;
++     }
++
++
++//check if this tag already voted in $added_ch_id channel
++$query_check = "SELECT * FROM tag "; 
++$query_check .= 'INNER JOIN channel ON tag.channel_id = channel.id ';
++$query_check .= 'INNER JOIN subscribe ON channel.id = subscribe.channel_id ';
++$query_check .= 'INNER JOIN users ON subscribe.user_id = users.id ';
++$query_check .= "WHERE tag.latitude = ${latitude} AND tag.longitude = ${longitude}
++ AND tag.altitude = ${altitude} AND tag.channel_id = ${tag_channel_id} AND channel.owner_id = ${tag_user_id}";
++
++
++if (!pg_query($dbconn, $query_check)) {
++    send_error(1, "Can't check tag");
++    die();
++} else {
++   $check_result = pg_query($dbconn, $query_check);
++}
++
++$row = pg_fetch_row($check_result);
++
++// If point already voted 
++if ($row) {
++    $voted='already voted';
++    return $voted;
++}
++
++// write tag in voting channel (if has't already added)
++
++$db_insert_tag=safe_pg_insert($dbconn, 'tag', $tag_data_array);
++
++if (!$db_insert_tag) {
++    send_error(1, "Can't write new tag");
++    die();
++}
++
++$voted='voted first';
++
++return $voted;
++
++}
++
++
++function change_vote($dbconn, $latitude, $longitude, $altitude, $added_ch_array, $vote) {
++
++// select tag from DB
++$query = "SELECT * FROM tag "; 
++$query .= 'INNER JOIN channel ON tag.channel_id = channel.id ';
++$query .= 'INNER JOIN subscribe ON channel.id = subscribe.channel_id ';
++$query .= 'INNER JOIN users ON subscribe.user_id=users.id ';
++$query .= "WHERE tag.latitude = ${latitude} AND tag.longitude = ${longitude}
++ AND tag.altitude = ${altitude} AND users.id='91'";
++
++if (!pg_query($dbconn, $query)) {
++    send_error(1, "Can't select tag");
++    die();
++} else {
++   $result = pg_query($dbconn, $query);
++}
++
++$row = pg_fetch_row($result);
++
++    $tag_data_array = array();
++    $tag_data_array['time'] = $row[1];
++    $tag_data_array['altitude'] = $row[2];
++    $tag_data_array['latitude'] = $row[3];
++    $tag_data_array['longitude'] = $row[4];
++    $tag_data_array['label'] = $row[5];
++    $tag_data_array['description'] = $row[6];
++    $tag_data_array['url'] = $row[7];
++    $tag_data_array['user_id'] = $added_ch_array[2];
++
++    $tag_user_id = $added_ch_array[2];
++
++//return $tag_user_id;
++//change vote (delete point from this channel and write in another one)
++
++ if ($vote == POSITIVE_VOTE) {
++         $old_voting_channel_id = $added_ch_array[1];
++         $new_voting_channel_id = $added_ch_array[0];
++         $tag_data_array['channel_id'] = $new_voting_channel_id;
++
++     }
++     else if ($vote == NEGATIVE_VOTE) {
++        $old_voting_channel_id = $added_ch_array[0];
++        $new_voting_channel_id = $added_ch_array[1];
++        $tag_data_array['channel_id'] = $new_voting_channel_id;
++     }
++
++// delete tag from $old_tag_channel_id
++$query_delete = "DELETE FROM tag WHERE tag.channel_id = ${old_voting_channel_id} AND tag.latitude = ${tag_data_array['latitude']} AND tag.longitude = ${tag_data_array['longitude']}
++AND tag.altitude = ${tag_data_array['altitude']} AND tag.user_id = ${tag_user_id}";
++
++if (!pg_query($dbconn, $query_delete)) {
++     send_error(1, "Can't delete tag");
++     die();
++} 
++else {
++    $delete_result = pg_query($dbconn, $query_delete);
++}
++
++
++// write tag in another voting channel
++$db_insert_tag=safe_pg_insert($dbconn, 'tag', $tag_data_array);
++
++if (!$db_insert_tag) {
++     send_error(1, "Can't write new tag");
++     die();
++}
++  $voted='vote changed';
++
++  return $voted;
++
++}
++
++
++function delete_vote($dbconn, $latitude, $longitude, $altitude, $channel_arr){
++
++$tag_channel_id = $channel_arr[0];
++$tag_user_id = $channel_arr[1];
++
++// delete tag from voting channel
++$query = "DELETE FROM tag WHERE tag.channel_id = ${tag_channel_id} "; 
++$query .= "AND tag.user_id = ${tag_user_id} AND tag.latitude = ${latitude} ";
++$query .= "AND tag.longitude = ${longitude} AND tag.altitude = ${altitude}";
++
++if (!pg_query($dbconn, $query)) {
++    send_error(1, "Can't delete tag");
++    die();
++} else {
++   $delete_result = 'deleted';
++   return $delete_result;
++}
++
++}
++
++
++
++function subscribe_voting_channel($dbconn, $channel_id) {
++
++ $query = 'INSERT INTO subscribe (channel_id, user_id)
++    SELECT channel.id as ins_channel_id, users.id as ins_user_id
++    FROM channel CROSS JOIN users
++    WHERE channel.id=$1
++          AND users.login=$2
++          AND NOT EXISTS (
++            SELECT subscribe.channel_id from subscribe
++            INNER JOIN users ON users.id = subscribe.user_id
++            INNER JOIN channel ON channel.id = subscribe.channel_id
++            WHERE users.login=$2
++                AND channel.id=$1
++          )
++          RETURNING 1;';
++
++    $result = pg_query_params($dbconn, $query, array($channel_id, GEO2TAG_USER));
++    
++    if (!$result) {
++        send_error(1, "Can't subscribe admin on voting_channel");
++	 die();
++    }
++ return 'subscribed';
++}
++
++?>
+diff --git a/service/loadPoints.php b/service/loadPoints.php
+index 56af28b..4618346 100644
+--- a/service/loadPoints.php
++++ b/service/loadPoints.php
+@@ -2,14 +2,12 @@
+ include_once('include/methods_url.inc');
+ include_once('include/utils.inc');
+ include_once('datatypes/point.inc');
+-
+ include_once('include/header.inc');
+ 
+ try {
+     $dom = get_input_dom('schemes/loadPoints.xsd');
+     $gets_token = get_request_argument($dom, "auth_token", null);
+-    
+-    
++ 
+     $auth_token = get_request_argument($dom, 'auth_token');
+     $category_id = get_request_argument($dom, 'category_id');
+     $space_arg = get_request_argument($dom, 'space');
+@@ -54,7 +52,7 @@ try {
+         }
+ 
+         $email_where_arr[] = "users.email='${private_email_escaped}'";
+-        $access_row = "users.email='${private_email_escaped}' AS permission";
++        $access_row = "users.email='${private_email_escaped}'"; 
+     } else {
+         $private_email = null;
+         $access_row = 'false AS permission';
+@@ -65,17 +63,35 @@ try {
+         $email_where_arr[] = "users.email='${email_escaped}'";
+     }
+ 
+-    $query = "SELECT DISTINCT ON(tag.id) tag.time, tag.label, tag.latitude, tag.longitude, 
+-                                      tag.altitude, tag.description, tag.url, tag.id, ${access_row}, category.id FROM tag ";
++
++    // rating and load points query
++    $query  = "WITH rating_channels_positive AS (SELECT subscribe.channel_id FROM subscribe INNER JOIN channel ON channel.id=subscribe.channel_id 
++                WHERE subscribe.user_id = 91 AND channel.name LIKE 'vote+%+positive'), "; 
++
++    $query .= "rating_channels_negative AS (SELECT subscribe.channel_id FROM subscribe INNER JOIN channel ON channel.id=subscribe.channel_id 
++                WHERE subscribe.user_id = 91 AND channel.name LIKE 'vote+%+negative'), ";
++
++    $query .= "rating_tags_positive AS (SELECT tag.id, tag.latitude, tag.longitude, tag.altitude, tag.label FROM tag 
++                INNER JOIN rating_channels_positive ON tag.channel_id = rating_channels_positive.channel_id), ";
++
++    $query .= "rating_tags_negative AS (SELECT tag.id, tag.latitude, tag.longitude, tag.altitude, tag.label FROM tag 
++                INNER JOIN rating_channels_negative ON tag.channel_id = rating_channels_negative.channel_id), ";
++    
++    if ($access_row == 'false AS permission') {
++        $query .= "response_tags AS (SELECT DISTINCT ON(tag.id) tag.time, tag.label, tag.latitude, tag.longitude, tag.altitude, 
++                    tag.description, tag.url, tag.id as tid, category.id as cat FROM tag ";
++    } else {
++        $query .= "response_tags AS (SELECT DISTINCT ON(tag.id) tag.time, tag.label, tag.latitude, tag.longitude, tag.altitude, 
++                    tag.description, tag.url, tag.id as tid, ${access_row} as acc, category.id as cat FROM tag ";
++    }
++
+     $query .= 'INNER JOIN channel ON tag.channel_id = channel.id ';
+     $query .= 'INNER JOIN subscribe ON channel.id = subscribe.channel_id ';
+     $query .= 'INNER JOIN users ON subscribe.user_id=users.id ';
+-
+     $query .= 'INNER JOIN category ON safe_cast_to_json(channel.description)->>\'category_id\'=category.id::text ';
+     $query .= 'INNER JOIN users AS project_users ON category.owner_id = project_users.id ';
+-
++    
+     $email_where = '(' . implode(' OR ', $email_where_arr) . ')';
+-
+     $where_arr[] = $email_where;
+     if ($category_id) {
+         $where_arr[] = "category.id=${category_id}";
+@@ -85,10 +101,58 @@ try {
+ 
+     // Distance 'where'
+     if ($is_radius_filter) {
+-        $where_arr[] = "gets_geo_distance(tag.latitude, tag.longitude, ${latitude}, ${longitude}) < ${radius}";
++        $where_arr[] = " gets_geo_distance(tag.latitude, tag.longitude, ${latitude}, ${longitude}) < ${radius}";
++    }
++
++    $query .= 'WHERE ' . implode(' AND ', $where_arr);
++    $query .= " AND channel.name NOT LIKE '%+positive' AND channel.name NOT LIKE '%+negative'), ";
++
++    if ($access_row == 'false AS permission') {
++        $query .= 'response_tags_positive AS (SELECT response_tags.time, response_tags.label, response_tags.latitude, 
++                   response_tags.longitude, response_tags.altitude, response_tags.description, response_tags.url, response_tags.tid, 
++                   response_tags.cat, COUNT(rating_tags_positive.latitude) as positive_count FROM rating_tags_positive ';
++
++        $query .= 'RIGHT JOIN response_tags USING (latitude, longitude, altitude) GROUP BY response_tags.latitude, response_tags.longitude,
++                   response_tags.altitude, response_tags.label, response_tags.time, response_tags.description, response_tags.url, 
++                   response_tags.cat, response_tags.tid), ';
++    } else {
++        $query .= 'response_tags_positive AS (SELECT response_tags.time, response_tags.label, response_tags.latitude, response_tags.longitude, 
++                   response_tags.altitude, response_tags.description, response_tags.url, response_tags.tid, response_tags.acc, response_tags.cat, 
++                   COUNT(rating_tags_positive.latitude) as positive_count FROM rating_tags_positive ';
++        $query .= 'RIGHT JOIN response_tags USING (latitude, longitude, altitude) GROUP BY response_tags.latitude, response_tags.longitude,
++                   response_tags.altitude, response_tags.label, response_tags.time, response_tags.description, response_tags.url, 
++                   response_tags.cat, response_tags.acc, response_tags.tid), ';       
++    }
++
++    if ($access_row == 'false AS permission') {
++        $query .= 'response_tags_negative AS (SELECT response_tags.time, response_tags.label, response_tags.latitude, response_tags.longitude, 
++                   response_tags.altitude, response_tags.description, response_tags.url, response_tags.tid, response_tags.cat, 
++                   COUNT(rating_tags_negative.latitude) as negative_count FROM rating_tags_negative ';
++
++        $query .= 'RIGHT JOIN response_tags USING (latitude, longitude, altitude) GROUP BY response_tags.latitude, response_tags.longitude,
++                   response_tags.altitude, response_tags.label, response_tags.time, response_tags.description, response_tags.url, 
++                   response_tags.cat, response_tags.tid) ';
++    } else {
++        $query .= 'response_tags_negative AS (SELECT response_tags.time, response_tags.label, response_tags.latitude, response_tags.longitude, 
++                   response_tags.altitude, response_tags.description, response_tags.url, response_tags.tid, response_tags.acc, response_tags.cat, 
++                   COUNT(rating_tags_negative.latitude) as negative_count FROM rating_tags_negative ';
++        $query .= 'RIGHT JOIN response_tags USING (latitude, longitude, altitude) GROUP BY response_tags.latitude, response_tags.longitude,
++                    response_tags.altitude, response_tags.label, response_tags.time, response_tags.description, response_tags.url, 
++                    response_tags.cat, response_tags.acc, response_tags.tid) ';
++    }
++
++    if ($access_row == 'false AS permission') {
++        $query .= 'SELECT response_tags_positive.time, response_tags_positive.label, response_tags_positive.latitude, response_tags_positive.longitude, 
++                    response_tags_positive.altitude, response_tags_positive.description, response_tags_positive.url, response_tags_positive.tid,
++                    response_tags_positive.positive_count, response_tags_negative.negative_count, response_tags_positive.cat
++                    FROM response_tags_positive INNER JOIN response_tags_negative USING (latitude, longitude)';  
++    } else {
++        $query .= 'SELECT response_tags_positive.time, response_tags_positive.label, response_tags_positive.latitude, response_tags_positive.longitude, 
++                    response_tags_positive.altitude, response_tags_positive.description, response_tags_positive.url, response_tags_positive.tid,
++                    response_tags_positive.positive_count, response_tags_negative.negative_count, response_tags_positive.cat, response_tags_positive.acc
++                    FROM response_tags_positive INNER JOIN response_tags_negative USING (latitude, longitude)';  
+     }
+ 
+-    $query .= 'WHERE ' . implode(' AND ', $where_arr) . ' ORDER BY tag.id ASC, permission DESC;';
+     $result = pg_query($dbconn, $query);
+ 
+     $xml = '<kml xmlns="http://www.opengis.net/kml/2.2">';
+@@ -107,9 +171,10 @@ try {
+ 
+     send_result(0, 'success', $xml);
+ 
+-    include_once('include/php-ga.inc');
++    //include_once('include/php-ga.inc');
+ } catch (GetsAuthException $e) {
+     send_error(1, "Can't revoke token");
+ } catch (Exception $e) {
+     send_error($e->getCode(), $e->getMessage());
+ }
++?>
+\ No newline at end of file
+diff --git a/service/voteForTag.php b/service/voteForTag.php
+new file mode 100644
+index 0000000..91850b6
+--- /dev/null
++++ b/service/voteForTag.php
+@@ -0,0 +1,107 @@
++<?php 
++include_once('include/auth.inc');
++include_once('include/voting.inc');
++include_once('include/methods_url.inc');
++include_once('include/utils.inc');
++include_once('include/public_token.inc');
++include_once('include/config.inc');
++
++//error_reporting(E_ALL);
++//ini_set("display_errors", 1);
++
++header('Content-Type:text/xml');
++if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
++    header('Access-Control-Allow-Origin: *');
++    header('Access-Control-Allow-Methods: POST, GET, PUT, DELETE');
++    header('Access-Control-Allow-Headers: X-Requested-With, Content-Type');
++} else {
++    header('Access-Control-Allow-Origin: *');
++}
++
++$xml_post = file_get_contents('php://input');
++if (!$xml_post) {
++    send_error(1, 'Error: no input file');
++    die();
++}
++
++libxml_use_internal_errors(true);
++$dom = new DOMDocument();
++$dom->loadXML($xml_post);
++
++if (!$dom) {
++    send_error(1, 'Error: resource isn\'t XML document.');
++    die();
++}
++
++if (!$dom->schemaValidate('schemes/voteForTag.xsd')) {
++    send_error(1, 'Error: not valid input XML document.');
++    die();
++}
++
++$auth_token_element = $dom->getElementsByTagName('auth_token');
++$vote_id_element = $dom->getElementsByTagName('vote');
++$latitude_element = $dom->getElementsByTagName('latitude');
++$longitude_element = $dom->getElementsByTagName('longitude');
++$altitude_element = $dom->getElementsByTagName('altitude');
++
++$auth_token = $auth_token_element->item(0)->nodeValue;
++$vote = $vote_id_element->item(0)->nodeValue;
++$latitude = $latitude_element->item(0)->nodeValue;
++$longitude = $longitude_element->item(0)->nodeValue;
++$altitude = $altitude_element->item(0)->nodeValue;
++
++
++//recieve user's id
++auth_set_token($auth_token);
++$dbconn = pg_connect(GEO2TAG_DB_STRING);
++
++try {
++     $user_db_id = auth_get_db_id($dbconn);
++} catch (Exception $ex) {
++    send_error(1, $ex->getMessage());
++    die();
++}
++
++$ch_user_id = (int) $user_db_id;
++
++// add voting channels
++$description_array = array();
++$description_array['description'] = 'channel for voting';
++$description_array['category_id'] = 40;
++$description_array['lang'] = 'en_US';
++$description_data = json_encode($description_array);
++
++$ch_data_array = array();
++$ch_data_array['name'] = 0;
++$ch_data_array['description'] = $description_data;
++$ch_data_array['url'] = 'no url';
++$ch_data_array['owner_id'] = $ch_user_id;
++
++$added_channel_array = add_voting_channels($dbconn, $ch_data_array, $ch_user_id);
++
++if (!$added_channel_array) {
++    send_error(1, "No channel's id");
++    die();   
++}
++
++// subscribe admin on voting channels
++$admin_token=receive_public_token();
++auth_set_token($admin_token);
++
++$admin_subscribed_positive_channel = subscribe_voting_channel($dbconn, $added_channel_array[0]);
++$admin_subscribed_negative_channel = subscribe_voting_channel($dbconn, $added_channel_array[1]);
++
++// write tag in voting channel
++$voted_tag = write_tag_in_voting_channel($dbconn, $latitude, $longitude, $altitude, $added_channel_array, $vote);
++if (!$voted_tag) {
++    send_error(1, "Can't write voting tag in DB");
++    die();
++}
++
++$xml = '<vote>';
++$xml_vote = htmlspecialchars($voted_tag);
++$xml .= "${xml_vote}";
++$xml .= '</vote>';
++ 
++send_result(0, 'success', $xml);
++?>
+diff --git a/web-client/dist/actions/changeVote.php b/web-client/dist/actions/changeVote.php
+new file mode 100644
+index 0000000..2ce4533
+--- /dev/null
++++ b/web-client/dist/actions/changeVote.php
+@@ -0,0 +1,25 @@
++<?php
++require_once('utils/process_request.inc');
++require_once('utils/constants.inc');
++require_once('utils/methods_url.inc');
++require_once('utils/array2xml.inc');
++
++header ('Content-Type:text/xml');
++
++session_start();
++if (!isset($_SESSION['g2t_token'])) {
++    die('<response><status><code>1</code><message>User doesn\'t authorize</message></status></response>');
++}
++
++if (filter_input(INPUT_SERVER, 'REQUEST_METHOD') == 'POST') {
++    $post_data_json = file_get_contents('php://input');
++    $post_data_array = json_decode($post_data_json, true);
++    $auth_token_array = array();
++    $auth_token_array['auth_token'] = $_SESSION['g2t_token'];
++    $combined_array = array_merge($auth_token_array, $post_data_array);        
++    $data = array2xml($combined_array, 'params', false);
++    echo process_request(CHANGE_VOTE_FOR_POINT_METHOD_URL, '<request>' . $data . '</request>', 'Content-Type: text/xml');   
++} else {
++    die('<response><status><code>1</code><message>Not POST request</message></status></response>');
++}
++?>
+\ No newline at end of file
+diff --git a/web-client/dist/actions/deleteVote.php b/web-client/dist/actions/deleteVote.php
+new file mode 100644
+index 0000000..be148ce
+--- /dev/null
++++ b/web-client/dist/actions/deleteVote.php
+@@ -0,0 +1,25 @@
++<?php
++require_once('utils/process_request.inc');
++require_once('utils/constants.inc');
++require_once('utils/methods_url.inc');
++require_once('utils/array2xml.inc');
++
++header ('Content-Type:text/xml');
++
++session_start();
++if (!isset($_SESSION['g2t_token'])) {
++    die('<response><status><code>1</code><message>User doesn\'t authorize</message></status></response>');
++}
++
++if (filter_input(INPUT_SERVER, 'REQUEST_METHOD') == 'POST') {
++    $post_data_json = file_get_contents('php://input');
++    $post_data_array = json_decode($post_data_json, true);
++    $auth_token_array = array();
++    $auth_token_array['auth_token'] = $_SESSION['g2t_token'];
++    $combined_array = array_merge($auth_token_array, $post_data_array);        
++    $data = array2xml($combined_array, 'params', false);
++    echo process_request(DELETE_VOTE_FOR_POINT_METHOD_URL, '<request>' . $data . '</request>', 'Content-Type: text/xml');   
++} else {
++    die('<response><status><code>1</code><message>Not POST request</message></status></response>');
++}
++?>
+\ No newline at end of file
+diff --git a/web-client/dist/actions/generateActionNames.php b/web-client/dist/actions/generateActionNames.php
+index 855d91d..2212802 100644
+--- a/web-client/dist/actions/generateActionNames.php
++++ b/web-client/dist/actions/generateActionNames.php
+@@ -18,7 +18,10 @@ $js_file .= 'var UPDATE_POINT_ACTION = "' . $base_url . 'updatePoint.php";';
+ $js_file .= 'var UPLOAD_FILE_ACTION = "' . $base_url . 'uploadFile.php";';
+ $js_file .= 'var PUBLISH_ACTION = "' . $base_url . 'publish.php";';
+ $js_file .= 'var UNPUBLISH_ACTION = "' . $base_url . 'unpublish.php";';
+-
++$js_file .= 'var VOTE_FOR_POINT_ACTION = "' . $base_url . 'voteForPoint.php";';
++$js_file .= 'var GET_USER_VOTE_ACTION = "' . $base_url . 'getVote.php";'; 
++$js_file .= 'var CHANGE_VOTE_ACTION = "' . $base_url . 'changeVote.php";';
++$js_file .= 'var DELETE_VOTE_ACTION = "' . $base_url . 'deleteVote.php";';   
+ $js_file .= 'var RETRANSLATOR_ACTION = "' . $base_url . 'retranslator.php";';
+ 
+ echo $js_file;
+diff --git a/web-client/dist/actions/getVote.php b/web-client/dist/actions/getVote.php
+new file mode 100644
+index 0000000..550c20f
+--- /dev/null
++++ b/web-client/dist/actions/getVote.php
+@@ -0,0 +1,25 @@
++<?php
++require_once('utils/process_request.inc');
++require_once('utils/constants.inc');
++require_once('utils/methods_url.inc');
++require_once('utils/array2xml.inc');
++
++header ('Content-Type:text/xml');
++
++session_start();
++if (!isset($_SESSION['g2t_token'])) {
++    die('<response><status><code>1</code><message>User doesn\'t authorize</message></status></response>');
++}
++
++if (filter_input(INPUT_SERVER, 'REQUEST_METHOD') == 'POST') {
++    $post_data_json = file_get_contents('php://input');
++    $post_data_array = json_decode($post_data_json, true);
++    $auth_token_array = array();
++    $auth_token_array['auth_token'] = $_SESSION['g2t_token'];
++    $combined_array = array_merge($auth_token_array, $post_data_array);        
++    $data = array2xml($combined_array, 'params', false);
++    echo process_request(GET_VOTE_FOR_POINT_METHOD_URL, '<request>' . $data . '</request>', 'Content-Type: text/xml');   
++} else {
++    die('<response><status><code>1</code><message>Not POST request</message></status></response>');
++}
++?>
+\ No newline at end of file
+diff --git a/web-client/dist/actions/utils/config.inc b/web-client/dist/actions/utils/config.inc
+index 444f594..5a8683f 100644
+--- a/web-client/dist/actions/utils/config.inc
++++ b/web-client/dist/actions/utils/config.inc
+@@ -1,5 +1,6 @@
+ <?php
+-define('GETS_SERVER_URL', 'gets.cs.karelia.ru/gets/service/');
++//define('GETS_SERVER_URL', 'gets.cs.karelia.ru/gets/service/');
++define('GETS_SERVER_URL', 'gets.cs.karelia.ru/gets-rating/gets/service/');
+ //define('GETS_SERVER_URL', 'gets.cs.petrsu.ru/obstacle/service/');
+ //define('GETS_SERVER_URL', 'localhost/gets/service/');
+ ?>
+\ No newline at end of file
+diff --git a/web-client/dist/actions/utils/methods_url.inc b/web-client/dist/actions/utils/methods_url.inc
+index a1e975f..98f0de8 100644
+--- a/web-client/dist/actions/utils/methods_url.inc
++++ b/web-client/dist/actions/utils/methods_url.inc
+@@ -22,4 +22,8 @@ define('USER_LOGIN', 'http://' . GETS_SERVER_URL . 'userLogin.php');
+ define('UPDATE_POINT', 'http://' . GETS_SERVER_URL . 'updatePoint.php');
+ define('PUBLISH', 'http://' . GETS_SERVER_URL . 'publish.php');
+ define('UNPUBLISH', 'http://' . GETS_SERVER_URL . 'unpublish.php');
++define('VOTE_FOR_POINT_METHOD_URL', 'http://' . GETS_SERVER_URL . 'voteForTag.php');
++define('GET_VOTE_FOR_POINT_METHOD_URL', 'http://' . GETS_SERVER_URL . 'getUserVote.php');
++define('CHANGE_VOTE_FOR_POINT_METHOD_URL', 'http://' . GETS_SERVER_URL . 'changeVoteForTag.php');
++define('DELETE_VOTE_FOR_POINT_METHOD_URL', 'http://' . GETS_SERVER_URL . 'deleteVoteForTag.php');
+ ?>
+\ No newline at end of file
+diff --git a/web-client/dist/actions/voteForPoint.php b/web-client/dist/actions/voteForPoint.php
+new file mode 100644
+index 0000000..6125f8d
+--- /dev/null
++++ b/web-client/dist/actions/voteForPoint.php
+@@ -0,0 +1,25 @@
++<?php
++require_once('utils/process_request.inc');
++require_once('utils/constants.inc');
++require_once('utils/methods_url.inc');
++require_once('utils/array2xml.inc');
++
++header ('Content-Type:text/xml');
++
++session_start();
++if (!isset($_SESSION['g2t_token'])) {
++    die('<response><status><code>1</code><message>User doesn\'t authorize</message></status></response>');
++}
++
++if (filter_input(INPUT_SERVER, 'REQUEST_METHOD') == 'POST') {
++    $post_data_json = file_get_contents('php://input');
++    $post_data_array = json_decode($post_data_json, true);
++    $auth_token_array = array();
++    $auth_token_array['auth_token'] = $_SESSION['g2t_token'];
++    $combined_array = array_merge($auth_token_array, $post_data_array);        
++    $data = array2xml($combined_array, 'params', false);
++    echo process_request(VOTE_FOR_POINT_METHOD_URL, '<request>' . $data . '</request>', 'Content-Type: text/xml');   
++} else {
++    die('<response><status><code>1</code><message>Not POST request</message></status></response>');
++}
++?>
+\ No newline at end of file
+diff --git a/web-client/dist/scripts/gets/controllers/PointsPage.Ctrl.js b/web-client/dist/scripts/gets/controllers/PointsPage.Ctrl.js
+index 7e67205..cbb003c 100644
+--- a/web-client/dist/scripts/gets/controllers/PointsPage.Ctrl.js
++++ b/web-client/dist/scripts/gets/controllers/PointsPage.Ctrl.js
+@@ -465,7 +465,175 @@ PointsPage.prototype.initPage = function() {
+             }
+         }
+     });
++
++
++    // Vote for point (positive) handler   
++    $(this.document).on('click', '#point-info-vote-like', function(e) {
++        e.preventDefault();
++        
++        var userVotePositive = self._points.getUserVotePositive();
++        var userVoteNegative = self._points.getUserVoteNegative();
++      
++        // Positive vote and no negative vote
++        if(userVotePositive && !userVoteNegative) {
++             //MessageBox.showMessage('You have already voted for this point, but you can change your mind (click "Dislike")', MessageBox.SUCCESS_MESSAGE);
++             try {
++                // Delete user's vote on positive vote and change button's icon
++                self._points.deleteVoteForPoint('1'); 
++                self._pointInfo.changeVoteButtonClass('#point-info-vote-like', 'glyphicon-star', 'glyphicon-star-empty');
++                
++               // MessageBox.showMessage('Your vote was deleted', MessageBox.SUCCESS_MESSAGE); 
++                
++                // Get and show points' info with new rating from server
++                var formData = $(self.document).find('#point-main-form').serializeArray();
++                self._points.downLoadPoints(formData, function () {
++                        var pointList = self._points.getPointList();
++                      
++                // Show new points' info        
++                self.showPointInfo();
++            });           
++            } catch (Exception) {
++                MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
++            }
++        }
++        
++        // No positive vote and negative vote
++        if(!userVotePositive && userVoteNegative) {            
++            try {
++                // Change user's vote on positive vote and change buttons' icons
++                self._points.changeVoteForPoint('1'); 
++                self._pointInfo.changeVoteButtonClass('#point-info-vote-like', 'glyphicon-star-empty', 'glyphicon-star');
++                self._pointInfo.changeVoteButtonClass('#point-info-vote-dislike', 'glyphicon-star', 'glyphicon-star-empty');
++                
++              //  MessageBox.showMessage('Your vote was changed on "Like"', MessageBox.SUCCESS_MESSAGE); 
++                
++                // Get and show points' info with new rating from server
++                var formData = $(self.document).find('#point-main-form').serializeArray();
++                self._points.downLoadPoints(formData, function () {
++                        var pointList = self._points.getPointList();
++                      
++                // Show new points' info        
++                self.showPointInfo();
++            });           
++            } catch (Exception) {
++                MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
++            }
++        }
++         // No positive vote and no negative vote
++        if(!userVotePositive && !userVoteNegative) {
++            try {
++                // Accept user's positive vote and change buttons' icons
++                self._points.voteForPoint('1');
++                self._pointInfo.changeVoteButtonClass('#point-info-vote-like', 'glyphicon-star-empty', 'glyphicon-star');
++                userVotePositive = self._points.getUserVotePositive();
++
++                    if(userVotePositive === 'voted first') {
++                      //  MessageBox.showMessage('Voted success ("Like")', MessageBox.SUCCESS_MESSAGE);
++                    }    
++
++                // Get and show points' info with new rating from server 
++                var formData = $(self.document).find('#point-main-form').serializeArray();
++                self._points.downLoadPoints(formData, function () {
++                        var pointList = self._points.getPointList();
++                      
++                    // Show new points' info 
++                    self.showPointInfo();
++                });
++        
++            } catch (Exception) {
++                
++                MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
++            }
++            
++        }
++        
++    });
+     
++
++     // Vote for point (negative) handler
++    $(this.document).on('click', '#point-info-vote-dislike', function(e) {
++        e.preventDefault();
++
++    var userVotePositive = self._points.getUserVotePositive();
++    var userVoteNegative = self._points.getUserVoteNegative();
++            
++        // No positive vote and negative vote
++        if(userVoteNegative && !userVotePositive) {
++             //MessageBox.showMessage('You have already voted for this point, but you can change your mind (click "Like")', MessageBox.SUCCESS_MESSAGE);
++              try {
++                // Delete user's vote on positive vote and change button's icon
++                self._points.deleteVoteForPoint('2'); 
++                self._pointInfo.changeVoteButtonClass('#point-info-vote-dislike', 'glyphicon-star', 'glyphicon-star-empty');
++                
++              //  MessageBox.showMessage('Your vote was deleted', MessageBox.SUCCESS_MESSAGE); 
++                
++                // Get and show points' info with new rating from server
++                var formData = $(self.document).find('#point-main-form').serializeArray();
++                self._points.downLoadPoints(formData, function () {
++                        var pointList = self._points.getPointList();
++                      
++                // Show new points' info        
++                self.showPointInfo();
++            });           
++            } catch (Exception) {
++                MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
++            }
++
++        }
++
++        // Positive vote and no negative vote
++        if(userVotePositive && !userVoteNegative) {
++            try {
++                // Change user's vote on negative vote and change buttons' icons
++                self._points.changeVoteForPoint('-1');
++                self._pointInfo.changeVoteButtonClass('#point-info-vote-dislike', 'glyphicon-star-empty', 'glyphicon-star');
++                self._pointInfo.changeVoteButtonClass('#point-info-vote-like', 'glyphicon-star', 'glyphicon-star-empty');
++                
++              //  MessageBox.showMessage('Your vote changed on "Dislike"', MessageBox.SUCCESS_MESSAGE);
++               
++                // Get and show points' info with new rating from server
++                var formData = $(self.document).find('#point-main-form').serializeArray();
++                self._points.downLoadPoints(formData, function () {
++                        var pointList = self._points.getPointList();
++                     
++                        // Show new points' info 
++                    self.showPointInfo();
++                });
++        
++            } catch (Exception) {
++                MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
++            }
++        }
++        
++             // No positive vote and no negative vote
++        if(!userVotePositive && !userVoteNegative) {
++            try {
++                // Accept user's negative vote and change buttons' icons
++                self._points.voteForPoint('-1');
++                self._pointInfo.changeVoteButtonClass('#point-info-vote-dislike', 'glyphicon-star', 'glyphicon-star-empty');
++                
++                userVoteNegative = self._points.getUserVoteNegative();
++
++                    if(userVoteNegative === 'voted first') {
++                             //MessageBox.showMessage('Voted success ("Dislike")', MessageBox.SUCCESS_MESSAGE);
++                    }
++
++                // Get and show points' info with new rating from server     
++                var formData = $(self.document).find('#point-main-form').serializeArray();
++                self._points.downLoadPoints(formData, function () {
++                        var pointList = self._points.getPointList();
++                   
++                    // Show new points' info 
++                    self.showPointInfo();
++                });
++        
++            } catch (Exception) {
++                MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
++            }
++        }
++    });
++    
++
+     this.downloadPointsHandler();
+     // get user's coordinates
+     if (this.window.navigator.geolocation) {
+@@ -517,6 +685,7 @@ PointsPage.prototype.showPointsMain = function() {
+ };
+ 
+ PointsPage.prototype.showPointInfo = function() {
++	
+     try {
+         this._headerView.changeOption($(this._pointInfo.getView()).data('pagetitle'), 'glyphicon-chevron-left', '#form=main');
+         
+@@ -525,9 +694,37 @@ PointsPage.prototype.showPointInfo = function() {
+             throw new GetsWebClientException('Track Page Error', 'showPointInfo, hash parameter point uuid undefined');
+         }
+         this._points.findPointInPointList(pointUUID);
+-        
++      
+         Logger.debug(this._points.getPoint());
+-        this._pointInfo.placePointInPointInfo(this._points.getPoint(), this._user.isLoggedIn());
++        
++        var userVote = null;
++
++        if (this._user.isLoggedIn()) {
++            this._points.getUserVote();
++            userVote = this._points.getVote();    
++        }
++
++        // Clear positive and negative votes 
++        this._points.setUserVoteNegative(null);
++        this._points.setUserVotePositive(null);
++
++        // Set user's vote for point (positive vote)    
++        if (this._points.userVote === 1) {
++            this._points.setUserVoteNegative(null);
++            this._points.setUserVotePositive('already voted');
++        }
++        // Set user's vote for point (negative vote)  
++        if (this._points.userVote === 2) {
++            this._points.setUserVoteNegative('already voted');
++            this._points.setUserVotePositive(null);
++        }
++        // Set user's vote for point (no vote (user hasn't voted yet))  
++        if (this._points.userVote === 3) {
++            this._points.setUserVoteNegative(null);
++            this._points.setUserVotePositive(null);
++          }
++
++        this._pointInfo.placePointInPointInfo(this._points.getPoint(), this._user.isLoggedIn(), userVote);
+         
+         this.currentView.hideView();
+         this.currentView = this._pointInfo;
+@@ -609,12 +806,14 @@ PointsPage.prototype.downloadPointsHandler = function() {
+ 
+         this._points.downLoadPoints(formData, function () {
+             var pointList = that._points.getPointList();
++
+             that._mapCtrl.removePointsFromMap();
+             that._pointsMain.placePointsInPointList(pointList);
+             that._mapCtrl.placePointsOnMap(pointList, {
+                 url: '#form=' + PointsPage.POINT_INFO + '&point_uuid=',
+                 text: $(that._pointInfo.getView()).data('putpoint')
+             });
++            
+             that._pointsMain.hideOverlay();
+         });
+     } catch (Exception) {
+diff --git a/web-client/dist/scripts/gets/models/Points.Class.js b/web-client/dist/scripts/gets/models/Points.Class.js
+index 29568ed..889dadd 100644
+--- a/web-client/dist/scripts/gets/models/Points.Class.js
++++ b/web-client/dist/scripts/gets/models/Points.Class.js
+@@ -12,6 +12,9 @@
+  */
+ function PointsClass() {
+     this.pointList = null;
++    this.userVote = null;
++    this.userVotePositive = null;
++    this.userVoteNegative = null;
+     this.point = null;
+     this.needPointListUpdate = false;
+     this.needPointUpdate = false;
+@@ -345,6 +348,233 @@ PointsClass.prototype.removePoint = function (callback) {
+     }
+ };
+ 
++/**
++ * Vote for point 
++ * 
++ * @param {String} vote user's vote (positive or negative).   
++ */
++
++PointsClass.prototype.voteForPoint = function (vote, callback) {
++    var point = this.getPoint();
++    if (point.latitude === 0) {
++        throw new GetsWebClientException('Points Error', 'voteForPoint, getPoint - no point');
++    }
++
++    var request = {};
++    var coords = point.coordinates.split(',');
++    request.latitude = coords[1];
++    request.longitude = coords[0];
++    request.altitude = coords[2];
++    request.vote = vote;
++  
++    var voteForPointRequest = $.ajax({
++        url: VOTE_FOR_POINT_ACTION,
++        type: 'POST',
++        async: false,
++        contentType: 'application/json',
++        dataType: 'xml',
++        data: JSON.stringify(request)
++    });
++    
++    point_uiid = point.uuid;
++    voteForPointRequest.fail(function(jqXHR, textStatus) {
++        throw new GetsWebClientException('Points Error', 'voteForPoint, voteForPointRequest failed ' + textStatus);
++    });
++    
++    if (($(voteForPointRequest.responseText).find('vote').text() === 'already voted') && (vote === '1')) {
++       this.userVotePositive = 'already voted';
++    }   
++    if (($(voteForPointRequest.responseText).find('vote').text() === 'already voted') && (vote === '-1')) {
++       this.userVoteNegative = 'already voted';
++    }   
++
++    if (($(voteForPointRequest.responseText).find('vote').text() === 'voted first')  && (vote === '1')) {
++       this.userVotePositive = 'voted first';
++    }   
++
++    if (($(voteForPointRequest.responseText).find('vote').text() === 'voted first')  && (vote === '-1')) {
++       this.userVoteNegative = 'voted first';
++    }  
++
++    if ($(voteForPointRequest.responseText).find('code').text() !== '0') {
++        throw new GetsWebClientException('Points Error', ' ' + $(voteForPointRequest.responseText).find('message').text());
++    }   
++    
++    if (callback) {
++        callback();
++    }
++    
++};
++
++/**
++ * Get user's vote for point 
++ * 
++ * 
++ */
++
++PointsClass.prototype.getUserVote = function () {
++    var point = this.getPoint();
++    if (!point) {
++        throw new GetsWebClientException('Points Error', 'getUserVote, no point');
++    }
++    
++    var request = {};
++    var coords = point.coordinates.split(',');
++    request.latitude = coords[1];
++    request.longitude = coords[0];
++    request.altitude = coords[2];
++  
++    var getUserVoteRequest = $.ajax({
++        url: GET_USER_VOTE_ACTION,
++        type: 'POST',
++        async: false,
++        contentType: 'application/json',
++        dataType: 'xml',
++        data: JSON.stringify(request)
++    });
++    
++    getUserVoteRequest.fail(function(jqXHR, textStatus) {
++        if (textStatus !== "User doesn't authorize") {
++            throw new GetsWebClientException('Points Error', 'getUserVoteRequest failed ' + textStatus);  
++        } 
++    });
++   
++    getUserVoteRequest.fail(function(jqXHR, textStatus) {
++        throw new GetsWebClientException('Points Error', 'getUserVoteRequest failed ' + textStatus);
++    });
++
++    if ($(getUserVoteRequest.responseText).find('code').text() !== '0') {
++        throw new GetsWebClientException('Channel Error', 'getUserVoteRequest, ' + $(getUserVoteRequest.responseText).find('message').text());
++    }
++
++        //Logger.debug(jqXHR.responseText);
++        var channelTypeElement = null;
++        channelTypeElement = $(getUserVoteRequest.responseText).find('type').length ? $(getUserVoteRequest.responseText).find('type').text() : '';
++
++        var channelType = null;
++
++    if(channelTypeElement === 'positive') {
++        channelType = 1;
++    }
++    else if(channelTypeElement === 'negative') {
++          channelType = 2;
++    }
++    else if(channelTypeElement === 'no vote') {
++        channelType = 3;
++    }
++     
++    this.userVote = channelType;
++   
++};
++      
++/**
++ * Change user's vote for point 
++ * 
++ * 
++ */
++
++PointsClass.prototype.changeVoteForPoint = function (vote, callback) {
++    var point = this.getPoint();
++    if (!point) {
++        throw new GetsWebClientException('Points Error', 'changeVoteForPoint, no point');
++    }
++    
++    var request = {};
++    var coords = point.coordinates.split(',');
++    request.latitude = coords[1];
++    request.longitude = coords[0];
++    request.altitude = coords[2];
++    request.vote = vote;
++  
++    var changeVoteForPointRequest = $.ajax({
++        url: CHANGE_VOTE_ACTION,
++        type: 'POST',
++        async: false,
++        contentType: 'application/json',
++        dataType: 'xml',
++        data: JSON.stringify(request)
++    });
++    
++    changeVoteForPointRequest.fail(function(jqXHR, textStatus) {
++        throw new GetsWebClientException('Points Error', 'changeVoteForPoint, changeVoteForPointRequest failed ' + textStatus);
++    });
++    
++    if (($(changeVoteForPointRequest.responseText).find('vote').text() !== null) && (vote =='1')) {
++       this.userVotePositive = 'voted';
++       this.userVoteNegative = null;
++    }   
++    if (($(changeVoteForPointRequest.responseText).find('vote').text() !== null) && (vote =='-1')) {
++       this.userVoteNegative = 'voted';
++       this.userVotePositive = null;
++    }   
++    
++    if ($(changeVoteForPointRequest.responseText).find('code').text() !== '0') {
++        throw new GetsWebClientException('Points Error', ' ' + $(changeVoteForPointRequest.responseText).find('message').text());
++    }   
++    
++    if (callback) {
++        callback();
++    }
++    
++};
++
++/**
++ * Delete user's vote for point 
++ * 
++ * 
++ */
++
++PointsClass.prototype.deleteVoteForPoint = function (userVote, callback) {
++
++/*
++    var userVote = this.getVote();
++    if (!userVote) {
++        throw new GetsWebClientException('Points Error', 'deleteVoteForPoint, no userVote');
++    }
++*/
++    var point = this.getPoint();
++    if (!point) {
++        throw new GetsWebClientException('Points Error', 'deleteVoteForPoint, no point');
++    }
++    
++    var request = {};
++    var coords = point.coordinates.split(',');
++    request.latitude = coords[1];
++    request.longitude = coords[0];
++    request.altitude = coords[2];
++    request.user_vote = userVote;
++    
++    var deleteVoteForPointRequest = $.ajax({
++        url: DELETE_VOTE_ACTION,
++        type: 'POST',
++        async: false,
++        contentType: 'application/json',
++        dataType: 'xml',
++        data: JSON.stringify(request)
++    });
++    
++    deleteVoteForPointRequest.fail(function(jqXHR, textStatus) {
++        throw new GetsWebClientException('Points Error', 'deleteVoteForPoint, deleteVoteForPointRequest failed ' + textStatus);
++    });
++    
++    if (($(deleteVoteForPointRequest.responseText).find('code').text() === '0') && (userVote === '1')) {
++       this.userVotePositive = null;
++    } 
++
++    if (($(deleteVoteForPointRequest.responseText).find('code').text() === '0') && (userVote === '2')) {
++       this.userVoteNegative = null;
++    }    
++    
++    if ($(deleteVoteForPointRequest.responseText).find('code').text() !== '0') {
++        throw new GetsWebClientException('Points Error', ' ' + $(deleteVoteForPointRequest.responseText).find('message').text());
++    }   
++    
++    if (callback) {
++        callback();
++    }
++    
++};
++
+ PointsClass.prototype.findPointInPointList = function(uuid) {
+     if (!uuid || !this.pointList) {
+         return;
+@@ -357,6 +587,17 @@ PointsClass.prototype.findPointInPointList = function(uuid) {
+     }
+ };
+ 
++
++PointsClass.prototype.setUserVoteNegative = function(status) {
++        this.userVoteNegative = status;
++        return this.userVoteNegative;  
++};
++
++PointsClass.prototype.setUserVotePositive = function(status) {
++        this.userVotePositive = status;
++        return this.userVotePositive;  
++};
++
+ /**
+  * Getters
+  */
+@@ -375,4 +616,21 @@ PointsClass.prototype.getPoint = function() {
+ 
+ PointsClass.prototype.setPoint = function(point) {
+     this.point = point;
+-};
+\ No newline at end of file
++};
++
++PointsClass.prototype.getUserVoteNegative = function() {
++        return this.userVoteNegative;  
++};
++
++PointsClass.prototype.getVote = function() {
++     if (!this.userVote) {
++        throw new GetsWebClientException('Points Error', 'getVote, vote undefined or null');
++    }
++        return this.userVote;  
++};
++
++PointsClass.prototype.getUserVotePositive = function() {
++        return this.userVotePositive;  
++};
++
++
+diff --git a/web-client/dist/scripts/gets/views/PointInfo.View.js b/web-client/dist/scripts/gets/views/PointInfo.View.js
+index 11ba8fd..c87fc65 100644
+--- a/web-client/dist/scripts/gets/views/PointInfo.View.js
++++ b/web-client/dist/scripts/gets/views/PointInfo.View.js
+@@ -22,7 +22,29 @@ function PointInfo(document, pointInfo) {
+  * @param {Object} point Object contains point info.
+  * @param {Boolean} isAuth Variable indicates is user authorized.
+  */
+-PointInfo.prototype.placePointInPointInfo = function(point, isAuth) {
++PointInfo.prototype.placePointInPointInfo = function(point, isAuth, userVote) {
++    
++     // Set "star-empty" buttons' icons 
++        this.changeVoteButtonClass('#point-info-vote-like', 'glyphicon-star-empty', 'glyphicon-star-empty');
++        this.changeVoteButtonClass('#point-info-vote-dislike', 'glyphicon-star-empty', 'glyphicon-star-empty');
++
++        // Show user's vote for point (positive vote)    
++        if (userVote === 1) {
++            this.changeVoteButtonClass('#point-info-vote-like', 'glyphicon-star-empty', 'glyphicon-star');
++        }
++
++        // Show user's vote for point (negative vote)  
++        if (userVote === 2) {
++            this.changeVoteButtonClass('#point-info-vote-dislike', 'glyphicon-star-empty', 'glyphicon-star');
++           
++        }
++
++        // Show user's vote for point (no vote (this user hasn't voted yet))  
++        if (userVote === 3) {
++            this.changeVoteButtonClass('#point-info-vote-like', 'glyphicon-star-empty', 'glyphicon-star-empty');
++            this.changeVoteButtonClass('#point-info-vote-dislike', 'glyphicon-star-empty', 'glyphicon-star-empty');  
++          }
++
+     // Get all elements
+     var nameElement = $(this.pointInfo).find('#point-info-name');
+     var coordsElementLat = $(this.pointInfo).find('#point-info-coords-lat');
+@@ -103,20 +125,35 @@ PointInfo.prototype.placePointInPointInfo = function(point, isAuth) {
+ 
+     var pointsInfoEdit = $('#point-info-edit');
+     var pointsInfoRemove = $('#point-info-remove');
++    var pointsVotePositive = $('#point-info-vote-like');
++    var pointsVoteNegative = $('#point-info-vote-dislike');
+     
+     $(pointsInfoEdit).attr('href', '#form=point_edit' + (point.track ? ('&track_id=' + point.track) : '') + '&point_uuid=' + point.uuid);
+ 
+-    if (!isAuth || point.access === 'r') {
++    if ((!isAuth) || point.access === 'r') {
+         $(pointsInfoEdit).on('click', function(e) {
+             e.preventDefault();
+         });
+         $(pointsInfoEdit).addClass('disabled');
+         $(pointsInfoRemove).addClass('disabled');
++        
+     } else {
+         $(pointsInfoEdit).off('click');        
+-        $(pointsInfoEdit).removeClass('disabled');
+-        $(pointsInfoRemove).removeClass('disabled');
++        $(pointsInfoEdit).addClass('disabled');
++        $(pointsInfoRemove).addClass('disabled');
++        
++    }
++
++     if (!isAuth) {
++        $(pointsVotePositive).addClass('disabled');
++        $(pointsVoteNegative).addClass('disabled');       
++    } else {        
++        $(pointsVotePositive).removeClass('disabled');
++        $(pointsVoteNegative).removeClass('disabled');
++        
+     }
++
++
+ };
+ 
+ PointInfo.prototype.getView = function() {
+@@ -151,5 +188,8 @@ PointInfo.prototype.prevImage = function() {
+     $(photoElement).find('img').attr('src', this.photos[this.photoIndex]);
+ };
+ 
+-
++PointInfo.prototype.changeVoteButtonClass = function(button_id, oldClass, newClass) {
++    $(button_id).find('span').removeClass(oldClass);
++    $(button_id).find('span').addClass(newClass);
++};
+ 
+diff --git a/web-client/dist/widgets/PointInfo.inc b/web-client/dist/widgets/PointInfo.inc
+index bf79634..068143a 100644
+--- a/web-client/dist/widgets/PointInfo.inc
++++ b/web-client/dist/widgets/PointInfo.inc
+@@ -12,7 +12,7 @@ echo    '<div id="point-info-page" class="action-menu-container hidden" data-pag
+                         <a id="point-info-remove" class="btn btn-danger" href="#" title="' . getString('remove-point','Remove point') . '" role="button" data-removetext="' . getString('point-remove-text','Are you sure you want to remove this point? (This action cannot be cancelled.)') . '">
+                             <span class="glyphicon glyphicon-remove"></span> ' . getString('remove-point','Remove point') . ' 
+                         </a>
+-                    </div>
++                    </div>    
+                 </div>
+             </div>
+             <div class="action-menu-inner-content">              
+@@ -68,7 +68,20 @@ echo    '<div id="point-info-page" class="action-menu-container hidden" data-pag
+                     <div id="point-info-extended-data">               
+                     </div>
+                 </div>
++            </div>
++             <div class="action-menu-toolbar-container">
++                <div class="btn-group btn-group-justified">
++                    <div class="btn-group">
++                        <a id="point-info-vote-like" class="btn btn-success" href="#" title="' . getString('like-point','Like') . '" role="button">
++                            <span class="glyphicon glyphicon-star-empty"></span> ' . getString('like-point','Like') . ' 
++                        </a>
++                    </div>
++                    <div class="btn-group">
++                        <a id="point-info-vote-dislike" class="btn btn-primary" href="#" title="' . getString('dislike-point','Dislike') . '" role="button">
++                           <span class="glyphicon glyphicon-star-empty"></span> ' . getString('dislike-point','Dislike') . ' 
++                        </a>
++                    </div>    
++                </div>
+             </div>            
+         </div>';
+-
+-?>
+\ No newline at end of file
++?>
+diff --git a/web-client/src/scripts/gets/controllers/PointsPage.Ctrl.js b/web-client/src/scripts/gets/controllers/PointsPage.Ctrl.js
+index 7e67205..4c0cb6a 100644
+--- a/web-client/src/scripts/gets/controllers/PointsPage.Ctrl.js
++++ b/web-client/src/scripts/gets/controllers/PointsPage.Ctrl.js
+@@ -12,6 +12,9 @@
+  * @param {Object} window window dom object of the current page.
+  */
+ function PointsPage(document, window) {
++    if (!window.hasOwnProperty('location')) {
++        throw new GetsWebClientException('Points Page Error', 'PointsPage, windowObj argument is not a window object');
++    }
+     this.document = document;
+     this.window = window;
+     
+@@ -27,8 +30,6 @@ function PointsPage(document, window) {
+     this._pointsMain = null;
+     this._headerView = null;
+     this._pointInfo = null;
+-    this._pointAdd = null;
+-    this._pointEdit = null;
+     
+     this.currentView = null;
+ }
+@@ -36,8 +37,7 @@ function PointsPage(document, window) {
+ // Forms
+ PointsPage.MAIN = 'main';
+ PointsPage.POINT_INFO = 'point_info';
+-PointsPage.ADD_POINT = 'point_add';
+-PointsPage.EDIT_POINT = 'point_edit';
++PointsPage.ADD_POINT = 'add_point';
+ 
+ PointsPage.prototype.changeForm = function() {
+     var form = this._utils.getHashVar('form');
+@@ -47,11 +47,10 @@ PointsPage.prototype.changeForm = function() {
+     } else if (form === PointsPage.POINT_INFO) {
+         this.showPointInfo();
+     } else if (form === PointsPage.ADD_POINT) {
+-        this.showAddPoint();
+-    } else if (form === PointsPage.EDIT_POINT) {
+-        this.showEditPoint();
++        //this.showAddPoint();
+     } else if (typeof form === 'undefined') {
+-        this.window.location.replace('#form=' + PointsPage.MAIN);
++        this.window.location.hash = 'form=' + PointsPage.MAIN;
++        this.showPointsMain();
+     }
+ };
+ 
+@@ -60,38 +59,32 @@ PointsPage.prototype.initPage = function() {
+     
+     try {      
+         // Init models
+-        if (!this._points) {
++        if (this._points == null) {
+             this._points = new PointsClass();
+         }
+-        if (!this._categories) {
++        if (this._categories == null) {
+             this._categories = new CategoriesClass();
+         }
+-        if (!this._user) {
++        if (this._user == null) {
+             this._user = new UserClass(this.window);
+             this._user.fetchAuthorizationStatus();
+             Logger.debug('is Auth: ' + this._user.isLoggedIn());
+         }
+-        if (!this._utils) {
++        if (this._utils == null) {
+             this._utils = new UtilsClass(this.window);
+         }
+     
+         // Init views
+-        if (!this._pointsMain) {
++        if (this._pointsMain == null) {
+             this._pointsMain = new PointsMain(this.document, $(this.document).find('#points-main-page'));
+             this._pointsMain.initView(this._user.isLoggedIn());
+         }
+-        if (!this._headerView) {
++        if (this._headerView == null) {
+             this._headerView = new HeaderView(this.document, $(this.document).find('.navbar'));
+         }
+-        if (!this._pointInfo) {
++        if (this._pointInfo == null) {
+             this._pointInfo = new PointInfo(this.document, $(this.document).find('#point-info-page'));
+         }
+-        if (!this._pointAdd) {
+-            this._pointAdd = new PointAdd(this.document, $(this.document).find('#edit-point-page'));
+-        }
+-        if (!this._pointEdit) {
+-            this._pointEdit = new PointEdit(this.document, $(this.document).find('#edit-point-page'));
+-        }
+         
+         // Init map
+         if (this._mapCtrl == null) {
+@@ -108,11 +101,20 @@ PointsPage.prototype.initPage = function() {
+     //Init first page
+     this.currentView = this._pointsMain;
+     this.changeForm();
+-    
++
+     // Init Points main
+     this._pointsMain.toggleOverlay();
+     this._pointsMain.setLatitude(this._mapCtrl.getMapCenter().lat);
+     this._pointsMain.setLongitude(this._mapCtrl.getMapCenter().lng);
++    var formDataInit = $(this.document).find('#point-main-form').serializeArray();
++    this._points.downLoadPoints(formDataInit, function() {
++        Logger.debug(self._points.getPointList());
++        self._pointsMain.placePointsInPointList(self._points.getPointList());
++        self._mapCtrl.removePointsFromMap();
++        self._mapCtrl.placePointsOnMap(self._points.getPointList());
++        
++        self._pointsMain.toggleOverlay();
++    });
+     
+ 
+     // Hash change handler
+@@ -120,7 +122,7 @@ PointsPage.prototype.initPage = function() {
+         Logger.debug('hashchanged');
+         self.changeForm();
+     });
+-    
++
+     // Sign in handler
+     $(this.document).on('click', '#sign-in-btn', function(e) {
+         e.preventDefault();
+@@ -130,106 +132,6 @@ PointsPage.prototype.initPage = function() {
+     // Sign out handler
+     $(this.document).on('click', '#sign-out-btn', function(e) {
+         e.preventDefault();
+-        self._user.logout();
+-    });
+-    
+-    // Use default active radius 
+-    $(this.document).on('change', '#edit-point-radius-default', function(e) {
+-        e.preventDefault();
+-        if($(this).is(":checked")) {
+-            $(self.document).find('#edit-point-active-radius-input').val($(this).data('defaultValue')).attr('disabled', 'disabled');        
+-            Logger.debug('checked');
+-        } else {
+-            $(self.document).find('#edit-point-active-radius-input').removeAttr('disabled');
+-        }       
+-    });
+-    
+-    // Add Point Handler
+-    $(this.document).on('submit', '#edit-point-form', function(e) {
+-        e.preventDefault();
+-        var form = self._utils.getHashVar('form');
+-        if (form === PointsPage.ADD_POINT) {
+-            self.addPointHandler(this, false);
+-        } else if (form === PointsPage.EDIT_POINT) {
+-            self.addPointHandler(this, true);
+-        }       
+-    });
+-    
+-    /*$('.dropdown').hover(
+-            function () {
+-                $(this).addClass('open');
+-            },
+-            function () {
+-                $(this).removeClass('open');
+-            }
+-    );*/
+-    
+-    // Create/remove temp marker (Use map) handler
+-    $(this.document).on('click', '#edit-point-use-map', function (e){
+-        e.preventDefault();
+-        var form = self._utils.getHashVar('form');
+-        if(!$(this).hasClass('active') && (form === PointsPage.ADD_POINT || form === PointsPage.EDIT_POINT)) {
+-            $(this).addClass('active');
+-            var coords = null;
+-            var settings = $(self.document).find('#edit-point-use-map-settings li a.marked-list-item').data('item');
+-            
+-            if (settings === 'center') {
+-                coords = self._mapCtrl.getMapCenter();
+-            } else if (settings === 'location') {
+-                if (self._user.isCoordsSet()) {
+-                    coords = self._user.getUsersGeoPosition();
+-                }
+-            }
+-             
+-            self._pointAdd.setLatLng(
+-                        Math.floor(coords.lat * 1000000) / 1000000, 
+-                        Math.floor(coords.lng * 1000000) / 1000000
+-            );
+-            self._mapCtrl.createTempMarker(coords.lat, coords.lng, function (position) {
+-                self._pointAdd.setLatLng(
+-                    Math.floor(position.lat * 1000000) / 1000000, 
+-                    Math.floor(position.lng * 1000000) / 1000000
+-                );
+-            });
+-        } else {
+-            $(this).removeClass('active');
+-            self._mapCtrl.removeTempMarker();
+-        }
+-    });
+-    
+-    // Use different settings for Use map button
+-    $(this.document).on('click', '#edit-point-use-map-settings li a', function (e){
+-        e.preventDefault();
+-        
+-        $(self.document).find('#edit-point-use-map-settings li a').removeClass('marked-list-item');   
+-        
+-        if ($(this).hasClass('marked-list-item')) {
+-            $(this).removeClass('marked-list-item');
+-        } else {
+-            $(this).addClass('marked-list-item');
+-        }
+-        
+-        var useMapButton = $(self.document).find('#edit-point-use-map');
+-        if($(useMapButton).hasClass('active')) {
+-            $(useMapButton).removeClass('active');
+-            $(useMapButton).click();
+-        }
+-    });
+-    
+-    // Use different modes for coords input
+-    $(this.document).on('click', '#edit-point-coords-input-type li a', function (e){
+-        e.preventDefault();
+-        
+-        $(self.document).find('#edit-point-coords-input-type li a').removeClass('marked-list-item');   
+-        
+-        if ($(this).hasClass('marked-list-item')) {
+-            $(this).removeClass('marked-list-item');
+-        } else {
+-            $(this).addClass('marked-list-item');
+-        }
+-        
+-        var type = $(self.document).find('#edit-point-coords-input-type li a.marked-list-item').data('item');
+-        self._pointAdd.switchCoordsInputFormat(type);
+     });
+     
+     // Create/remove search area
+@@ -250,12 +152,23 @@ PointsPage.prototype.initPage = function() {
+ 
+     // 
+     $(this.document).on('submit', '#point-main-form', function(e) {
+-        e.preventDefault();         
+-        self.downloadPointsHandler();       
++        e.preventDefault();        
++        self._pointsMain.toggleOverlay();
++        
++        var formData = $(this).serializeArray();
++        Logger.debug(formData);
++        self._points.downLoadPoints(formData, function() {
++            self._pointsMain.placePointsInPointList(self._points.getPointList(false));
++            self._mapCtrl.placePointsOnMap(self._points.getPointList());
++            
++            self._pointsMain.toggleOverlay();
++        });
+     });
+-       
++    
+     //dragend
+-    this._mapCtrl.setMapCallback('dragend', function(e){       
++    this._mapCtrl.setMapCallback('dragend', function(e){
++        self._pointsMain.toggleOverlay();
++        
+         var center = self._mapCtrl.getMapCenter();
+         self._pointsMain.setLatitude(Math.floor(center.lat * 10000) / 10000);
+         self._pointsMain.setLongitude(Math.floor(center.lng * 10000) / 10000);
+@@ -265,219 +178,36 @@ PointsPage.prototype.initPage = function() {
+             self._pointsMain.getLongitude(), 
+             self._pointsMain.getRadius() * 1000
+         );
+-
+-        var size = self._mapCtrl.getMapSize();
+-        if (size.x / 4 < e.distance || size.y / 4 < e.distance) {
+-            self.downloadPointsHandler();
+-        }      
+-    });
+-    
+-    // upload picture show/hide handler
+-    $(this.document).on('click', '#edit-point-picture-toggle-upload', function (e){
+-        e.preventDefault();
+-        var upload = $(self.document).find('#edit-point-picture-upload');
+-        if ($(upload).hasClass('hidden')) {
+-            $(upload).removeClass('hidden').addClass('show');
+-            $(self.document).find('#edit-point-picture-input-url').attr('disabled', 'disabled');
+-            // scroll to upload element
+-            $(self.document).find('#edit-point-page .action-menu-inner-content').animate({
+-                scrollTop: $('#edit-point-picture-input-file-upload').offset().top
+-            }, 2000);
+-        } else {
+-            $(upload).removeClass('show').addClass('hidden');
+-            $(self.document).find('#edit-point-picture-input-url').removeAttr('disabled');
+-        }       
+-    });
+-    
+-    // Upload picture handler
+-    $(this.document).on('click', '#edit-point-picture-input-file-upload', function (e) {
+-        e.preventDefault();
+-        self._pointAdd.toggleOverlay();
+-        try {
+-            var imageFile = $(self.document).find('#edit-point-picture-input-file').get(0).files[0];
+-            if (typeof imageFile !== 'undefined') {
+-                self._utils.uploadFile({
+-                    file: imageFile
+-                }, function (url) {
+-                    $(self.document).find('.edit-point-picture-input-url').last().val(url);
+-                    $(self.document).find('#edit-point-picture-upload').removeClass('show').addClass('hidden');
+-                    $(self.document).find('#edit-point-picture-input-url').removeAttr('disabled');
+-                    self._pointAdd.toggleOverlay();
+-                });
+-            }
+-        } catch (Exception) {
+-            MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
+-        }
+-    });
+-    
+-    $(this.document).on('change', '#edit-point-picture-input-file', function(e) {
+-        e.preventDefault();
+-        if ($(this).val() !== '') {
+-            $(self.document).find('#edit-point-picture-input-file-upload').removeClass('disabled');
+-        } else {
+-            $(self.document).find('#edit-point-picture-input-file-upload').addClass('disabled');
+-        }        
+-    });
+-    
+-    // Clear file input handler
+-    $(this.document).on('click', '#edit-point-picture-input-file-clear', function(e) {
+-        e.preventDefault();
+-        self._utils.resetFileInput($(self.document).find('#edit-point-picture-input-file'));
+-    });
+-    
+-    $(this.document).on('click', '#edit-point-picture-input-file-cancel', function (e){
+-        $(self.document).find('#edit-point-picture-upload').removeClass('show').addClass('hidden');
+-        $(self.document).find('#edit-point-picture-input-url').removeAttr('disabled');
+-    });
+-    
+-    // photos controls
+-    $(this.document).on('click', '#point-info-image-prev', function (e){
+-        e.preventDefault();
+-        self._pointInfo.prevImage();
+-    });
+-    
+-    $(this.document).on('click', '#point-info-image-next', function (e){
+-        e.preventDefault();
+-        self._pointInfo.nextImage();
+-    });
+-    
+-    // handle add picture input
+-    $(this.document).on('click', '#edit-point-picture-add-input', function (e){
+-        e.preventDefault();
+-        try {
+-            self._pointAdd.addPictureInputField();
+-        } catch (Exception) {
+-            Logger.debug(Exception.toString());
+-            MessageBox.showMessage(Exception.toString(), MessageBox.WARNING_MESSAGE);          
+-        }       
+-    });
+-    
+-    // handle delete picture input
+-    $(this.document).on('click', '#edit-point-picture-input-delete', function (e){
+-        e.preventDefault();
+-        self._pointAdd.deletePictureInputField($(this).data('pictureIndex'));      
+-    });
+-    
+-    // upload audio show/hide handler
+-    $(this.document).on('click', '#edit-point-audio-toggle-upload', function (e){
+-        e.preventDefault();
+-        var upload = $(self.document).find('#edit-point-audio-upload');
+-        if ($(upload).hasClass('hidden')) {
+-            $(upload).removeClass('hidden').addClass('show');
+-            $(self.document).find('#edit-point-audio-input-url').attr('disabled', 'disabled');
+-            // scroll to upload element
+-            $(self.document).find('#edit-point-page .action-menu-inner-content').animate({
+-                scrollTop: $('#edit-point-audio-input-file-upload').offset().top
+-            }, 2000);
+-        } else {
+-            $(upload).removeClass('show').addClass('hidden');
+-            $(self.document).find('#edit-point-audio-input-url').removeAttr('disabled');
+-        }
+-    });
+-    
+-    // Upload audio handler
+-    $(this.document).on('click', '#edit-point-audio-input-file-upload', function (e) {
+-        e.preventDefault();
+-        self._pointAdd.toggleOverlay();
+-        try {
+-            var audioFile = $(self.document).find('#edit-point-audio-input-file').get(0).files[0];
+-            if (typeof audioFile !== 'undefined') {
+-                self._utils.uploadFile({
+-                    file: audioFile
+-                }, function (url) {
+-                    $(self.document).find('#edit-point-audio-input-url').val(url);
+-                    $(self.document).find('#edit-point-audio-upload').removeClass('show').addClass('hidden');
+-                    $(self.document).find('#edit-point-audio-input-url').removeAttr('disabled');
+-                    self._pointAdd.toggleOverlay();
+-                });
+-            }
+-        } catch (Exception) {
+-            MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
+-        }
+-    });
+-    
+-    $(this.document).on('change', '#edit-point-audio-input-file', function(e) {
+-        e.preventDefault();//id="edit-point-audio-input-file-upload"
+-        if ($(this).val() !== '') {
+-            $(self.document).find('#edit-point-audio-input-file-upload').removeClass('disabled');
+-        } else {
+-            $(self.document).find('#edit-point-audio-input-file-upload').addClass('disabled');
+-        }        
+-    });
+-    
+-    // Clear file input handler
+-    $(this.document).on('click', '#edit-point-audio-input-file-clear', function(e) {
+-        e.preventDefault();
+-        self._utils.resetFileInput($(self.document).find('#edit-point-audio-input-file'));
+-    });
+-    
+-    $(this.document).on('click', '#edit-point-audio-input-file-cancel', function (e){
+-        $(self.document).find('#edit-point-audio-upload').removeClass('show').addClass('hidden');
+-        $(self.document).find('#edit-point-audio-input-url').removeAttr('disabled');
+-    });
+-    
+-    // Add field handler
+-    $(this.document).on('click', '#edit-point-add-field-open', function(e) {
+-        e.preventDefault();
+-        if (!$(self.document).find('#edit-point-add-field-open-button').hasClass('hidden')) {
+-            $(self.document).find('#edit-point-add-field-open-button').addClass('hidden');
+-            $(self.document).find('#edit-point-add-field-input-box').removeClass('hidden').addClass('show');
+-            $(self.document).find('#edit-point-add-field-control-buttons').removeClass('hidden').addClass('show');
+-            
+-            $(self.document).find('#edit-point-page .action-menu-inner-content').animate({
+-                scrollTop: $('#edit-point-add-field-input-box').offset().top
+-            }, 2000);
+-        }
+-    });
+-    
+-    $(this.document).on('click', '#edit-point-add-field-save', function(e) {
+-        e.preventDefault();//edit-point-add-field-save  class="form-group" 
+-        var extendedData = $(self.document).find('#edit-point-extended-data');
+-        var extendedDataHTML = $(extendedData).html();
+-        var fieldName = $(self.document).find('#edit-point-add-field-input-name').val();
+-        var fieldValue = $(self.document).find('#edit-point-add-field-input-value').val();
+-        extendedDataHTML += '<div class="form-group"><label for="' + fieldName + '" class="block">' + fieldName + '</label><input name="' + fieldName + '" class="form-control" type="text" value="' + fieldValue + '" /></div>';
+-        $(extendedData).html(extendedDataHTML);
+         
+-        // close
+-        $(self.document).find('#edit-point-add-field-cancel').click();
++        var formDataInit = $(self.document).find('#point-main-form').serializeArray();       
++        self._points.downLoadPoints(formDataInit, function () {           
++            self._pointsMain.placePointsInPointList(self._points.getPointList());
++            self._mapCtrl.removePointsFromMap();
++            self._mapCtrl.placePointsOnMap(self._points.getPointList());
++            
++            self._pointsMain.toggleOverlay();
++        });
+     });
+     
+-    // Close add field handler
+-    $(this.document).on('click', '#edit-point-add-field-cancel', function(e) {
+-        e.preventDefault();
+-        $(self.document).find('#edit-point-add-field-input').val('');
+-        $(self.document).find('#edit-point-add-field-open-button').removeClass('hidden').addClass('show');
+-        $(self.document).find('#edit-point-add-field-input-box').removeClass('show').addClass('hidden');
+-        $(self.document).find('#edit-point-add-field-control-buttons').removeClass('show').addClass('hidden');
+-    });
+-       
+-    // Remove point handler
+-    $(this.document).on('click', '#point-info-remove', function(e) {
+-        e.preventDefault();
+-        if (confirm($(self._pointInfo.getView()).find('#point-info-remove').data('removetext'))) {
+-            try {
+-                self._points.removePoint();                              
+-                self.window.location.replace('#form=' + PointsPage.MAIN);
+-                MessageBox.showMessage($(self._pointInfo.getView()).data('messagesuccessRemove'), MessageBox.SUCCESS_MESSAGE);
+-            } catch (Exception) {
+-                MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
+-            }
+-        }
+-    });
+     
+-    this.downloadPointsHandler();
+     // get user's coordinates
+     if (this.window.navigator.geolocation) {
+-        this.window.navigator.geolocation.getCurrentPosition(function(position) {           
++        this.window.navigator.geolocation.getCurrentPosition(function(position) {  
++            self._pointsMain.toggleOverlay();
++            
+             Logger.debug(position);
+             self._user.setUserGeoPosition(position);
+             self._mapCtrl.setMapCenter(position.coords.latitude, position.coords.longitude);
+             self._pointsMain.setLatitude(Math.floor(position.coords.latitude * 10000) / 10000);
+             self._pointsMain.setLongitude(Math.floor(position.coords.longitude * 10000) / 10000);
+-            
+-            self.downloadPointsHandler();
+-            
++            var formDataInit = $(self.document).find('#point-main-form').serializeArray();
++            self._points.downLoadPoints(formDataInit, function() {
++                self._pointsMain.placePointsInPointList(self._points.getPointList());
++                self._mapCtrl.removePointsFromMap();
++                self._mapCtrl.placePointsOnMap(self._points.getPointList());
++                
++                self._pointsMain.toggleOverlay();
++            });
+         }, this.handleGeoLocationError);
+     } else {
+        Logger.debug('geolocation is not supported by this browser');
+@@ -518,15 +248,14 @@ PointsPage.prototype.showPointsMain = function() {
+ 
+ PointsPage.prototype.showPointInfo = function() {
+     try {
+-        this._headerView.changeOption($(this._pointInfo.getView()).data('pagetitle'), 'glyphicon-chevron-left', '#form=main');
++        this._headerView.changeOption('Point Info', 'glyphicon-chevron-left', '#form=main');
+         
+-        var pointUUID = decodeURIComponent(this._utils.getHashVar('point_uuid'));
+-        if (!pointUUID) {
+-            throw new GetsWebClientException('Track Page Error', 'showPointInfo, hash parameter point uuid undefined');
++        var pointName = decodeURIComponent(this._utils.getHashVar('point_name'));
++        if (!pointName) {
++            throw new GetsWebClientException('Track Page Error', 'showPointInfo, hash parameter pointName undefined');
+         }
+-        this._points.findPointInPointList(pointUUID);
++        this._points.findPointInPointList(pointName);
+         
+-        Logger.debug(this._points.getPoint());
+         this._pointInfo.placePointInPointInfo(this._points.getPoint(), this._user.isLoggedIn());
+         
+         this.currentView.hideView();
+@@ -538,88 +267,3 @@ PointsPage.prototype.showPointInfo = function() {
+     }
+ };
+ 
+-PointsPage.prototype.showAddPoint = function() {
+-    try {
+-        this._headerView.changeOption($(this._pointAdd.getView()).data('pagetitleAdd'), 'glyphicon-chevron-left', '#form=main');
+-        this._utils.clearAllInputFields(this._pointAdd.getView());
+-        this._pointAdd.removeCustomFields();
+-        
+-        this._pointAdd.placeCategoriesInPointAdd(this._categories.getCategories());
+-        
+-        this.currentView.hideView();
+-        this.currentView = this._pointAdd;
+-        this.currentView.showView();
+-    } catch (Exception) {
+-        MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
+-        Logger.error(Exception.toString());
+-    }
+-};
+-
+-PointsPage.prototype.showEditPoint = function() {
+-    try {
+-        var point = this._points.getPoint();
+-        this._headerView.changeOption($(this._pointEdit.getView()).data('pagetitleEdit'), 'glyphicon-chevron-left', '#form=point_info&point_uuid=' + point.uuid);
+-        this._pointEdit.removeCustomFields();
+-        this._pointEdit.placePointInPointEdit(point);  
+-        this._pointEdit.placeCategoriesInPointAdd(this._categories.getCategories(), point.category_id);
+-        this._pointAdd.defaultCoordsInputFormat();
+-        
+-        this.currentView.hideView();
+-        this.currentView = this._pointEdit;
+-        this.currentView.showView();
+-    } catch (Exception) {
+-        MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
+-        Logger.error(Exception.toString());
+-    }
+-};
+-
+-PointsPage.prototype.addPointHandler = function(formData, update) {
+-    var that = this;   
+-    try { 
+-        var latlng = this._pointAdd.getLatLng();
+-        if (this._utils.checkCoordsInput(
+-                latlng.lat,
+-                latlng.lng,
+-                $(formData).find('#edit-point-alt-input').val()
+-                )) {
+-            this._pointAdd.toggleOverlay();
+-
+-            var paramsObj = $(formData).serializeArray();
+-            paramsObj.push({name: 'latitude', value: latlng.lat});
+-            paramsObj.push({name: 'longitude', value: latlng.lng});
+-            this._points.addPoint(paramsObj, update, function () {
+-                that.window.location.replace('#form=' + PointsPage.MAIN);
+-                var message = update ? $(that._pointAdd.getView()).data('messagesuccessEdit') : $(that._pointAdd.getView()).data('messagesuccessAdd'); 
+-                MessageBox.showMessage(message, MessageBox.SUCCESS_MESSAGE);
+-            });
+-        }      
+-    } catch (Exception) {
+-        MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
+-        Logger.error(Exception.toString());
+-    } finally {
+-        this._pointAdd.toggleOverlay();
+-    }
+-};
+-
+-PointsPage.prototype.downloadPointsHandler = function() {
+-    var that = this;
+-    try {
+-        this._pointsMain.showOverlay();
+-        var formData = $(this.document).find('#point-main-form').serializeArray();
+-
+-        this._points.downLoadPoints(formData, function () {
+-            var pointList = that._points.getPointList();
+-            that._mapCtrl.removePointsFromMap();
+-            that._pointsMain.placePointsInPointList(pointList);
+-            that._mapCtrl.placePointsOnMap(pointList, {
+-                url: '#form=' + PointsPage.POINT_INFO + '&point_uuid=',
+-                text: $(that._pointInfo.getView()).data('putpoint')
+-            });
+-            that._pointsMain.hideOverlay();
+-        });
+-    } catch (Exception) {
+-        MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
+-        Logger.error(Exception.toString());
+-    } 
+-};
+-
+diff --git a/web-client/src/widgets/PointInfo.inc b/web-client/src/widgets/PointInfo.inc
+index bf79634..a6dc651 100644
+--- a/web-client/src/widgets/PointInfo.inc
++++ b/web-client/src/widgets/PointInfo.inc
+@@ -1,72 +1,36 @@
+ <?php
+ 
+-echo    '<div id="point-info-page" class="action-menu-container hidden" data-pagetitle="' . getString('point-info-title','Point Info') . '" data-messagesuccess-remove="' . getString('point-remove-success','Point was successfully removed') . '" data-putpoint="' . getString('put-point-in-point-info','Put point into the «Point Info» window') . '">
++echo    '<div id="point-info-page" class="action-menu-container hidden">
+             <div class="action-menu-toolbar-container">
+                 <div class="btn-group btn-group-justified">
+                     <div class="btn-group">
+-                        <a id="point-info-edit" class="btn btn-default" title="' . getString('edit-point','Edit point') . '" role="button">
+-                            <span class="glyphicon glyphicon-pencil"></span> ' . getString('edit-point','Edit point') . ' 
++                        <a id="point-info-edit" class="btn btn-default" title="Edit point" role="button">
++                            <span class="glyphicon glyphicon-pencil"></span> Edit point 
+                         </a>
+                     </div>
+                     <div class="btn-group">
+-                        <a id="point-info-remove" class="btn btn-danger" href="#" title="' . getString('remove-point','Remove point') . '" role="button" data-removetext="' . getString('point-remove-text','Are you sure you want to remove this point? (This action cannot be cancelled.)') . '">
+-                            <span class="glyphicon glyphicon-remove"></span> ' . getString('remove-point','Remove point') . ' 
++                        <a id="point-info-remove" class="btn btn-danger" href="#" title="Remove point" role="button">
++                            <span class="glyphicon glyphicon-remove"></span> Remove point 
+                         </a>
+                     </div>
+                 </div>
+             </div>
+-            <div class="action-menu-inner-content">              
+-                <div id="point-info-name" class="main-block font-big height-half"></div>               
++            <div class="action-menu-inner-content">
++                <div id="point-info-name" class="main-block font-big width-three-fourth height-100"></div>               
+                 <!--<div id="point-info-map" class="button-w-icon" title="Show on map">
+                     <img src="images/icons/map.png" alt="Show on map">
+                 </div>-->
+-                <div class="main-block">
+-                    <label>' . getString('coordinates','Coordinates') . '</label>
+-                    <div class="emulate-tab"><label>' . getString('latitude','Latitude') . ': &nbsp;</label><div id="point-info-coords-lat" class="inline"></div></div>
+-                    <div class="emulate-tab"><label>' . getString('longitude','Longitude') . ': &nbsp;</label><div id="point-info-coords-lon" class="inline"></div></div>
+-                    <div class="emulate-tab"><label>' . getString('altitude','Altitude') . ': &nbsp;</label><div id="point-info-coords-alt" class="inline"></div></div>    
++                <div id="point-info-coords" class="main-block"></div>
++                <div id="point-info-image" class="main-block">
++                    <img class="info-image" alt="No image">
+                 </div>
+-                <div class="main-block">
+-                    <label for="point-info-image">' . getString('picture','Pictures') . '</label>
+-                    <img id="no-point-info-image" class="show" alt="' . getString('no-image','No image') . '">
+-                    <div id="point-info-image" class="well well-sm hidden">
+-                        <a target="_blank"><img class="info-image"></a>
+-                        <br>    
+-                        <div id="point-info-image-controls" class="btn-group btn-group-justified show">
+-                            <div class="btn-group">
+-                                <a id="point-info-image-prev" class="btn btn-default" role="button">
+-                                    <span class="glyphicon glyphicon-chevron-left"></span>
+-                                </a>
+-                            </div>
+-                            <div class="btn-group">
+-                                <a id="point-info-image-next" class="btn btn-default" href="#" role="button">
+-                                    <span class="glyphicon glyphicon-chevron-right"></span>
+-                                </a>
+-                            </div>
+-                        </div>
+-                    </div>
+-                </div>
+-                <div class="main-block">
+-                    <label for="point-info-description">' . getString('description','Description') . '</label>
+-                    <div id="point-info-description"></div>
+-                </div>
+-                <div class="main-block">
+-                    <label for="point-info-url">' . getString('url','Link') . '</label>
+-                    <div id="point-info-url">
+-                        <a target="_blank"></a>                 
+-                    </div>
+-                </div> 
+-                <div class="main-block">
+-                    <label for="point-info-audio">' . getString('audio-track','Audio track') . '</label>
+-                    <div id="point-info-audio">
+-                        <!--<audio controls>
+-                        </audio>-->                
+-                    </div>
++                <div id="point-info-description" class="main-block"></div>
++                <div id="point-info-url" class="main-block">
++                    <a target="_blank"></a>                 
+                 </div>
+-                <div class="main-block">
+-                    <label for="point-info-audio">' . getString('extended-data', 'Extended data') . '</label>
+-                    <div id="point-info-extended-data">               
+-                    </div>
++                <div id="point-info-audio" class="main-block">
++                    <!--<audio controls>
++                    </audio>-->                
+                 </div>
+             </div>            
+         </div>';

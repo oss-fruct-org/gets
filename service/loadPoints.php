@@ -1,7 +1,6 @@
 <?php
 include_once('include/methods_url.inc');
 include_once('include/utils.inc');
-include_once('include/public_token.inc');
 include_once('datatypes/point.inc');
 
 include_once('include/header.inc');
@@ -67,7 +66,7 @@ try {
     }
 
     $query = "SELECT DISTINCT ON(tag.id) tag.time, tag.label, tag.latitude, tag.longitude, 
-                                      tag.altitude, tag.description, tag.url, tag.id, category.id, ${access_row}, tag.id FROM tag ";
+                                      tag.altitude, tag.description, tag.url, tag.id, ${access_row}, category.id FROM tag ";
     $query .= 'INNER JOIN channel ON tag.channel_id = channel.id ';
     $query .= 'INNER JOIN subscribe ON channel.id = subscribe.channel_id ';
     $query .= 'INNER JOIN users ON subscribe.user_id=users.id ';

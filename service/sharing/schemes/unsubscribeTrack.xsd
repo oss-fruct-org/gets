@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="request">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="params">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element type="xs:string" name="auth_token" minOccurs="1" maxOccurs="1"/>
+                            <xs:element type="xs:string" name="track_id" minOccurs="1" maxOccurs="1"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

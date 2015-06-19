@@ -1,2 +1,4 @@
+/getsconfig.py
 config.sh
 token.txt
+*.pyc

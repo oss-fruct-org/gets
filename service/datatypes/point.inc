@@ -21,6 +21,40 @@ class Point {
     public $extended_data = array();
     public $photos = array();
 
+    public function merge(Point $other) {
+        if ($other->title) {
+            $this->title = $other->title;
+        }
+        
+        if ($other->link) {
+            $this->link = $other->link;
+        }
+
+        if ($other->description) {
+            $this->description = $other->description;
+        }
+        
+        if ($other->latitude) {
+            $this->latitude = $other->latitude;
+        }
+        
+        if ($other->longitude) {
+            $this->longitude = $other->longitude;
+        }
+        
+        if ($other->altitude) {
+            $this->altitude = $other->altitude;
+        }
+        
+        if ($other->extended_data) {
+            $this->extended_data = $other->extended_data;
+        }
+        
+        if ($other->photos) {
+            $this->photos = $other->photos;
+        }
+    }
+    
     public function toPgArray($user_id, $channel_id) {
         $pg_array = array();
         $pg_array["label"] = $this->title;
@@ -28,8 +62,13 @@ class Point {
         $pg_array["longitude"] = $this->longitude;
         $pg_array["altitude"] = $this->altitude;
 
-        $pg_array["user_id"] = $user_id;
-        $pg_array["channel_id"] = $channel_id;
+        if ($user_id) {
+            $pg_array["user_id"] = $user_id;
+        }
+        
+        if ($channel_id) {
+            $pg_array["channel_id"] = $channel_id;
+        }
         
         $description_field_array = array();
         $url_field_array = array();
@@ -79,7 +118,10 @@ class Point {
         $xml .= '<description>' . htmlspecialchars($this->description) . '</description>';
         $xml .= '<ExtendedData xmlns:gets="http://gets.cs.petrsu.ru/">';
         
-        $xml .= '<Data name="link"><value>' . htmlspecialchars($this->link) . '</value></Data>';
+        if ($this->link) {
+            $xml .= '<Data name="link"><value>' . htmlspecialchars($this->link) . '</value></Data>';
+        }
+        
         $xml .= '<Data name="time"><value>' . htmlspecialchars($this->time) . '</value></Data>';
         $xml .= '<Data name="uuid"><value>' . htmlspecialchars($this->uuid) . '</value></Data>';
 
@@ -95,14 +137,15 @@ class Point {
                 $xml .= "<Data name=\"$key\"><value>$value</value></Data>";
             }
 
-            if ($key == "uuid") {
+            if ($key === "uuid") {
                 $uuid_found = true;
             }
         }
 
         // Custom elements must be after 'Data'
         foreach ($this->photos as $photo_url) {
-            $xml .= "<gets:photo>$photo_url</gets:photo>";
+            $photo_url_escaped = htmlspecialchars($photo_url);
+            $xml .= "<gets:photo>${photo_url_escaped}</gets:photo>";
         }
         
         $xml .= '</ExtendedData>';
@@ -113,7 +156,7 @@ class Point {
         return $xml;
     }
     
-    // time, label, latitude, longitude, altitude, description, url, id
+    // time, label, latitude, longitude, altitude, description, url, id, access, category_id
     public static function makeFromPgRow($row) {
         $point = new Point();
         
@@ -124,14 +167,14 @@ class Point {
         $point->altitude = $row[4];
         
         $description_array = json_decode($row[5], true);
-        if ($description_array) {
+        if ($description_array !== null) {
             $point->addExtraArray($description_array);
         } else {
             $point->description = $row[5];
         }
         
         $url_array = json_decode($row[6], true);
-        if ($url_array) {
+        if ($url_array !== null) {
             $point->addExtraArray($url_array);
         } else {
             $point->link = $row[6];
@@ -141,12 +184,12 @@ class Point {
             $point->uuid = $row[7];
         }
         
-        if (array_key_exists(8, $row)) {
-            $point->category_id = (int) $row[8];
+        if (array_key_exists(9, $row)) {
+            $point->category_id = (int) $row[9];
         }
         
-        if (array_key_exists(9, $row)) {
-            $point->access = $row[9] === 't';
+        if (array_key_exists(8, $row)) {
+            $point->access = $row[8] === 't';
         }
         
         return $point;
@@ -168,7 +211,7 @@ class Point {
         $description = get_array_element($request_array, "description");
         
         $description_array = json_decode($description, true);
-        if ($description_array) {
+        if ($description_array !== null) {
             $point->addExtraArray($description_array);
         } else {
             $point->description = $description;

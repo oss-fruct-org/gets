@@ -128,20 +128,23 @@ PointsClass.prototype.downLoadPoints = function(paramsObj, callback) {
         for (var i = 0, len = pointListItems.length; i < len; i++) {          
             var pointObj = {};
             var pointExtendedData = [];
+            pointObj.photos = [];
             
             pointObj.name = $(pointListItems[i]).find('name').length ? $(pointListItems[i]).find('name').text() : '';
-            pointObj.description = $(pointListItems[i]).find("[name='description']").length ? $(pointListItems[i]).find("[name='description']").text() : '';
+            pointObj.description = $(pointListItems[i]).find('description').length ? $(pointListItems[i]).find('description').text() : '';
             pointObj.uuid = $(pointListItems[i]).find("[name='uuid']").length ? $(pointListItems[i]).find("[name='uuid']").text() : '';
             pointObj.access = $(pointListItems[i]).find("[name='access']").length ? $(pointListItems[i]).find("[name='access']").text() : '';
-            pointObj.photo = $(pointListItems[i]).find("[name='photo']").length ? decodeURIComponent($(pointListItems[i]).find("[name='photo']").text()) : '';
-            pointObj.audio = $(pointListItems[i]).find("[name='audio']").length ? decodeURIComponent($(pointListItems[i]).find("[name='audio']").text()) : '';
+            $(pointListItems[i]).find("gets\\:photo").each(function (idx, val) {
+                pointObj.photos.push($(val).text());
+            });
+            pointObj.audio = $(pointListItems[i]).find("[name='audio']").length ? $(pointListItems[i]).find("[name='audio']").text() : '';
             pointObj.url = $(pointListItems[i]).find("[name='link']").length ? $(pointListItems[i]).find("[name='link']").text() : '';
             pointObj.coordinates = $(pointListItems[i]).find('coordinates').length ? $(pointListItems[i]).find('coordinates').text() : '';
             pointObj.category_id = $(pointListItems[i]).find("[name='category_id']").length ? $(pointListItems[i]).find("[name='category_id']").text() : '';
             pointObj.radius = $(pointListItems[i]).find("[name='radius']").length ? $(pointListItems[i]).find("[name='radius']").text() : '';
             
             $(pointListItems[i]).find('Data').each(function(index, newValue) {               
-                pointExtendedData.push({name: $(newValue).attr('name')/*.replace(/_/g, ' ')*/, value: decodeURIComponent($(newValue).text())});               
+                pointExtendedData.push({name: $(newValue).attr('name')/*.replace(/_/g, ' ')*/, value: $(newValue).text()});               
             });                                    
             pointObj.extendedData = pointExtendedData;
 
@@ -211,10 +214,15 @@ PointsClass.prototype.addPoint = function (paramsObj, update, callback) {
             newParamsObj.latitude = value.value;
         } else if (value.name === 'longitude') {
             newParamsObj.longitude = value.value;
+        } else if (value.name === 'photo') {
+            newParamsObj.photos = newParamsObj.photos || [];
+            newParamsObj.photos.push({
+                photo: value.value
+            });
         } else {
             if (value.value !== '') {
                 newParamsObj.extended_data = newParamsObj.extended_data || {};
-                newParamsObj.extended_data[value.name.replace(/ /g, '_')] = encodeURIComponent(value.value);
+                newParamsObj.extended_data[value.name.replace(/ /g, '_')] = value.value;
             }
         }
     });
@@ -228,7 +236,8 @@ PointsClass.prototype.addPoint = function (paramsObj, update, callback) {
         newParamsObj.category_id = category;
     }
                
-    Logger.debug(newParamsObj); 
+    Logger.debug(newParamsObj);
+    Logger.debug(JSON.stringify(newParamsObj));
     
     var addPointRequest = $.ajax({
         url: update ? UPDATE_POINT_ACTION : ADD_POINT_ACTION,

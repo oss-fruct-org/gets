@@ -116,6 +116,10 @@ html, body {
     margin-top: 10px;
 }
 
+.bottom-margin {
+    margin-bottom: 10px;
+}
+
 .bordered-element {
     display: block;
     position: relative; 

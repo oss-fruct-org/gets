@@ -59,6 +59,7 @@ PointAdd.prototype.hideView = function() {
     $(this.addPoint).removeClass('show').addClass('hidden');
     // Remove the temp marker, if it is on the map 
     $(this.addPoint).find('#edit-point-use-map').click();
+    this.deleteAllExtraPictureInputField();
 };
 
 /**
@@ -166,6 +167,30 @@ PointAdd.prototype.defaultCoordsInputFormat = function () {
     $(this.addPoint).find('#edit-point-coords-input-type li a[data-item="' + PointAdd.DECIMAL + '"]').addClass('marked-list-item');   
 };
 
+PointAdd.prototype.addPictureInputField = function () {
+    var pictureInputs = $(this.addPoint).find('.edit-point-picture-input-url');
+       
+    if ($(pictureInputs).length >= 10)
+        throw new GetsWebClientException('Add Point Error', 'Too many pictures');
+    
+    var lastPictureInput = $(pictureInputs).last();
+    //Logger.debug(lastPictureInput);
+    $(lastPictureInput).after('\n\
+        <div class="input-group add-on top-margin edit-point-picture-input-url" data-picture-index="' + $(pictureInputs).length + '">\n\
+            <input name="photo" type="url" class="form-control">\n\
+            <div class="input-group-btn">\n\
+                <button id="edit-point-picture-input-delete" type="button" class="close" data-picture-index="' + $(pictureInputs).length + '">&nbsp;<span aria-hidden="true">&times;</span></button>\n\
+            </div>\n\
+        </div>');
+};
+
+PointAdd.prototype.deletePictureInputField = function (index) {
+    $(this.addPoint).find('div[data-picture-index="' + index + '"]').remove();
+};
+
+PointAdd.prototype.deleteAllExtraPictureInputField = function () {
+    $(this.addPoint).find('div.edit-point-picture-input-url').remove();
+};
 
 PointAdd.prototype.convertDec2DegMS = function (dec) {
     var deg = Math.floor(dec);

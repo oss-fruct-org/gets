@@ -393,6 +393,25 @@ function uuidv4()
 }
 
 /**
+ * Escapes value before insertion to database of needed
+ * @param resource $dbconn
+ * @param mixed $value
+ */
+function convert_database_value($dbconn, $value) {
+    if (is_bool($value)) {
+        return $value ? 'true' : 'false';
+    } else if (is_string($value)) {
+        return "'" . pg_escape_string($dbconn, $value) . "'";
+    } else if (is_numeric($value)) {
+        return "$value";
+    } else if (is_null($value)) {
+        return "null";
+    } else {
+        throw new Exception("Wrong type passed to safe_pg_insert");
+    }
+}
+
+/**
  * pg_insert without backslash escaping issues
  * @param $dbconn
  * @param $table
@@ -405,12 +424,35 @@ function safe_pg_insert($dbconn, $table, $data_array) {
 
     foreach ($data_array as $key => $value) {
         $names_array[] = $key;
-        $values_array[] = "'" . pg_escape_string($dbconn, $value) . "'";
+        $values_array[] = convert_database_value($dbconn, $value);
     }
 
     $values = implode(",", $values_array);
     $names = implode(",", $names_array);
     return pg_query($dbconn, "INSERT INTO $table ($names) VALUES ($values);");
+}
+
+/**
+ * pg_update without possible backslash escaping issues
+ */
+function safe_pg_update($dbconn, $table, $data_array, $condition) {
+    $sets_array = array();
+    $where_array = array("TRUE");
+    
+    foreach ($data_array as $key => $value) {
+        $value_escaped = convert_database_value($dbconn, $value);
+        $sets_array[] = "$key=$value_escaped";
+    }
+    
+    foreach ($condition as $key => $value) {
+        $value_escaped = convert_database_value($dbconn, $value);
+        $where_array[] = "$key=$value_escaped";
+    } 
+    
+    $sets_string = implode(",", $sets_array);
+    $where_string = implode(" AND ", $where_array);
+    
+    return pg_query($dbconn, "UPDATE $table SET $sets_string WHERE $where_string;");
 }
 
 /*
@@ -603,8 +645,7 @@ function require_user_trusted($dbconn) {
 
 /*
  * Check that user with $auth_token or public user subscribed to channel $channel_name
- * Null $auth_token means public token
- * Returns: array (user_id, channel_id)
+ * Returns: array (channel_id, is_owned)
  */
 function require_channel_accessible($dbconn, $channel_name, $is_public) {
     if (!$is_public) {
@@ -613,20 +654,23 @@ function require_channel_accessible($dbconn, $channel_name, $is_public) {
         $email = GEO2TAG_EMAIL;
     }
 
-    $result_check = pg_query_params($dbconn, 'SELECT users.id, channel.id FROM channel 
+    $result_check = pg_query_params($dbconn, 'SELECT channel.id, BOOL_OR(users.email=$1) FROM channel 
             INNER JOIN subscribe ON channel.id = subscribe.channel_id 
             INNER JOIN users ON users.id = subscribe.user_id 
-            WHERE (users.email=$1 OR users.login=$2) AND channel.name=$3;',
+            WHERE (users.email=$1 OR users.login=$2) AND channel.name=$3
+            GROUP BY channel.id;',
         array($email, GEO2TAG_USER, $channel_name));
 
     if (!($result_check_row = pg_fetch_row($result_check))) {
         throw new Exception('Channel not subscribed', 1);
     }
 
+    // Replace 't'/'f' with true/false
+    $result_check_row[1] = $result_check_row[1] === 't';
     return $result_check_row;
 }
 
-/*
+/**
  * Check that current user owns channel $channel_name
  * Admin users also has permissions
  * Returns: array (user_id, channel_id)
@@ -650,6 +694,29 @@ function require_channel_owned($dbconn, $channel_name) {
     return $result_check_row;
 }
 
+/**
+ * Check is user owns share with given key
+ * @param type $dbconn database connection
+ * @param type $key share key
+ * @return boolean
+ */
+function check_key_owned($dbconn, $key) {
+    if (is_user_admin($dbconn)) {
+        return true;
+    }
+    
+    $email = auth_get_google_email();
+    $result = pg_query_params($dbconn, "SELECT count(*) "
+            . "FROM share "
+            . "JOIN channel ON share.channel_id = channel.id "
+            . "JOIN users ON users.id = channel.owner_id "
+            . "AND users.email=$1 AND share.key=$2;", array($email, $key));
+    
+    $row = pg_fetch_row($result);
+    
+    return $row[0] > 0;
+}
+
 function get_channel_id($dbconn, $channel_name) {
     $result = pg_query_params($dbconn, 'SELECT id FROM channel WHERE name = $1;', array($channel_name));
     $row = pg_fetch_row($result);
@@ -658,6 +725,28 @@ function get_channel_id($dbconn, $channel_name) {
     } else {
         return null;
     }
+}
+
+// https://stackoverflow.com/questions/834303/startswith-and-endswith-functions-in-php
+function starts_with($haystack, $needle) {
+    // search backwards starting from haystack length characters from the end
+    return $needle === "" || strrpos($haystack, $needle, -strlen($haystack)) !== FALSE;
+}
+
+function ends_with($haystack, $needle) {
+    // search forward starting from end minus needle length characters
+    return $needle === "" || (($temp = strlen($haystack) - strlen($needle)) >= 0 && strpos($haystack, $needle, $temp) !== FALSE);
+}
+
+/**
+ * Check that channel id represents track
+ * 
+ * @deprecated
+ * @param string $track_id
+ * @return boolean yes/no
+ */
+function check_track_id($track_id) {
+    return starts_with($track_id, "tr+");
 }
 
 function date_gets_to_postgres($gets_date) {

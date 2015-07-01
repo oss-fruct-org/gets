@@ -278,5 +278,53 @@ class TestPoint(unittest.TestCase):
         self.assertEqual(points[0].name, "new title")
         self.assertEqual(points[1].name, "new title")
 
+    def test_load_by_pattern(self):
+        self.sign_in()
+
+        gt.request("addPoint.php", gt.make_request(
+            ("auth_token", self.token),
+            ("category_id", "1"),
+            ("title", "test point 2"),
+            ("description", "test description "),
+            ("link", "http://example.com"),
+            ("latitude", "64"),
+            ("longitude", "31"),
+            ("altitude", "0"),
+            ("time", "01 10 2014 17:33:47.630")
+            ))
+        gt.request("addPoint.php", gt.make_request(
+            ("auth_token", self.token),
+            ("category_id", "1"),
+            ("title", "tes point 1"),
+            ("description", "test description "),
+            ("link", "http://example.com"),
+            ("latitude", "64"),
+            ("longitude", "31"),
+            ("altitude", "0"),
+            ("time", "01 10 2014 17:33:47.630")
+            ))
+
+        gt.request("addPoint.php", gt.make_request(
+            ("auth_token", self.token),
+            ("category_id", "1"),
+            ("title", "tes potesthhhint 1"),
+            ("description", "test description "),
+            ("link", "http://example.com"),
+            ("latitude", "64"),
+            ("longitude", "31"),
+            ("altitude", "0"),
+            ("time", "01 10 2014 17:33:47.630")
+            ))
+
+        res = gt.request("loadPoints.php", gt.make_request(
+            ("auth_token", self.token),
+            ("category_id", "1"),
+            ("pattern", "test"),
+            ("space", "private")
+            ))
+
+        points = gt.Point.from_xml(gt.get_content(res))
+        self.assertEqual(len(points), 2)
+
 if __name__ == "__main__":
     unittest.main()

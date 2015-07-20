@@ -16,6 +16,7 @@ try {
     $radius = get_request_argument($dom, 'radius', 0);
     $longitude = get_request_argument($dom, 'longitude', 0);
     $latitude = get_request_argument($dom, 'latitude', 0);
+    $pattern = get_request_argument($dom, "pattern");
 
     $is_radius_filter = ($radius !== 0);
 
@@ -86,6 +87,12 @@ try {
     // Distance 'where'
     if ($is_radius_filter) {
         $where_arr[] = "gets_geo_distance(tag.latitude, tag.longitude, ${latitude}, ${longitude}) < ${radius}";
+    }
+    
+    // Pattern wher
+    if ($pattern) {
+        $pattern_escaped = pg_escape_string($dbconn, $pattern);
+        $where_arr[] = "tag.label ILIKE '%$pattern_escaped%'";
     }
 
     $query .= 'WHERE ' . implode(' AND ', $where_arr) . ' ORDER BY tag.id ASC, permission DESC;';

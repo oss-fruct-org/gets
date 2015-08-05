@@ -104,9 +104,13 @@ try {
     $xml .= '<open>1</open>';
     $xml .= '<Style id="styleDocument"><LabelStyle><color>ff0000cc</color></LabelStyle></Style>';
 
+    $user_is_admin = ($private_email !== null && is_user_admin($dbconn) > 0 ? true : false);
     // Output points
     while ($row = pg_fetch_row($result)) {
         $point = Point::makeFromPgRow($row);
+	if($user_is_admin) {
+	    $point->access = true;
+	}
         $xml .= $point->toKmlPlacemark();
     }
 

@@ -12,17 +12,12 @@
                                     <xs:sequence>
                                         <xs:element type="xs:double" name="latitude"/>
                                         <xs:element type="xs:double" name="longitude"/>
-                                        <xs:element name="radius">
-                                            <xs:simpleType>
-                                                <xs:restriction base="xs:double">
-                                                    <xs:minInclusive value="0"/>
-                                                </xs:restriction>
-                                            </xs:simpleType>
-                                        </xs:element>
+                                        <xs:element type="radiusType" name="radius" />
                                         <xs:element type="xs:string" name="category_id" minOccurs="0"/>
                                     </xs:sequence>
                                     <xs:element type="xs:string" name="category_id"/>
                                 </xs:choice>
+                                <xs:element type="xs:string" name="pattern" minOccurs="0"/>
                                 <xs:element name="space" minOccurs="0" maxOccurs="1">
                                     <xs:simpleType>
                                         <xs:restriction base="xs:string">
@@ -38,17 +33,12 @@
                                     <xs:sequence>
                                         <xs:element type="xs:double" name="latitude"/>
                                         <xs:element type="xs:double" name="longitude"/>
-                                        <xs:element name="radius">
-                                            <xs:simpleType>
-                                                <xs:restriction base="xs:double">
-                                                    <xs:minInclusive value="0"/>
-                                                </xs:restriction>
-                                            </xs:simpleType>
-                                        </xs:element>
+                                        <xs:element type="radiusType" name="radius" />
                                         <xs:element type="xs:string" name="category_id" minOccurs="0"/>
                                     </xs:sequence>
                                     <xs:element type="xs:string" name="category_id"/>
                                 </xs:choice> 
+                                <xs:element type="xs:string" name="pattern" minOccurs="0"/>
                             </xs:sequence>
                         </xs:choice>
                     </xs:complexType>
@@ -56,4 +46,10 @@
             </xs:sequence>
         </xs:complexType>
     </xs:element>
+    
+    <xs:simpleType name="radiusType">
+        <xs:restriction base="xs:double">
+            <xs:minInclusive value="0"/>
+        </xs:restriction>
+    </xs:simpleType>
 </xs:schema>

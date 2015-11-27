@@ -1,5 +1,10 @@
 <?php
+
+require_once('utils/config.inc');
 $base_url = 'http://' . $_SERVER['SERVER_NAME'] . substr($_SERVER['REQUEST_URI'], 0, -strlen(basename(__FILE__)));
+
+if(defined('GETS_WEB_HOST'))
+    $base_url = 'http://' . GETS_WEB_HOST . substr($_SERVER['REQUEST_URI'], 0, -strlen(basename(__FILE__)));
 
 $js_file = 'var ADD_POINT_ACTION = "' . $base_url . 'addPoint.php";';
 $js_file .= 'var ADD_TRACK_ACTION = "' . $base_url . 'addTrack.php";';

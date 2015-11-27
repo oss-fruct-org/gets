@@ -1,7 +1,6 @@
 <?php
 include_once('include/methods_url.inc');
 include_once('include/utils.inc');
-include_once('include/public_token.inc');
 include_once('datatypes/point.inc');
 
 include_once('include/header.inc');
@@ -17,6 +16,7 @@ try {
     $radius = get_request_argument($dom, 'radius', 0);
     $longitude = get_request_argument($dom, 'longitude', 0);
     $latitude = get_request_argument($dom, 'latitude', 0);
+    $pattern = get_request_argument($dom, "pattern");
 
     $is_radius_filter = ($radius !== 0);
 
@@ -88,6 +88,12 @@ try {
     if ($is_radius_filter) {
         $where_arr[] = "gets_geo_distance(tag.latitude, tag.longitude, ${latitude}, ${longitude}) < ${radius}";
     }
+    
+    // Pattern wher
+    if ($pattern) {
+        $pattern_escaped = pg_escape_string($dbconn, $pattern);
+        $where_arr[] = "tag.label ILIKE '%$pattern_escaped%'";
+    }
 
     $query .= 'WHERE ' . implode(' AND ', $where_arr) . ' ORDER BY tag.id ASC, permission DESC;';
     $result = pg_query($dbconn, $query);
@@ -98,9 +104,13 @@ try {
     $xml .= '<open>1</open>';
     $xml .= '<Style id="styleDocument"><LabelStyle><color>ff0000cc</color></LabelStyle></Style>';
 
+    $user_is_admin = ($private_email !== null && is_user_admin($dbconn) > 0 ? true : false);
     // Output points
     while ($row = pg_fetch_row($result)) {
         $point = Point::makeFromPgRow($row);
+	if($user_is_admin) {
+	    $point->access = true;
+	}
         $xml .= $point->toKmlPlacemark();
     }
 

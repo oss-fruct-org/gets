@@ -1,50 +1,42 @@
 <?php
 include_once('include/methods_url.inc');
 include_once('include/utils.inc');
-include_once('include/public_token.inc');
 include_once('include/auth.inc');
 include_once('datatypes/point.inc');
+include_once('include/channels.inc');
 
 include_once('include/header.inc');
 
+if (ends_with($_SERVER['SCRIPT_FILENAME'], "Track.php")) {
+    $type = CHANNEL_TRACK;
+} else {
+    $type = CHANNEL_POLYGON;
+}
+
 try {
-    $dom = get_input_dom('schemes/loadTrack.xsd');
+    $dom = get_input_dom($type === CHANNEL_TRACK ? 'schemes/loadTrack.xsd' : 'schemes/loadPolygon.xsd');
     
     $auth_token = get_request_argument($dom, 'auth_token');
-    $channel_name = get_request_argument($dom, 'name');
-
-    if ($auth_token) {
-        auth_set_token($auth_token);
+    
+    if ($type === CHANNEL_TRACK) {
+        // One of two arguments must be defined
+        $channel_name = get_request_argument($dom, 'name');
+        $track_id = get_request_argument($dom, 'track_id');
+        
+        if ($track_id) {
+            $channel_name = $track_id;
+        }
+    } else {
+        $channel_name = get_request_argument($dom, "polygon_id");    
     }
 
-    $dbconn = pg_connect(GEO2TAG_DB_STRING);
+    $key = get_request_argument($dom, 'key');
 
-    list($channel_id, $is_owned) = require_channel_accessible($dbconn, $channel_name, $auth_token == null);
-
-    $result_tag = pg_query_params($dbconn, 
-            'SELECT time, label, latitude, longitude, altitude, description, url, id '
-            . 'FROM tag WHERE tag.channel_id=$1 ORDER BY time;', array($channel_id));
-
-    $xml = '<kml xmlns="http://www.opengis.net/kml/2.2">';
-    $xml .= '<Document>';
-    $xml .= '<name>' . $channel_name . '.kml</name>';
-    $xml .= '<open>1</open>';
-    $xml .= '<Style id="styleDocument"><LabelStyle><color>ff0000cc</color></LabelStyle></Style>';
-
-    // Output points
-    while ($row = pg_fetch_row($result_tag)) {
-        $point = Point::makeFromPgRow($row);
-        $point->access = $is_owned && $auth_token !== null;
-        $xml .= $point->toKmlPlacemark();
-    }
-
-    $xml .= '</Document>';
-    $xml .= '</kml>';
+    $xml = load_channel($type, $auth_token, $channel_name, $key);
 
     send_result(0, 'success', $xml);
 } catch (GetsAuthException $e) {
-    send_error(1, "Can't revoke token");
-    
+    send_error(1, "Gets authentication error");
 } catch (Exception $e) {
     send_error($e->getCode(), $e->getMessage());
 }

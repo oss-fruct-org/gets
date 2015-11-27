@@ -7,8 +7,13 @@
                     <xs:complexType>
                         <xs:all>
                             <xs:element type="xs:string" name="auth_token" minOccurs="1" maxOccurs="1"/>
-                            <xs:element type="xs:string" name="name" minOccurs="1" maxOccurs="1"/>
-                            <xs:element type="xs:string" name="hname" minOccurs="0" maxOccurs="1"/>
+
+                            <!-- These two parameters must be checked in script -->
+                                <xs:element type="xs:string" name="track_id" minOccurs="0"/>
+                                <xs:element type="xs:string" name="polygon_id" minOccurs="0"/>
+
+                            
+                            <xs:element type="xs:string" name="name" minOccurs="0" maxOccurs="1"/>
                             <xs:element type="xs:string" name="description" minOccurs="0" maxOccurs="1"/>
                             <xs:element type="xs:string" name="url" minOccurs="0" maxOccurs="1"/>
                             <xs:element type="xs:integer" name="category_id" minOccurs="0" maxOccurs="1"/>

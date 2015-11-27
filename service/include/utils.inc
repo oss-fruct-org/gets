@@ -670,7 +670,7 @@ function require_channel_accessible($dbconn, $channel_name, $is_public) {
     return $result_check_row;
 }
 
-/*
+/**
  * Check that current user owns channel $channel_name
  * Admin users also has permissions
  * Returns: array (user_id, channel_id)
@@ -694,6 +694,29 @@ function require_channel_owned($dbconn, $channel_name) {
     return $result_check_row;
 }
 
+/**
+ * Check is user owns share with given key
+ * @param type $dbconn database connection
+ * @param type $key share key
+ * @return boolean
+ */
+function check_key_owned($dbconn, $key) {
+    if (is_user_admin($dbconn)) {
+        return true;
+    }
+    
+    $email = auth_get_google_email();
+    $result = pg_query_params($dbconn, "SELECT count(*) "
+            . "FROM share "
+            . "JOIN channel ON share.channel_id = channel.id "
+            . "JOIN users ON users.id = channel.owner_id "
+            . "AND users.email=$1 AND share.key=$2;", array($email, $key));
+    
+    $row = pg_fetch_row($result);
+    
+    return $row[0] > 0;
+}
+
 function get_channel_id($dbconn, $channel_name) {
     $result = pg_query_params($dbconn, 'SELECT id FROM channel WHERE name = $1;', array($channel_name));
     $row = pg_fetch_row($result);
@@ -702,6 +725,28 @@ function get_channel_id($dbconn, $channel_name) {
     } else {
         return null;
     }
+}
+
+// https://stackoverflow.com/questions/834303/startswith-and-endswith-functions-in-php
+function starts_with($haystack, $needle) {
+    // search backwards starting from haystack length characters from the end
+    return $needle === "" || strrpos($haystack, $needle, -strlen($haystack)) !== FALSE;
+}
+
+function ends_with($haystack, $needle) {
+    // search forward starting from end minus needle length characters
+    return $needle === "" || (($temp = strlen($haystack) - strlen($needle)) >= 0 && strpos($haystack, $needle, $temp) !== FALSE);
+}
+
+/**
+ * Check that channel id represents track
+ * 
+ * @deprecated
+ * @param string $track_id
+ * @return boolean yes/no
+ */
+function check_track_id($track_id) {
+    return starts_with($track_id, "tr+");
 }
 
 function date_gets_to_postgres($gets_date) {

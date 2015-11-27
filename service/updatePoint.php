@@ -2,7 +2,6 @@
 
 include_once('include/methods_url.inc');
 include_once('include/utils.inc');
-include_once('include/public_token.inc');
 include_once('include/auth.inc');
 include_once('datatypes/point.inc');
 
@@ -44,7 +43,8 @@ try {
     // Point category condition
     if ($point_category) {
         $point_category_escaped = pg_escape_string($dbconn, $point_category);
-        $where_arr[] = "safe_cast_to_json(tag.description)->>'category_id'='${point_category_escaped}'";
+        $where_arr[] = "(safe_cast_to_json(tag.description)->>'category_id'='${point_category_escaped}' OR "
+        . "safe_cast_to_json(channel.description)->>'category_id'='${point_category_escaped}')";
     }
 
     // UUID condition

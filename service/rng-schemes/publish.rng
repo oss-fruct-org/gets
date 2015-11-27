@@ -17,6 +17,9 @@
         <element name="track_name">
           <text/>
         </element>
+        <element name="polygon_name">
+          <text/>
+        </element>
         <element name="category_id">
           <data type="integer"/>
         </element>

@@ -12,6 +12,7 @@ try {
 
     $track_name = get_request_argument($dom, 'track_name');
     $category_id = get_request_argument($dom, 'category_id', null);
+    $polygon_name = get_request_argument($dom, 'polygon_name', null);
 
     auth_set_token($auth_token);
     $dbconn = pg_connect(GEO2TAG_DB_STRING);
@@ -19,8 +20,11 @@ try {
 
     if ($category_id) {
         $channel_name = ensure_category_channel($dbconn, $category_id);
-    } else {
+    } else if ($track_name) {
         $channel_name = $track_name;
+        require_channel_owned($dbconn, $channel_name);
+    } else {
+        $channel_name = $polygon_name;
         require_channel_owned($dbconn, $channel_name);
     }
 

@@ -30,8 +30,8 @@ MapClass.ROUTE_TYPE_CURVE_RAW = 'curve-raw';
 MapClass.ROUTE_TYPE_CURVE_SERVICE = 'curve-service';
 
 // Route colors
-MapClass.ROUTE_TYPE_RAW_COLOR = '#8B8B8B';
-MapClass.ROUTE_TYPE_SERVICE_COLOR = '#4c4cff';
+MapClass.ROUTE_TYPE_RAW_COLOR = '#0000FF';//'#8B8B8B';
+MapClass.ROUTE_TYPE_SERVICE_COLOR = '#0000FF';//'#4c4cff';
 MapClass.ROUTE_TYPE_CURVE_RAW_COLOR = '#00AA00';
 MapClass.ROUTE_TYPE_CURVE_SERVICE_COLOR = '#00AA00';
 
@@ -241,9 +241,9 @@ MapClass.prototype.addRawRoute = function (track, mapRoute) {
             {
                 color: track.onMap[MapClass.ROUTE_TYPE_RAW].color, //this.getRandomColor(),
                 weight: 5,
-                opacity: 0.8,
-                lineJoin: 'round',
-                lineCap: 'round'
+                opacity: 1
+                //lineJoin: 'round',
+                //lineCap: 'round'
             }
     ).bindPopup('<b>Track</b>: ' + track.hname);
     
@@ -279,9 +279,9 @@ MapClass.prototype.addServiceRoute = function (track, mapRoute) {
                 {
                     color: track.onMap[MapClass.ROUTE_TYPE_SERVICE].color,
                     weight: 5,
-                    opacity: 0.8,
-                    lineJoin: 'round',
-                    lineCap: 'round'
+                    opacity: 1
+                    //lineJoin: 'round',
+                    //lineCap: 'round'
                 }
         ).bindPopup('<b>Track</b>: ' + track.hname);
 
@@ -874,8 +874,8 @@ MapClass.prototype.drawValidPoints = function (grid) {
     
     for (var i = 0, len = grid.length; i < len; i++) {
         for (var j = 0, len2 = grid[i].length; j < len2; j++) {
-            L.circle(grid[i][j].coords, 2, {
-                color: grid[i][j].valid ? (grid[i][j].waypoint ? '#0000ff' : '#006600') : '#660000',
+            L.circle(grid[i][j].coords, 0.2, {
+                color: grid[i][j].valid ? (grid[i][j].waypoint ? '#0000ff' : '#00AA00') : '#AA0000',
                 weight: 2,
                 opacity: 1
             }).addTo(group);
@@ -898,8 +898,8 @@ MapClass.prototype.drawPath = function (path, label, color) {
             ], 
             {
                 color: color_, 
-                weight: 2,
-                opacity: 0.9
+                weight: 5,
+                opacity: 1
             }
         ).addTo(group);
 
@@ -935,11 +935,11 @@ MapClass.prototype.drawTriangulation = function (tri) {
                     new L.LatLng(tri[i].points_[1].x, tri[i].points_[1].y)
                 ],
                 {
-                    color: tri[i].constrained_edge[0] ? '#660000' : '#006600',
+                    color: '#000000',//tri[i].constrained_edge[0] ? '#FF0000' : '#00FF00',
                     weight: 2,
-                    opacity: 0.7,
-                    fillOpacity: 0.5,
-                    fillColor: '#00CC66'
+                    opacity: 0.7//,
+                    //fillOpacity: 0.5,
+                    //fillColor: '#00CC66'
                 }
         ).addTo(group);
 
@@ -949,11 +949,11 @@ MapClass.prototype.drawTriangulation = function (tri) {
                     new L.LatLng(tri[i].points_[2].x, tri[i].points_[2].y)
                 ],
                 {
-                    color: tri[i].constrained_edge[1] ? '#660000' : '#006600',
+                    color: '#000000',//tri[i].constrained_edge[1] ? '#FF0000' : '#00FF00',
                     weight: 2,
-                    opacity: 0.7,
-                    fillOpacity: 0.5,
-                    fillColor: '#00CC66'
+                    opacity: 0.7//,
+                    //fillOpacity: 0.5,
+                    //fillColor: '#00CC66'
                 }
         ).addTo(group);
 
@@ -963,11 +963,11 @@ MapClass.prototype.drawTriangulation = function (tri) {
                     new L.LatLng(tri[i].points_[0].x, tri[i].points_[0].y)
                 ],
                 {
-                    color: tri[i].constrained_edge[2] ? '#660000' : '#006600',
+                    color: '#000000',//tri[i].constrained_edge[2] ? '#FF0000' : '#00FF00',
                     weight: 2,
-                    opacity: 0.7,
-                    fillOpacity: 0.5,
-                    fillColor: '#00CC66'
+                    opacity: 0.7//,
+                    //fillOpacity: 0.5,
+                    //fillColor: '#00CC66'
                 }
         ).addTo(group);
     }
@@ -1041,8 +1041,8 @@ MapClass.prototype.drawLatLngPolyline = function (path, label, color) {
             ], 
             {
                 color: color_, 
-                weight: 2,
-                opacity: 0.9,
+                weight: 5,
+                opacity: 1,
                 lineJoin: 'round',
                 lineCap: 'round'
             }

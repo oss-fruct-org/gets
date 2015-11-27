@@ -285,13 +285,20 @@ TracksPage.prototype.initPage = function() {
                     self._mapCtrl.drawConvexHullObjects(obsts);
                     //self._mapCtrl.drawBoundingBox(obsts);
                     self._mapCtrl.drawValidPoints(track.esp.grid);
-                    self._mapCtrl.drawPath(track.esp.path, 'Grid Shortest path - Points Num: ' + track.esp.path.length, '#0000FF');//self._mapCtrl.drawPath(track.esp.pp);
+                                        
+                    self._mapCtrl.drawPath(track.esp.path, 'Grid Shortest path - Points Num: ' + track.esp.path.length + 
+                            '; D: ' + track.esp.path_dist + 
+                            'm; A: ' + self._routes.calcAnglesSumLineSegs(track.esp.path, self._mapCtrl) + 
+                            '°; DF: ' + self._routes.calcFDistance(track, track.esp.path.map(function (elem) {
+                        return elem.coords;
+                    }), self._mapCtrl), '#423075');
+                    
                     //self._mapCtrl.drawEncodedPolyline(track.esp.curve, 'Shortest path - Curve waypoints - fixed');
                     //self._mapCtrl.drawEncodedPolyline(track.esp.curve_, 'Grid Shortest path - Curve', '#0000BB');
-                    self._mapCtrl.drawLatLngPolyline(track.esp.curve_, 'Tri. Shortest path - Curve P-s Num: ' + track.esp.curve_.length + 
-                            '; D: ' + self._routes.calcDistLatLngs(track.esp.curve_) + 
-                            'm; A: ' + self._routes.calcAnglesSumLatLngs(track.esp.curve_, self._mapCtrl) + 
-                            '°; DF: ' + self._routes.calcFDistance(track, track.esp.curve_, self._mapCtrl), '#0000BB');
+                    self._mapCtrl.drawLatLngPolyline(track.esp.curve_.curve, 'Grid Shortest path - Curve (inaccurate) P-s Num: ' + track.esp.curve_.curve.length + 
+                            '; D: ' + self._routes.calcDistLatLngs(track.esp.curve_.curve) + 
+                            'm; A: ' + self._routes.calcAnglesSumLatLngs(track.esp.curve_.curve, self._mapCtrl) + 
+                            '°; DF: ' + track.esp.curve_.df, '#2B4D6D');
                 }, self._mapCtrl);
                     //self._mapCtrl.drawEncodedPolyline(track.esp.curve_s, 'Shortest path - Curve sections');
                 self._routes.ESP_trianglebased(track, function (obsts) {
@@ -303,12 +310,12 @@ TracksPage.prototype.initPage = function() {
                             'm; A: ' + self._routes.calcAnglesSumLineSegs(track.esp_tri.path, self._mapCtrl) + 
                             '°; DF: ' + self._routes.calcFDistance(track, track.esp_tri.path.map(function (elem) {
                         return elem.coords;
-                    }), self._mapCtrl), '#2E0854');
+                    }), self._mapCtrl), /*'#2E0854'*/'#A8733A');
                     
-                    self._mapCtrl.drawLatLngPolyline(track.esp_tri.curve_, 'Tri. Shortest path - Curve P-s Num: ' + track.esp_tri.curve_.length + 
-                            '; D: ' + self._routes.calcDistLatLngs(track.esp_tri.curve_) + 
-                            'm; A: ' + self._routes.calcAnglesSumLatLngs(track.esp_tri.curve_, self._mapCtrl) + 
-                            '°; DF: ' + self._routes.calcFDistance(track, track.esp_tri.curve_, self._mapCtrl), '#7D26CD');
+                    self._mapCtrl.drawLatLngPolyline(track.esp_tri.curve_.curve, 'Tri. Shortest path - Curve (inaccurate) P-s Num: ' + track.esp_tri.curve_.curve.length + 
+                            '; D: ' + self._routes.calcDistLatLngs(track.esp_tri.curve_.curve) + 
+                            'm; A: ' + self._routes.calcAnglesSumLatLngs(track.esp_tri.curve_.curve, self._mapCtrl) + 
+                            '°; DF: ' + track.esp_tri.curve_.df, '#7D26CD');
                 }, self._mapCtrl);
                 self._trackInfo.toggleOverlay();
             }, 0);
@@ -356,7 +363,7 @@ TracksPage.prototype.initPage = function() {
                         self._trackInfo.addRouteOnMap(track, MapClass.ROUTE_TYPE_SERVICE);
                     }
                     self._trackInfo.toggleOverlay();
-                });
+                }, self._mapCtrl);
             } catch (Exception) {
                 self._trackInfo.toggleOverlay();
                 MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);

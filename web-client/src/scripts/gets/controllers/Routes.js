@@ -17,7 +17,7 @@ function Routes() {
     };
 }
 
-Routes.prototype.makeGoogleDirectionsRoute = function (track, options, callback) {
+Routes.prototype.makeGoogleDirectionsRoute = function (track, options, callback, map) {
     if (!track) {
         throw new GetsWebClientException('Routes Error', 'makeGoogleDirectionsRoute, track undefined or null');
     }
@@ -77,11 +77,48 @@ Routes.prototype.makeGoogleDirectionsRoute = function (track, options, callback)
         throw new GetsWebClientException('Routes Error', 'makeGoogleDirectionsRoute, getRouteRequest failed ' + textStatus);
     });
     
+    var that = this;
     getRouteRequest.done(function(data, textStatus, jqXHR) {
         track.serviceRoutes = [];
         track.bounds = jqXHR.responseJSON.routes[0].bounds;
         for (var i = 0, len = jqXHR.responseJSON.routes.length; i < len; i++) {
-            track.serviceRoutes.push(jqXHR.responseJSON.routes[i].overview_polyline.points);
+            var pointsStr = jqXHR.responseJSON.routes[i].overview_polyline.points;
+            track.serviceRoutes.push(pointsStr);
+            
+            var pointsArr = L.PolylineUtil.decode(pointsStr);
+            pointsArr = pointsArr.map(function (elem) {
+                return new L.LatLng(elem[0], elem[1]);
+            });
+            
+            var pointsArr2 = L.PolylineUtil.decode(pointsStr);
+            pointsArr2 = pointsArr2.map(function (elem) {
+                return {coords: new L.LatLng(elem[0], elem[1])};
+            });
+            
+            Logger.error('Google.Path PNum: ' + pointsArr.length + 
+                ' L: ' + that.calcDistLatLngs(pointsArr) + 
+                ' A: ' + that.calcAnglesSumLatLngs(pointsArr, map) + 
+                ' DF: 0');
+                      
+            Logger.error('Google.Path \u005Catpbox{PN = ' + pointsArr.length + 
+                ' \u005C\u005C D = ' + that.calcDistLatLngs(pointsArr) + 
+                ' \u005C\u005C A = ' + that.calcAnglesSumLatLngs(pointsArr, map) + 
+                ' \u005C\u005C DF = ' + that.calcFDistance2(track, pointsArr, map) + '}');
+        
+            var bezier = that.bezierCurveszzz(pointsArr2, map);
+            Logger.error('Google.Path Bezier \u005Catpbox{PN = ' + bezier.length + 
+                ' \u005C\u005C D = ' + that.calcDistLatLngs(bezier) + 
+                ' \u005C\u005C A = ' + that.calcAnglesSumLatLngs(bezier, map) + 
+                ' \u005C\u005C DF = ' + that.calcFDistance2(track, bezier, map) + '}');
+            map.drawLatLngPolyline(bezier, 'Google.Path Bezier', /*'#BB00BB'*/'#0000FF');    
+                
+        
+            var hermite = that.smoothcurvejs(pointsArr2, map);        
+            Logger.error('Google.Path Hermite \u005Catpbox{PN = ' + hermite.length + 
+                ' \u005C\u005C D = ' + that.calcDistLatLngs(hermite) + 
+                ' \u005C\u005C A = ' + that.calcAnglesSumLatLngs(hermite, map) + 
+                ' \u005C\u005C DF = ' + that.calcFDistance2(track, hermite, map) + '}'); 
+            map.drawLatLngPolyline(hermite, 'Google.Path Hermite', /*'#BB00BB'*/'#0000FF');    
         }
             
         if (callback) {
@@ -356,13 +393,91 @@ Routes.prototype.simpleCurve = function (track, type, map) {
 
 Routes.prototype.ESP_gridbased = function (track, callback, map) {
     var that = this;
-    this.generateGrid(track, 15);
+    this.generateGrid(track, 2);
     this.requestOSMObstacles(track, function (obsts) {
         that.markInvalidPointsOnGrid(track, obsts);
         that.AStarGrid(track);
-        track.esp.curve_ = that.bezierCurves(that.partitionToCShape(track.esp.path, map), obsts, map);
+        track.esp.curve_ = that.bezierCurves(that.partitionToCShape(track.esp.path, map));
+        
+        var trackPoints = track.points.map(function (elem) {
+            var crs = elem.coordinates.split(',').map(parseFloat);
+            return new L.LatLng(crs[1], crs[0]);
+        });
+        
+        var trackPoints2 = track.points.map(function (elem) {
+            var crs = elem.coordinates.split(',').map(parseFloat);
+            return {coords: new L.LatLng(crs[1], crs[0])};
+        });
+        
+        /*that.makeGoogleDirectionsRoute(track, [{name: 'mode', value: 'walking'}], function () {
+            Logger.error('O.Path PNum: ' + trackPoints.length + 
+                ' L: ' + that.calcDistLatLngs(trackPoints) + 
+                ' A: ' + that.calcAnglesSumLatLngs(trackPoints, map) + 
+                ' DF: 0');
+        });*/        
+        Logger.error('O.Path \u005Catpbox{PN = ' + trackPoints.length + 
+                ' \u005C\u005C D = ' + that.calcDistLatLngs(trackPoints) + 
+                ' \u005C\u005C A = ' + that.calcAnglesSumLatLngs(trackPoints, map) + 
+                ' \u005C\u005C DF = 0' + '}');
+        
+        var bezier0 = that.bezierCurveszzz(trackPoints2, map);
+        
+        map.drawLatLngPolyline(bezier0, 'O.Path Bez: ', '#0000FF');
+                      
+        Logger.error('O.Path Bez \u005Catpbox{PN = ' + bezier0.length + 
+                ' \u005C\u005C D = ' + that.calcDistLatLngs(bezier0) + 
+                ' \u005C\u005C A = ' + that.calcAnglesSumLatLngs(bezier0, map) + 
+                ' \u005C\u005C DF = ' + that.calcFDistance3(track, bezier0, map) + '}');
+        
+        var hermite0 = that.smoothcurvejs(trackPoints2, map);
+        
+        map.drawLatLngPolyline(hermite0, 'O.Path Hermite: ', '#0000FF');
+                      
+        Logger.error('O.Path Hermite \u005Catpbox{PN = ' + hermite0.length + 
+                ' \u005C\u005C D = ' + that.calcDistLatLngs(hermite0) + 
+                ' \u005C\u005C A = ' + that.calcAnglesSumLatLngs(hermite0, map) + 
+                ' \u005C\u005C DF = ' + that.calcFDistance3(track, hermite0, map) + '}');
+        
+        
+        ///////////////////////////////////////////////////////////////////
+        
+      
+        Logger.error('Grid O.Path \u005Catpbox{PN = ' + track.esp.path.length + 
+                ' \u005C\u005C D = ' + that.calcDistLineSegs(track.esp.path) + 
+                ' \u005C\u005C A = ' + that.calcAnglesSumLineSegs(track.esp.path, map) + 
+                ' \u005C\u005C DF = ' + that.calcFDistance3(track, track.esp.path.map(function (elem) {
+                        return elem.coords;
+                }), map) + '}');
+        
         //map.drawEncodedPolyline(L.PolylineUtil.encode(that.bezierCurvesz(track.esp.path)), 'Grid Shortest path - Curve---', '#0000BB');
-        map.drawEncodedPolyline(L.PolylineUtil.encode(that.bezierCurveszzz(that.removeClosePoints(track.esp.path), map)), 'Grid Shortest path - Curve---', '#0000BB');
+        //map.drawEncodedPolyline(L.PolylineUtil.encode(that.bezierCurveszzz(that.removeClosePoints(track.esp.path), map)), 'Grid Shortest path - Curve---', '#0000BB');
+        
+        var bezier = that.bezierCurveszzz(track.esp.path, map);
+                      
+        Logger.error('Grid Bez.Path \u005Catpbox{PN = ' + bezier.length + 
+                ' \u005C\u005C D = ' + that.calcDistLatLngs(bezier) + 
+                ' \u005C\u005C A = ' + that.calcAnglesSumLatLngs(bezier, map) + 
+                ' \u005C\u005C DF = ' + that.calcFDistance3(track, bezier, map) + '}');
+        
+        map.drawLatLngPolyline(bezier, 'Grid Bez.Path - Curve (Bezier)| P-s Num: ' + bezier.length + 
+                '; D: ' + that.calcDistLatLngs(bezier) + 
+                'm; A: ' + that.calcAnglesSumLatLngs(bezier, map) + 
+                '°; DF: ' + that.calcFDistance(track, bezier, map), '#2A064E');
+               
+        //that.calcAnglesSumTrack(track);
+        //that.smoothcurvejs(track.esp_tri.path, map);
+        var hermite = that.smoothcurvejs(track.esp.path, map);
+        
+        map.drawLatLngPolyline(hermite, 'Grid Bez.Path - Curve Lib (Hermite 0.4)| P-s Num: ' + hermite.length + 
+                '; D: ' + that.calcDistLatLngs(hermite) + 
+                'm; A: ' + that.calcAnglesSumLatLngs(hermite, map) + 
+                '°; DF: ' + that.calcFDistance(track, hermite, map), '#862E62');
+                      
+        Logger.error('Grid Hermite.Path \u005Catpbox{PN = ' + hermite.length + 
+                ' \u005C\u005C D = ' + that.calcDistLatLngs(hermite) + 
+                ' \u005C\u005C A = ' + that.calcAnglesSumLatLngs(hermite, map) + 
+                ' \u005C\u005C DF = ' + that.calcFDistance3(track, hermite, map) + '}');
+        
         
       
         //that.pointToPointCurve(track, obsts);
@@ -381,12 +496,18 @@ Routes.prototype.generateGrid = function (track, width) {
     
     var bbox = track.bounds;
     
-    var R = 6378137;//Earth radius in meters
+    var R = 6378137, //Earth radius in meters
+        margin = 50;
     
     var north = bbox.northeast.lat,
         east = bbox.northeast.lng,
         south = bbox.southwest.lat,
         west = bbox.southwest.lng;
+
+    north += (180 / Math.PI) * (margin / R);  
+    east += (180 / Math.PI) * (margin / (R * Math.cos(Math.PI * north / 180.0)));
+    south -= (180 / Math.PI) * (margin / R);  
+    west -= (180 / Math.PI) * (margin / (R * Math.cos(Math.PI * south / 180.0)));
     
     var topleft = new L.LatLng(north, west),
         topright = new L.LatLng(north, east),
@@ -522,7 +643,8 @@ Routes.prototype.AStarGrid = function (track) {
     }
     //graph.result.splice(6, 1);
     //graph.result.splice(11, 1);
-    track.esp.path = graph.result;   
+    track.esp.path = graph.result;
+    track.esp.path_dist = this.calcDistLineSegs(track.esp.path);
     Logger.debug(track.esp.path);
 };
 
@@ -623,12 +745,17 @@ Routes.prototype.partitionToCShape = function (points, map) {
 
 Routes.prototype.bezierCurves = function (points, obstacles, map) { 
     // only 4 or more points can create S-shaped curve, which is the type of curve we want to get rid
+    
+    var df = 0;
     if (points.length < 4) {
         var coordsArray = [];
         for (var i = 0; i < points.length; i++) {
             coordsArray.push(points[i].coords);
         }
-        return coordsArray;
+        return {
+            curve: coordsArray,
+            df: df
+        };
     }
     
     var U_DEFAULT = 0.7;
@@ -687,7 +814,7 @@ Routes.prototype.bezierCurves = function (points, obstacles, map) {
     var b0 = points[0].coords,
         b1 = pointsAdd(points[0].coords, pointsMult(pointsSubs(points[1].coords, points[0].coords), u / 2)),
         b2 = pointsAdd(points[0].coords, pointsSubs(pointsSubs(points[1].coords, points[0].coords), pointsMult(pointsSubs(points[1].coords, points[0].coords), u / 2))),
-        b3 = /*points[1].waypoint ? points[1].coords : */pointsAdd(points[0].coords, pointsAdd(pointsSubs(points[1].coords, points[0].coords), pointsMult(pointsSubs(pointsSubs(points[2].coords, points[1].coords), pointsSubs(points[1].coords, points[0].coords)), u / 4)));
+        b3 = pointsAdd(points[0].coords, pointsAdd(pointsSubs(points[1].coords, points[0].coords), pointsMult(pointsSubs(pointsSubs(points[2].coords, points[1].coords), pointsSubs(points[1].coords, points[0].coords)), u / 4)));
     /*while (checkCollision(b0, b1, b2, b3)) {
         Logger.debug('u = ' + u);
         if (u < 0.1) break;
@@ -698,27 +825,27 @@ Routes.prototype.bezierCurves = function (points, obstacles, map) {
         b3 = pointsAdd(points[0].coords, pointsAdd(pointsSubs(points[1].coords, points[0].coords), pointsMult(pointsSubs(pointsSubs(points[2].coords, points[1].coords), pointsSubs(points[1].coords, points[0].coords)), u / 4)));
     }   
     if (map) {
-        map.addMarker(b0, 'b0');
-        map.addMarker(b1, 'b1');
-        map.addMarker(b2, 'b2');
-        map.addMarker(b3, 'b3');
+        map.addMarker(points[0].coords, 'i = ' + 0);
+        //map.addMarker(b0, 'b0');
+        //map.addMarker(b1, 'b1');
+        //map.addMarker(b2, 'b2');
+        //map.addMarker(b3, 'b3');
     };*/
     for (var j = 0.0; j <= 1; j += accuracy) {
-        //Logger.debug('j = ' + j);       
-        //var bez = bezier(j, b0, b1, b2, b3);
-        //Logger.debug('bez = ' + bez.lat + ', ' + bez.lng);
         curve.push(bezier(j, b0, b1, b2, b3));
     }
     //map.drawEncodedPolyline(L.PolylineUtil.encode(curve), 'a')
     
     u = U_DEFAULT;
+    var dfArray = [];
     for (var i = 1, len = points.length; i < len - 2; i++) {
         if (points[i].isInflection) u = U_DEFAULT;       
-        b0 = /*points[i].waypoint ? points[i].coords : */pointsAdd(points[i].coords, pointsMult(pointsSubs(pointsSubs(points[i + 1].coords, points[i].coords), pointsSubs(points[i].coords, points[i - 1].coords)), u / 4));
+        b0 = pointsAdd(points[i].coords, pointsMult(pointsSubs(pointsSubs(points[i + 1].coords, points[i].coords), pointsSubs(points[i].coords, points[i - 1].coords)), u / 4));
         b1 = pointsAdd(points[i].coords, pointsMult(pointsSubs(points[i + 1].coords, points[i].coords), u / 2));
         b2 = pointsAdd(points[i].coords, pointsSubs(pointsSubs(points[i + 1].coords, points[i].coords), pointsMult(pointsSubs(points[i + 1].coords, points[i].coords), u / 2)));
-        b3 = /*points[i + 1].waypoint ? points[i + 1].coords : */pointsAdd(points[i].coords, pointsAdd(pointsSubs(points[i + 1].coords, points[i].coords), pointsMult(pointsSubs(pointsSubs(points[i + 2].coords, points[i + 1].coords), pointsSubs(points[i + 1].coords, points[i].coords)), u / 4)));
+        b3 = pointsAdd(points[i].coords, pointsAdd(pointsSubs(points[i + 1].coords, points[i].coords), pointsMult(pointsSubs(pointsSubs(points[i + 2].coords, points[i + 1].coords), pointsSubs(points[i + 1].coords, points[i].coords)), u / 4)));
         //
+        dfArray.push(b1.distanceTo(points[i].coords));
         //Logger.debug('b i = ' + i + ', u = ' + u);
         /*while (checkCollision(b0, b1, b2, b3)) {            
             if (u < 0.2) break;
@@ -729,17 +856,19 @@ Routes.prototype.bezierCurves = function (points, obstacles, map) {
             b3 = pointsAdd(points[i].coords, pointsAdd(pointsSubs(points[i + 1].coords, points[i].coords), pointsMult(pointsSubs(pointsSubs(points[i + 2].coords, points[i + 1].coords), pointsSubs(points[i + 1].coords, points[i].coords)), u / 4)));
         }
         Logger.debug('a i = ' + i + ', u = ' + u);
-        if (map) {
-            map.addMarker(b0, 'b0');
-            map.addMarker(b1, 'b1');
-            map.addMarker(b2, 'b2');
-            map.addMarker(b3, 'b3');
+        if (map) {           
+            map.addMarker(points[i].coords, 'i = ' + i);
+            //map.addMarker(b0, 'b0');
+            //map.addMarker(b1, 'b1');
+            //map.addMarker(b2, 'b2');
+            //map.addMarker(b3, 'b3');
         }*/
         for (var j = 0.0; j <= 1; j += accuracy) {
             curve.push(bezier(j, b0, b1, b2, b3));
         }
         //map.drawEncodedPolyline(L.PolylineUtil.encode(curve), 'a');
     }
+    df = Math.max.apply(Math, dfArray);
     
     u = U_DEFAULT;
     var len = points.length;
@@ -755,19 +884,27 @@ Routes.prototype.bezierCurves = function (points, obstacles, map) {
         b1 = pointsAdd(points[len - 2].coords, pointsMult(pointsSubs(points[len - 1].coords, points[len - 2].coords), u / 2));
         b2 = pointsAdd(points[len - 2].coords, pointsSubs(pointsSubs(points[len - 1].coords, points[len - 2].coords), pointsMult(pointsSubs(points[len - 1].coords, points[len - 2].coords), u / 2)));
         b3 = points[len - 1].coords;
-    }*/  
+    }
+    if (map) {
+        //map.addMarker(b0, 'b0');
+        //map.addMarker(b1, 'b1');
+        //map.addMarker(b2, 'b2');
+        //map.addMarker(b3, 'b3');
+    }*/    
     for (var j = 0; j <= 1; j += accuracy) {
         curve.push(bezier(j, b0, b1, b2, b3));
     }
     
-    
-    /*for (var i = 0, len = points.length; i < len - 3; i += 3) {
-        for (var j = 0; j <= 1; j += accuracy) {
-            curve.push(bezier(j, points[i].coords, points[i + 1].coords, points[i + 2].coords, points[i + 3].coords));
+    /*if (map) {
+        for (var i = 0, len = points.length; i < len; i++) {
+            map.addMarker(points[i].coords, 'i = ' + i);
         }
     }*/
        
-    return curve;
+    return {
+        curve: curve,
+        df: df
+    };
 };
 
 // https://www.particleincell.com/2012/bezier-splines/
@@ -1110,15 +1247,36 @@ Routes.prototype.ESP_trianglebased = function (track, callback, map) {
     this.requestOSMObstacles(track, function (obsts) {
         that.generateTriangulation(track, obsts, map);
         that.AStarTri(track, map);
-        track.esp_tri.curve_ = that.bezierCurves(that.partitionToCShape(track.esp_tri.path), map, obsts);
+        track.esp_tri.curve_ = that.bezierCurves(track.esp_tri.path, obsts, map);
         //map.drawEncodedPolyline(L.PolylineUtil.encode(that.yetAnotherBezierCurve(that.additionalPoints(track.esp_tri.path), map)), 'Tri. Shortest path - Curve---', '#BB00BB');
+              
+        Logger.error('Tri O.Path PNum: ' + track.esp_tri.path.length + 
+                ' L: ' + that.calcDistLineSegs(track.esp_tri.path) + 
+                ' A: ' + that.calcAnglesSumLineSegs(track.esp_tri.path, map) + 
+                ' DF: ' + that.calcFDistance(track, track.esp_tri.path.map(function (elem) {
+                        return elem.coords;
+                }), map));
+                
+        Logger.error('Tri O.Path \u005Catpbox{PN = ' + track.esp_tri.path.length + 
+                ' \u005C\u005C D = ' + that.calcDistLineSegs(track.esp_tri.path) + 
+                ' \u005C\u005C A = ' + that.calcAnglesSumLineSegs(track.esp_tri.path, map) + 
+                ' \u005C\u005C DF = ' + that.calcFDistance(track, track.esp_tri.path.map(function (elem) {
+                        return elem.coords;
+                }), map) + '}');        
+        
         var bezier = that.bezierCurveszzz(track.esp_tri.path, map);
         
         map.drawLatLngPolyline(bezier, 'Tri. Shortest path - Curve (Bezier)| P-s Num: ' + bezier.length + 
                 '; D: ' + that.calcDistLatLngs(bezier) + 
                 'm; A: ' + that.calcAnglesSumLatLngs(bezier, map) + 
-                '°; DF: ' + that.calcFDistance(track, bezier, map), '#BB00BB');
+                '°; DF: ' + that.calcFDistance(track, bezier, map), /*'#BB00BB'*/'#AE3B00');
+              
+        Logger.error('Tri Bez.Path \u005Catpbox{PN = ' + bezier.length + 
+                ' \u005C\u005C D = ' + that.calcDistLatLngs(bezier) + 
+                ' \u005C\u005C A = ' + that.calcAnglesSumLatLngs(bezier, map) + 
+                ' \u005C\u005C DF = ' + that.calcFDistance(track, bezier, map) + '}');
         
+                       
         //that.calcAnglesSumTrack(track);
         //that.smoothcurvejs(track.esp_tri.path, map);
         var hermite = that.smoothcurvejs(track.esp_tri.path, map);
@@ -1126,7 +1284,12 @@ Routes.prototype.ESP_trianglebased = function (track, callback, map) {
         map.drawLatLngPolyline(hermite, 'Tri. Shortest path - Curve Lib (Hermite 0.4)| P-s Num: ' + hermite.length + 
                 '; D: ' + that.calcDistLatLngs(hermite) + 
                 'm; A: ' + that.calcAnglesSumLatLngs(hermite, map) + 
-                '°; DF: ' + that.calcFDistance(track, hermite, map), '#123456');
+                '°; DF: ' + that.calcFDistance(track, hermite, map), /*'#123456'*/'#AE9500');
+        
+        Logger.error('Tri Hermite.Path \u005Catpbox{PN = ' + hermite.length + 
+                ' \u005C\u005C D = ' + that.calcDistLatLngs(hermite) + 
+                ' \u005C\u005C A = ' + that.calcAnglesSumLatLngs(hermite, map) + 
+                ' \u005C\u005C DF = ' + that.calcFDistance(track, hermite, map) + '}');
         
         //Logger.debug('distance: ' + that.calcFDistance(track, track.esp_tri.path, map));
         callback(obsts);       
@@ -1548,7 +1711,7 @@ Routes.prototype.calcDistLineSegs = function (arr) {
         distance += arr[i].coords.distanceTo(arr[i + 1].coords);
     }
     
-    return distance.toFixedDown(3);
+    return distance.toFixedDown(2);
 };
 
 Routes.prototype.calcDistLatLngs = function (arr) {
@@ -1557,7 +1720,7 @@ Routes.prototype.calcDistLatLngs = function (arr) {
         distance += arr[i].distanceTo(arr[i + 1]);
     }
     
-    return distance.toFixedDown(3);
+    return distance.toFixedDown(2);
 };
 
 Routes.prototype.calcDistTrack = function (track) {
@@ -1572,7 +1735,7 @@ Routes.prototype.calcDistTrack = function (track) {
         distance += waypoints[i].distanceTo(waypoints[i + 1]);
     }
     
-    return distance.toFixedDown(3);
+    return distance.toFixedDown(2);
 };
 
 Routes.prototype.calcDistEncodedPolyline = function (polyline) {
@@ -1587,7 +1750,7 @@ Routes.prototype.calcDistEncodedPolyline = function (polyline) {
         distance += points[i].distanceTo(points[i + 1]);
     }
     
-    return distance.toFixedDown(3);
+    return distance.toFixedDown(2);
 };
 
 Routes.prototype.calcAnglesSumTrack = function (track, map) {
@@ -1613,7 +1776,7 @@ Routes.prototype.calcAnglesSumTrack = function (track, map) {
         sum += angle;
     }
     
-    return sum.toFixedDown(3);
+    return sum.toFixedDown(2);
 };
 
 Routes.prototype.calcAnglesSumLineSegs = function (arr, map) {
@@ -1633,7 +1796,7 @@ Routes.prototype.calcAnglesSumLineSegs = function (arr, map) {
         sum += isNaN(angle) ? 0 : angle;
     }
     
-    return sum.toFixedDown(3);
+    return sum.toFixedDown(2);
 };
 
 Routes.prototype.calcAnglesSumLatLngs = function (arr, map) {
@@ -1658,7 +1821,7 @@ Routes.prototype.calcAnglesSumLatLngs = function (arr, map) {
         sum += isNaN(angle) ? 0 : angle;
     }
     
-    return sum.toFixedDown(3);
+    return sum.toFixedDown(2);
 };
 
 Routes.prototype.calcFDistance = function (track, curve, map) {
@@ -1696,7 +1859,72 @@ Routes.prototype.calcFDistance = function (track, curve, map) {
     //Logger.debug('+++++++++++++++++++++++++++++++++'); 
     //Logger.debug(distances);
     
-    return Math.max.apply(Math, distances).toFixedDown(3);
+    return Math.max.apply(Math, distances).toFixedDown(2);
+};
+
+Routes.prototype.calcFDistance2 = function (track, curve, map) {
+    var waypoints = [];
+    for (var k = 0, len = track.points.length; k < len; k++) {
+        var point = track.points[k].coordinates.split(',').map(parseFloat);
+        waypoints.push(new L.LatLng(point[1], point[0]));
+    }
+    //Logger.debug(waypoints);
+    //Logger.debug(curve);
+    
+    var distances = [];
+    for (var index = 1; index < curve.length - 1; index++) {
+        var localDistances = [];
+        var p = map.project(curve[index], 1);
+        for (var i = 0; i < waypoints.length - 1; i++) {
+            var l1 = map.project(waypoints[i], 1),
+                l2 = map.project(waypoints[i + 1], 1); 
+                
+            localDistances.push(this.euclidian_p2e(p, l1, l2));
+        }
+        //Logger.debug(localDistances);
+        distances.push(Math.min.apply(Math, localDistances));
+    }
+    //Logger.debug('+++++++++++++++++++++++++++++++++'); 
+    //Logger.debug(distances);
+    
+    return Math.max.apply(Math, distances).toFixedDown(2);
+};
+
+Routes.prototype.calcFDistance3 = function (track, curve, map) {
+    //Logger.debug(curve);
+    var waypoints = [];
+    for (var k = 0, len = track.points.length; k < len; k++) {
+        var point = track.points[k].coordinates.split(',').map(parseFloat);
+        waypoints.push(new L.LatLng(point[1], point[0]));
+    }
+    
+    //var maxDist = -1;
+    var distances = [];
+    var index = 1;
+    for (var i = 0; i < waypoints.length - 1; i++) {
+        var l1 = map.project(waypoints[i], 1),
+            l2 = map.project(waypoints[i + 1], 1);
+    
+        //Logger.debug('+++++++++++++++++++++++++++++++++');    
+        //Logger.debug(l1);
+        //Logger.debug(l2);
+        var localDistances = [];
+        for (; index < curve.length; index++) {
+            //Logger.debug(waypoints[i + 1], curve[index]);
+            if (waypoints[i + 1].distanceTo(curve[index]) < 3) break;
+            
+            //Logger.debug('---------------------------------'); 
+            var p = map.project(curve[index], 1);
+            //Logger.debug(p);
+            localDistances.push(this.euclidian_p2e(p, l1, l2));
+        }
+        //Logger.debug(localDistances);
+        distances.push(Math.max.apply(Math, localDistances));
+    }
+    //Logger.debug('+++++++++++++++++++++++++++++++++'); 
+    //Logger.debug(distances);
+    
+    return Math.max.apply(Math, distances).toFixedDown(2);
 };
 
 Routes.prototype.smoothcurvejs = function (points, map) {
@@ -1885,5 +2113,11 @@ Routes.prototype.euclidian_p2e = function (point, edge_s, edge_e) {
     var dx = point.x - xx;
     var dy = point.y - yy;
     
+    return Math.sqrt(dx * dx + dy * dy);
+};
+
+Routes.prototype.euclidian_p2p = function (pos0, pos1) {
+    var dx = Math.abs(pos0.x - pos1.x);
+    var dy = Math.abs(pos0.y - pos1.y);
     return Math.sqrt(dx * dx + dy * dy);
 };

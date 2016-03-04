@@ -471,27 +471,46 @@ MapClass.prototype.getRoutesForTrack = function (track) {
 };
 
 MapClass.prototype.placePointsOnMap = function(pointList, markerBaseLink) {
+
     if (!pointList) {
         throw new GetsWebClientException('Map Error', 'placePointsOnMap, pointList undefined or null.');
     }
-    this.pointsLayer = new L.MarkerClusterGroup();
-     
+    this.pointsLayer = new L.MarkerClusterGroup({disableClusteringAtZoom: 17});
+
     for (var i = 0; i < pointList.length; i++) {
         var coords = pointList[i].coordinates.split(',');
-                  
-        var marker = L.marker([coords[1], coords[0]], {title: pointList[i].name}); //{icon: myIcon}
+        var marker = L.marker([coords[1], coords[0]], {title: pointList[i].name, draggable: false}); //{icon: myIcon}
+
+        marker.uuid = pointList[i].uuid;
+        marker.title = pointList[i].name;
+        marker.category_id = pointList[i].category_id;
+
+
         this.pointsLayer.addLayer(marker);
-        
+
         var popup = L.popup()
             .setContent(
-                '<b>' + pointList[i].name + 
-                '</b><br>' + pointList[i].description + 
-                (markerBaseLink ? 
-                    '<br><a id="' + this.pointsLayer.getLayerId(marker) + '" href="' + markerBaseLink.url + pointList[i].uuid + '">' + markerBaseLink.text + '</a>' : '')
-            );  
+            '<b>' + pointList[i].name +
+            '</b><br>' + pointList[i].description +
+            (markerBaseLink ?
+            '<br><a id="' + this.pointsLayer.getLayerId(marker) + '" href="' + markerBaseLink.url + pointList[i].uuid + '">' + markerBaseLink.text + '</a>' : '')
+        );
         marker.bindPopup(popup);
+
+        marker.on('contextmenu', function(e) {
+            if (this.dragging.enabled())
+                this.dragging.disable();
+            else
+                this.dragging.enable();
+            var updPoint= new PointsClass();
+            updPoint.point = {};
+            updPoint.point.uuid = this.uuid;
+            var latLng = this.getLatLng();
+            updPoint.addPoint([{name: "longitude", value: latLng.lng.toString()}, {name: "latitude", value: latLng.lat.toString()},
+                {name: "category", value: this.category_id}, {name: "title", value: this.title}], true, null);
+        });
     }
-  
+
     this.map.addLayer(this.pointsLayer);
 };
 

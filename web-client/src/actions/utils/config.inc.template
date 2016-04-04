@@ -1,0 +1,3 @@
+<?php
+define('GETS_SERVER_URL', 'localhost/service/');
+?>

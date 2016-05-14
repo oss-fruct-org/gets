@@ -22,4 +22,16 @@ define('USER_LOGIN', 'http://' . GETS_SERVER_URL . 'userLogin.php');
 define('UPDATE_POINT', 'http://' . GETS_SERVER_URL . 'updatePoint.php');
 define('PUBLISH', 'http://' . GETS_SERVER_URL . 'publish.php');
 define('UNPUBLISH', 'http://' . GETS_SERVER_URL . 'unpublish.php');
+
+define('ADD_CATEGORY_METHOD_URL', 'http://' . GETS_SERVER_URL . 'addCategory.php');
+define('DELETE_CATEGORY_METHOD_URL', 'http://' . GETS_SERVER_URL . 'deleteCategory.php');
+define('ADD_ADMIN_METHOD_URL', 'http://' . GETS_SERVER_URL . 'addAdminUser.php');
+define('GET_USERS_METHOD_URL', 'http://' . GETS_SERVER_URL . 'getUsers.php');
+define('DELETE_USER_METHOD_URL', 'http://' . GETS_SERVER_URL . 'deleteUser.php');
+define('GET_USER_POINTS_URL', 'http://' . GETS_SERVER_URL . 'getUserPoints.php');
+define('UPDATE_USER_POINT', 'http://' . GETS_SERVER_URL . 'updateUserPoint.php');
+define('GET_USER_TRACKS_URL', 'http://' . GETS_SERVER_URL . 'getUserTracks.php');
+define('UPDATE_USER_TRACK', 'http://' . GETS_SERVER_URL . 'updateUserTrack.php');
+define('UPDATE_CATEGORY_METHOD_URL', 'http://' . GETS_SERVER_URL . 'updateCategory.php');
+define('REMOVE_POINT_BY_ID_METHOD_URL', 'http://' . GETS_SERVER_URL . 'deletePointById.php');
 ?>

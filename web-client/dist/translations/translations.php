@@ -76,6 +76,7 @@ function handleCookieValue() {
         if (strlen($lang_value) === 2) {
             if (array_key_exists($lang_value, $available_langs)) {
                 $lang = $lang_value;
+                $_SESSION['POST'] = $_POST;
                 header('Location: ' . $_SERVER['PHP_SELF'] . '?lang=' . $lang);
                 return TRUE;
             }

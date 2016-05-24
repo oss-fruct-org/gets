@@ -5,6 +5,7 @@ $translations = array(
     'points' => 'Точки',//'' => '',
     'tracks' => 'Маршруты', 
     'polygons' => 'Полигоны',  
+    'admin' => 'Админ',
     'sign-in' => 'Войти', 
     'sign-out' => 'Выйти', 
     
@@ -119,7 +120,37 @@ $translations = array(
     'all' => 'Все', 
     'public' => 'Публичные',
     'private' => 'Приватные', 
-    'search' => 'Поиск'
+    'search' => 'Поиск',
+
+    //Admins
+    //Admins menu strings
+    'admin-home' => 'Главная', 
+    'admin-categories' => 'Категории', 
+    'admin-users' => 'Пользователи', 
+    'admin-cont' => 'Контент', 
+
+    //Admins categories page
+    'list-of-all-categories' => 'Список всех категорий',
+    'adding-a-category' => 'Добавление категории',
+
+    //Admins users page
+    'search..' => 'Поиск..',
+    'all' => 'Все',
+    'trusted' => 'Доверенный',
+    'trusteds' => 'Доверенные',
+    'admins' => 'Админы',
+    'rights' => 'Права',
+    'list-of-all-users' => 'Список всех пользователей',
+    'simple' => 'Обычный',
+   
+    //Admins content page
+    'list-of-all-points' => 'Список всех точек',
+    'list-of-all-tracks' => 'Список всех маршрутов',
+
+    //other words
+    'show-on-map' => 'Показать на карте',
+    'delete' => 'Удалить',
+    'more' => 'Еще',
 );
 ?>
 

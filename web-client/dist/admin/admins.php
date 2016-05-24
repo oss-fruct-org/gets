@@ -1,10 +1,12 @@
-<?php
-require_once('./config.php');
-require_once(TRANSLATIONS_SCRIPT);
-session_start();
+<?php 
+require_once('./config.php'); echo '!!! '. TRANSLATIONS_SCRIPT;
+require_once(TRANSLATIONS_SCRIPT); 
+echo '   admins ' . __FILE__;
+session_start(); echo "azaza " . $_SESSION['g2t_token'];
 ?>
 <html>
-    <head>               
+    <head>     
+        <link rel="stylesheet" href="styles/bootstrap-3.2.0/bootstrap.css">          
         <link rel="stylesheet" href="styles/bootstrap-3.2.0/bootstrap.min.css">
         <link rel="stylesheet" href="styles/bootstrap-3.2.0/bootstrap-theme.min.css">
         <link rel="stylesheet" type="text/css" href="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.css"/>
@@ -72,24 +74,86 @@ session_start();
                 ?>
             </div>
             <div class="main-content">
+
                 <div class="action-menu">
-                    <?php
-                    require_once('./widgets/TracksMain.inc');
-                    require_once('./widgets/TrackInfo.inc');
-                    require_once('./widgets/PointInfo.inc');
-                    if (isset($_SESSION['g2t_token'])) {
+                    
+                    <?php 
+                    //require_once('./widgets/TracksMain.inc');
+                   // require_once('./widgets/TrackInfo.inc');
+                   // require_once('./widgets/PointInfo.inc');
+                   /* if (isset($_SESSION['g2t_token'])) {                        
                         require_once('./widgets/TrackEdit.inc');
                         require_once('./widgets/PointEdit.inc');
-                    }
+                    }*/
                     ?>
+
+                    
+
+                    <div id="tracks-main-page" class="action-menu-container hidden">
+                        <div class="action-menu-inner-content"> 
+                            <?php
+                                require_once('./widgets/AdminsMenu.inc');
+                                echo get_admin_menu_item($_GET['menu']);
+                            ?>
+                          <!--  <div><p>Категории</p></div>  
+                            <div><p>hghfghgfhf</p></div> 
+
+                            <ul class="nav nav-pills nav-stacked">
+                                <li><a href="#">Home</a></li>
+                                <li class='active'><a href="#">Home</a></li>
+                                <li><a href="#">Home</a></li>
+                            </ul>-->
+
+                            <div id="tracks-list" class="list-group">
+                            </div>            
+                        </div>
+                    </div>
                 </div>
-                <div id="map"></div> 
+                <div class="map">
+                  
+                      Тут категории, но они спрятаны, так надо, так надо !
+
+                        <p>аа вот тут табличка с категориями ? </p> 
+                        <table >
+                            <?php 
+                                require_once('./actions/getCategoriesAdmin.php');
+                            ?>
+                        </table>
+                        <form method="post" action="./actions/addCategoriesAdmin.php" >
+                            <p>Имя</p>
+                            <input name="name" type="text"> <br/>
+                            <p>Описание</p>
+                            <input name="description" type="text"> <br/>
+                            <p>URL</p>
+                            <input name="url" type="text"> <br/>
+                            <input name="submit" type="submit" value="Добавить"/>
+                        </form>    <!-- -->
+ 
+                        А тут про добавление админов
+
+                        <form method="post" action="./actions/addAdminUser.php" >
+                            <p>admin id</p>
+                            <input name="admin_id" type="text"> <br/>
+                            <?php
+                                echo  "<input name=token type=\"hidden\" value=\"" . $_SESSION['g2t_token'] . "\"/>";
+                            ?>                  
+                            <input name="submit" type="submit" value="Добавить"/>
+                        </form> 
+                         
+                </div> 
             </div>
-            <div class="main-footer">
+           <!--- <div class="main-footer">
                 <?php
-                require_once('./widgets/Footer.inc');
-                ?>
-            </div>
-        </div>       
+                /*require_once('./widgets/Footer.inc');
+                //$xml = simplexml_load_file('./actions/getCategories.php');
+                //$xml = require_once('./actions/getCategories.php');
+                echo "zaza\n";
+echo $xml;*/
+              /*  foreach($xml->xpath("content/categories/category") as $i){
+                    echo "ИМЯ:" . $i->name . "<br/> " ;  
+                }*/
+            ?>
+            </div> -->
+        </div>         
     </body>
 </html>

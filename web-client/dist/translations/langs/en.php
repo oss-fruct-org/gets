@@ -5,6 +5,7 @@ $translations = array(
     'points' => 'Points',//'' => '',
     'tracks' => 'Tracks', 
     'polygons' => 'Polygons',  
+    'admin' => 'Admin',
     'sign-in' => 'Sign In', 
     'sign-out' => 'Sign Out', 
     
@@ -118,7 +119,37 @@ $translations = array(
     'all' => 'All', 
     'public' => 'Public',
     'private' => 'Private', 
-    'search' => 'Search'
+    'search' => 'Search',
+
+    //Admins
+    //Admins menu strings
+    'admin-home' => 'Главная', 
+    'admin-categories' => 'Категории', 
+    'admin-users' => 'Пользователи', 
+    'admin-cont' => 'Контент', 
+
+    //Admins categories page
+    'list-of-all-categories' => 'List of all categories',
+    'adding-a-category' => 'Adding a category',
+
+    //Admins users page
+    'search..' => 'Search..',
+    'all' => 'All',
+    'trusted' => 'Trusted',
+    'trusteds' => 'Trusted',
+    'admins' => 'Admin',
+    'rights' => 'Rights',
+    'list-of-all-users' => 'List of all users',
+    'simple' => 'Simple',
+
+    //Admins content page
+    'list-of-all-points' => 'List of all points',
+    'list-of-all-tracks' => 'List of all tracks',
+
+    //other words
+    'show-on-map' => 'Show on map',
+    'delete' => 'Удалить',
+    'more' => 'Еще',
 );
 ?>
 

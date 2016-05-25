@@ -14,6 +14,10 @@ class Point {
     public $altitude = 0;
     public $time;
     public $uuid;
+    public $rating = 0;
+    public $rating_positive = 0;
+    public $rating_negative = 0;
+
     
     public $access = true;
     public $category_id;
@@ -124,7 +128,9 @@ class Point {
         
         $xml .= '<Data name="time"><value>' . htmlspecialchars($this->time) . '</value></Data>';
         $xml .= '<Data name="uuid"><value>' . htmlspecialchars($this->uuid) . '</value></Data>';
-
+	    $xml .= '<Data name="rating"><value>' . htmlspecialchars($this->rating) . '</value></Data>';
+	    $xml .= '<Data name="rating_positive"><value>' . htmlspecialchars($this->rating_positive) . '</value></Data>';
+	    $xml .= '<Data name="rating_negative"><value>' . htmlspecialchars($this->rating_negative) . '</value></Data>';
         $xml .= '<Data name="access"><value>' . ($this->access ? "rw" : "r") . '</value></Data>';
         
         if ($this->category_id) {
@@ -184,12 +190,16 @@ class Point {
             $point->uuid = $row[7];
         }
         
-        if (array_key_exists(9, $row)) {
-            $point->category_id = (int) $row[9];
+	    $point->rating_positive = $row[8];
+        $point->rating_negative = $row[9];
+	    $point->rating = $row[8]-$row[9];
+
+        if (array_key_exists(10, $row)) {
+            $point->category_id = (int) $row[10];
         }
         
-        if (array_key_exists(8, $row)) {
-            $point->access = $row[8] === 't';
+        if (array_key_exists(11, $row)) {
+            $point->access = $row[11] === 't';
         }
         
         return $point;

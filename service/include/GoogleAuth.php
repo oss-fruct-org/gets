@@ -6,12 +6,14 @@ require_once 'config.php';
 require_once 'config.inc';
 
 //http://oss.fruct.org/projects/gets/service/include/GoogleAuth.php
+/*
 if (defined("AUTH_REDIRECT_URL")) {
     $redirectUri = AUTH_REDIRECT_URL;
 } else {
     $redirectUri = 'http://' . GETS_SERVER_URL .'/include/GoogleAuth.php';
 }
-//$redirectUri = 'http://' . $_SERVER['HTTP_HOST'] . '/service/include/GoogleAuth.php';
+*/
+$redirectUri = 'http://gets.cs.petrsu.ru/gets-rating/gets/service/include/GoogleAuth.php';
 
 $client = new Google_Client();
 $client->setAccessType('offline');

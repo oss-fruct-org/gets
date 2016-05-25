@@ -12,7 +12,7 @@ echo    '<div id="point-info-page" class="action-menu-container hidden" data-pag
                         <a id="point-info-remove" class="btn btn-danger" href="#" title="' . getString('remove-point','Remove point') . '" role="button" data-removetext="' . getString('point-remove-text','Are you sure you want to remove this point? (This action cannot be cancelled.)') . '">
                             <span class="glyphicon glyphicon-remove"></span> ' . getString('remove-point','Remove point') . ' 
                         </a>
-                    </div>
+                    </div>    
                 </div>
             </div>
             <div class="action-menu-inner-content">              
@@ -68,7 +68,20 @@ echo    '<div id="point-info-page" class="action-menu-container hidden" data-pag
                     <div id="point-info-extended-data">               
                     </div>
                 </div>
+            </div>
+             <div class="action-menu-toolbar-container">
+                <div class="btn-group btn-group-justified">
+                    <div class="btn-group">
+                        <a id="point-info-vote-like" class="btn btn-success" href="#" title="' . getString('like-point','Like') . '" role="button">
+                            <span class="glyphicon glyphicon-star-empty"></span> ' . getString('like-point','Like') . ' 
+                        </a>
+                    </div>
+                    <div class="btn-group">
+                        <a id="point-info-vote-dislike" class="btn btn-primary" href="#" title="' . getString('dislike-point','Dislike') . '" role="button">
+                           <span class="glyphicon glyphicon-star-empty"></span> ' . getString('dislike-point','Dislike') . ' 
+                        </a>
+                    </div>    
+                </div>
             </div>            
         </div>';
-
 ?>

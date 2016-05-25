@@ -23,7 +23,10 @@ $js_file .= 'var UPDATE_POINT_ACTION = "' . $base_url . 'updatePoint.php";';
 $js_file .= 'var UPLOAD_FILE_ACTION = "' . $base_url . 'uploadFile.php";';
 $js_file .= 'var PUBLISH_ACTION = "' . $base_url . 'publish.php";';
 $js_file .= 'var UNPUBLISH_ACTION = "' . $base_url . 'unpublish.php";';
-
+$js_file .= 'var VOTE_FOR_POINT_ACTION = "' . $base_url . 'voteForPoint.php";';
+$js_file .= 'var GET_USER_VOTE_ACTION = "' . $base_url . 'getVote.php";'; 
+$js_file .= 'var CHANGE_VOTE_ACTION = "' . $base_url . 'changeVote.php";';
+$js_file .= 'var DELETE_VOTE_ACTION = "' . $base_url . 'deleteVote.php";';   
 $js_file .= 'var RETRANSLATOR_ACTION = "' . $base_url . 'retranslator.php";';
 
 echo $js_file;

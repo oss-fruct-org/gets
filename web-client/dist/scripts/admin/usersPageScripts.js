@@ -96,10 +96,11 @@ $(document).ready(function() {
 
     $(".dropdown-menu-item").on("click",function(e) { 
 
-        var rights = $(this).text(); 
+        var rights = $(this).attr("id"); 
         var id = $(this).parent().parent().attr("id");
 
-        $.post("./actions/addAdminUser.php",{"rights": rights, "id": id}, function(data) { 
+        $.post("./actions/addAdminUser.php",{"rights": rights, "id": id}, function(data) {    
+                
            location.reload();
         });
 

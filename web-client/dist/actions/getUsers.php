@@ -45,9 +45,9 @@
                                                       "<span class=\"caret\"></span>
                                                     </button>
                                                     <ul class=\"dropdown-menu\" id=\"" . $i->id . "\">
-                                                      <li><a class=\"dropdown-menu-item\">" . getString('simple','Simple') . "</a></li>
-                                                      <li><a class=\"dropdown-menu-item\">" . getString('trusted','Trusted') . "</a></li>
-                                                      <li><a class=\"dropdown-menu-item\">" . getString('admin','Admin') . "</a></li>
+                                                      <li><a id=\"Simple\" class=\"dropdown-menu-item\">" . getString('simple','Simple') . "</a></li>
+                                                      <li><a id=\"Trusted\" class=\"dropdown-menu-item\">" . getString('trusted','Trusted') . "</a></li>
+                                                      <li><a id=\"Admin\" class=\"dropdown-menu-item\">" . getString('admin','Admin') . "</a></li>
                                                     </ul>                        
                                                 </div>
                                             </td> 

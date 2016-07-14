@@ -10,6 +10,8 @@ $js_file = 'var ADD_POINT_ACTION = "' . $base_url . 'addPoint.php";';
 $js_file .= 'var ADD_TRACK_ACTION = "' . $base_url . 'addTrack.php";';
 $js_file .= 'var GET_CATEGORIES_ACTION = "' . $base_url . 'getCategories.php";';
 $js_file .= 'var GET_POINTS_ACTION = "' . $base_url . 'getPoints.php";';
+$js_file .= 'var GET_JSON_ACTION = "' . $base_url . 'jsonWrite.php";';
+$js_file .= 'var GET_ROUTES_ACTION = "' . $base_url . 'getRoutes.php";';
 $js_file .= 'var GET_TRACK_BY_NAME_ACTION = "' . $base_url . 'getTrackByName.php";';
 $js_file .= 'var GET_TRACKS_ACTION = "' . $base_url . 'getTracks.php";';
 $js_file .= 'var GET_UPLOAD_LINK_ACTION = "' . $base_url . 'getUploadLink.php";';

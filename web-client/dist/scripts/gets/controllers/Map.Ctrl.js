@@ -49,6 +49,10 @@ MapController.prototype.setMapCenter = function(latitude, longitude) {
     this._map.setCenter(latitude, longitude);
 };
 
+MapController.prototype.setMapCenterOnSocial = function(uuid) {
+    this._map.setMapCenterOnSocial(uuid);
+};
+
 MapController.prototype.getMapCenter = function() {
     return this._map.getCenter();
 };
@@ -76,17 +80,35 @@ MapController.prototype.getRoutesForTrack = function(track) {
 MapController.prototype.placePointsOnMap = function(pointList, markerBaseLink) {
     this._map.placePointsOnMap(pointList, markerBaseLink);
 };
+MapController.prototype.placeRouteOnMap = function (route, points, routeBaseLink, categories) {
+    this._map.placeRouteOnMap(route, points, routeBaseLink, categories);
+};
+MapController.prototype.placeSocialsOnMap = function(socialList) {
+    this._map.placeSocialsOnMap(socialList);
+};
 
+MapController.prototype.removeRoutesFromMap = function() {
+    this._map.removeRoutesFromMap();
+};
+MapController.prototype.placeFilteredSocialsOnMap = function(categoryId, states) {
+    this._map.placeFilteredSocialsOnMap(categoryId, states);
+};
 MapController.prototype.removePointsFromMap = function() {
     this._map.removePointsLayer();
 };
-
+MapController.prototype.removeSocialsFromMap = function() {
+    this._map.removeSocialsLayer();
+};
 MapController.prototype.createTempMarker = function(latitude, longitude, callback) { 
     this._map.createTempMarker(latitude, longitude, callback);
 };
 
 MapController.prototype.removeTempMarker = function() { 
     this._map.removeTempMarker();
+};
+
+MapController.prototype.setCurrentRouteLayer = function (type) {
+    this._map.setCurrentRouteLayer(type);
 };
 
 MapController.prototype.createSearchArea = function(lat, lng, radius) {

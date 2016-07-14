@@ -606,9 +606,40 @@ PointsPage.prototype.downloadPointsHandler = function() {
     try {
         this._pointsMain.showOverlay();
         var formData = $(this.document).find('#point-main-form').serializeArray();
-
         this._points.downLoadPoints(formData, function () {
             var pointList = that._points.getPointList();
+            /*var points_json = "[";
+             for (var i = 0; i < pointList.length; i++) {
+             var flag = false;
+             for (var j = 0, len = pointList[i].extendedData.length; j < len; j++)
+             {
+             if (pointList[i].extendedData[j].name == "rating") {
+             points_json += "{'difficulty': " + pointList[i].extendedData[j].value + ",";
+             flag = true;
+             break;
+             }
+             }
+             if (flag) {
+             var coords = pointList[i].coordinates.split(',');
+             points_json += "'lat':" + coords[1] + ",";
+             points_json += "'lng':" + coords[0] + ",";
+             points_json += "'uuid':" +  pointList[i].uuid + ",";
+             if (i == pointList.length - 1)
+             points_json += "'category_id':" + pointList[i].category_id + "}";
+             else
+             points_json += "'category_id':" + pointList[i].category_id + "},";
+             }
+             }
+             points_json += "]";
+             $.ajax({
+             type: 'POST',
+             url: GET_JSON_ACTION,
+             dataType: 'text ',
+             data: "jsonPoints="+points_json,
+             success: function() {
+             alert("done");
+             }
+             });*/
             that._mapCtrl.removePointsFromMap();
             that._pointsMain.placePointsInPointList(pointList);
             that._mapCtrl.placePointsOnMap(pointList, {
@@ -620,6 +651,6 @@ PointsPage.prototype.downloadPointsHandler = function() {
     } catch (Exception) {
         MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
         Logger.error(Exception.toString());
-    } 
+    }
 };
 

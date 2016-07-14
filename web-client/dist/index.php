@@ -1,3 +1,3 @@
 <?php
-header("Location: points.php"); 
+header("Location: routes.php");
 ?>

@@ -4,7 +4,8 @@ $translations = array(
     // Common strings
     'points' => 'Точки',//'' => '',
     'tracks' => 'Маршруты', 
-    'polygons' => 'Полигоны',  
+    'polygons' => 'Полигоны',
+    'routes' => 'Навигатор',
     'sign-in' => 'Войти', 
     'sign-out' => 'Выйти', 
     

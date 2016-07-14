@@ -31,7 +31,7 @@ define('GEO2TAG_DB_STRING', 'host=localhost dbname=geo2tag user=geo2tag');
 // настройка прав пользователей по-умолчанию.
 // значение  true - все пользователи по умолчанию имеют права доверенных пользователей
 // значение false - все пользователи по умолчанию обычные
-define('ALL_USERS_TRUSTED', false);
+define('ALL_USERS_TRUSTED', true);
 
 // имя сервиса в Google Apps
 define('GOOGLE_APP_NAME', 'GeTS-Service');

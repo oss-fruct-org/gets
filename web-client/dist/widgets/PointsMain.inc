@@ -1,5 +1,4 @@
 <?php
-
 echo   '<div id="points-main-page" class="action-menu-container hidden">
             <div id="points-main-overlay" class="busy-overlay"></div>
             <div class="action-menu-toolbar-container">

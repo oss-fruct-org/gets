@@ -66,7 +66,6 @@ html, body {
     width: 1000px;
     text-align: center;
     left: 50%;
-    top: 50%;   
     margin-left: -500px;
     margin-top: -15px;
 }
@@ -108,16 +107,93 @@ html, body {
     padding: 10px;
 }
 
+.action-menu-inner-content-social-info {
+    display: block;
+    position: relative;
+    padding: 20px;
+}
+.leaflet-bar a {
+    background-color: #fff;
+    border-bottom: 1px solid #ccc;
+    /* border-bottom-color: rgb(204, 204, 204); */
+    color: #444;
+    display: block;
+    height: 26px;
+    width: 26px;
+    line-height: 1.45 !important;
+    text-align: center;
+    text-decoration: none;
+    font: bold 18px'Lucida Console', Monaco, monospace;
+}
+#route-weight {
+    border-radius: 50px 50px 50px 50px;
+    width: 50px;
+    height: 50px;
+    line-height: 50px;
+    text-align: center;
+    cursor: pointer;
+}
+.picture_box img{
+    height: 50px;
+}
+#obstacles_calc {
+    display: none;
+}
 .action-menu-toolbar-container {
     display: block;
     position: relative;
     padding: 10px;
+}
+.full_obstacles_info {
+    display: none;
+    flex-direction: column;
+    flex-wrap: wrap;
+}
+.obstacles_info:first-child {
+     border-radius: 10px 10px 0 0;
+}
+.obstacles_info:last-child {
+    border-radius: 0 0 10px 10px;
+}
+.obstacles_info_header {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+.distance-route-div {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    width: 80%;
+    margin: 0 auto;
+    height:auto;
+}
+.distanceBtn {
+    width: 90px;
+    text-align: center;
+    border-radius: 3px;
+    cursor: pointer;
 }
 
 .main-block {
     display: block;
     position: relative;
     margin-top: 10px;
+}
+
+.main-block-bold {
+    display: block;
+    position: relative;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+.main-block-italic {
+    display: block;
+    position: relative;
+    margin-top: 10px;
+    font-style: italic;
 }
 
 .top-margin {
@@ -267,8 +343,8 @@ input.search-query {
 
 .ellipsis-text {
     display: block;
-    white-space: nowrap; 
-    overflow: hidden; 
+    white-space: nowrap;
+    overflow: hidden;
     text-overflow: ellipsis;
 }
 
@@ -299,6 +375,92 @@ input.search-query {
     display: none;
 }
 
+
+/* Disabilities checkbox style */
+
+#blind_img {
+    background: url('../../images/icons/ic_blind_gray.png') no-repeat;
+    position: relative;
+    cursor: pointer;
+    background-size: 40px 40px;
+    width: 40px;
+    height: 40px;
+    float: left;
+    margin-right:5px;
+    margin-left:5px;
+}
+#deaf_img
+{
+    background: url('../../images/icons/ic_deaf_gray.png') no-repeat;
+    position: relative;
+    cursor: pointer;
+    background-size: 40px 40px;
+    width: 40px;
+    height: 40px;
+    float: left;
+    margin-right:5px;
+    margin-left:5px;
+}
+#wheelchair_img {
+    background: url('../../images/icons/ic_wheelchair_gray.png') no-repeat;
+    position: relative;
+    cursor: pointer;
+    float: left;
+    background-size: 40px 40px;
+    width: 40px;
+    height: 40px;
+    margin-right:5px;
+    margin-left:5px;
+}
+#mental_img {
+    background: url('../../images/icons/ic_mental_gray.png') no-repeat;
+    position: relative;
+    cursor: pointer;
+    float: left;
+    background-size: 40px 40px;
+    width: 40px;
+    height: 40px;
+    margin-right:5px;
+    margin-left:5px;
+}
+#muscle_img {
+    background: url('../../images/icons/ic_muscle_gray.png') no-repeat;
+    position: relative;
+    cursor: pointer;
+    float: left;
+    background-size: 40px 40px;
+    width: 40px;
+    height: 40px;
+    margin-right:5px;
+    margin-left:5px;
+}
+#deaf:checked ~ #deaf_img {
+    background: url('../../images/icons/ic_deaf.png') no-repeat;
+    background-size: 40px 40px;
+}
+#blind:checked ~ #blind_img {
+    background: url('../../images/icons/ic_blind.png') no-repeat;
+    background-size: 40px 40px;
+}
+#mental:checked ~ #mental_img {
+    background: url('../../images/icons/ic_mental.png') no-repeat;
+    background-size: 40px 40px;
+}
+#wheelchair:checked ~ #wheelchair_img {
+    background: url('../../images/icons/ic_wheelchair.png') no-repeat;
+    background-size: 40px 40px;
+}
+#muscle:checked ~ #muscle_img {
+    background: url('../../images/icons/ic_muscle.png') no-repeat;
+    background-size: 40px 40px;
+}
+.disabilitiesSelect {
+    display: none;
+}
+
+.invisibleAccessibility {
+    display: none;
+}
 .map {
     display: inline-block;
     position: absolute;

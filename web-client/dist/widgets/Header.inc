@@ -8,7 +8,7 @@ session_start();
  */
 function get_navbar_depend_on_page($page_name) {
     global $lang;
-
+    
     return '
                <div class="navbar navbar-static-top navbar-default">
                     <div class="navbar-header">
@@ -29,6 +29,7 @@ function get_navbar_depend_on_page($page_name) {
                                 <li ' . ($page_name === 'points' ? 'class="active"' : '') . '><a href="points.php">' . getString('points', 'Points') . '</a></li>
                                 <!-- <li ' . ($page_name === 'tracks' ? 'class="active"' : '') . '><a href="tracks.php">' . getString('tracks', 'Tracks') . '</a></li>
                                 <li ' . ($page_name === 'polygons' ? 'class="active"' : '') . '><a href="polygons.php">' . getString('polygons', 'Polygons') . '</a></li> -->
+                                <li ' . ($page_name === 'routes' ? 'class="active"' : '') . '><a href="routes.php">' . getString('routes', 'Routes') . '</a></li>
                                  ' . (isset($_SESSION['admin_user']) ? 
                                     '<li ' . (substr($page_name, 0, 5) === 'admin' ? 'class="active"' : '') . '><a href="admins.php">' . getString('admin', 'Admin') . '</a></li>'
                                     : "") . '                                

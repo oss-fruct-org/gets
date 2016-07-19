@@ -20,13 +20,17 @@ if (!$xml_post) {
     send_error(1, 'Error: no input file');
     die();
 }
-
 libxml_use_internal_errors(true);
 $dom = new DOMDocument();
 $dom->loadXML($xml_post);
 
 if (!$dom) {
     send_error(1, 'Error: resource isn\'t XML document.');
+    die();
+}
+
+if (!$dom->schemaValidate('schemes/addAdminUser.xsd')) {
+    send_error(1, 'Error: not valid input XML document.');
     die();
 }
 
@@ -71,7 +75,7 @@ switch ($rights) {
         break;
 
     default:
-       send_result(10, 'error');
+       send_result(1, 'error');
 }
 
 send_result(0, 'success');

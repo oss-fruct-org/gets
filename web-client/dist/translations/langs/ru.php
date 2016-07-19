@@ -6,6 +6,7 @@ $translations = array(
     'tracks' => 'Маршруты', 
     'polygons' => 'Полигоны',  
     'admin' => 'Админ',
+    'routes' => 'Навигатор',
     'sign-in' => 'Войти', 
     'sign-out' => 'Выйти', 
     

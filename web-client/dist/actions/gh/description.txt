@@ -1,0 +1,5 @@
+<file>
+    <region-id>70015d77052905b9c495229209117fb6d969a507</region-id>
+    <name>karel.osm.pbf.ghz</name>
+    <description lang="ru">Республика Карелия</description>
+</file>

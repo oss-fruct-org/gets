@@ -1,0 +1,18 @@
+<?php
+define('GETS_SERVER_URL', 'localhost/gets/service/');
+
+define('GETS_WEB_HOST', 'localhost');
+
+// отображение вкладки с точками
+define('PAGE_POINTS', true);
+
+// отображение вкладки с маршрутами
+define('PAGE_TRACKS', true);
+
+// отображение вкладки с навигацией
+define('PAGE_ROUTES', true);
+
+// отображение вкладки с полигонами
+define('PAGE_POLYGONS', false);
+
+?>

@@ -1,5 +1,9 @@
 <?php
-session_start();
+include_once 'actions/utils/config.inc';
+
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
 /**
  * Get HTML nav bar string to put on a page. 
  * Nav bar active tab will depend on given page name.
@@ -9,7 +13,7 @@ session_start();
 function get_navbar_depend_on_page($page_name) {
     global $lang;
     
-    return '
+    $ret =  '
                <div class="navbar navbar-static-top navbar-default">
                     <div class="navbar-header">
                         <a class="navbar-brand navbar-option"></a>
@@ -25,12 +29,20 @@ function get_navbar_depend_on_page($page_name) {
                     </div>
                     <div class="container">
                         <div class="navbar-collapse collapse">
-                            <ul class="nav navbar-nav">
-                                <li ' . ($page_name === 'points' ? 'class="active"' : '') . '><a href="points.php">' . getString('points', 'Points') . '</a></li>
-                                <li ' . ($page_name === 'tracks' ? 'class="active"' : '') . '><a href="tracks.php">' . getString('tracks', 'Tracks') . '</a></li>
-                                <li ' . ($page_name === 'routes' ? 'class="active"' : '') . '><a href="routes.php">' . getString('routes', 'Routes') . '</a></li>
-                                <li ' . ($page_name === 'polygons' ? 'class="active"' : '') . '><a href="polygons.php">' . getString('polygons', 'Polygons') . '</a></li>
-                                 ' . (isset($_SESSION['admin_user']) ? 
+                            <ul class="nav navbar-nav">';
+    if (constant('PAGE_POINTS') === true) {
+        $ret .= '<li ' . ($page_name === 'points' ? 'class="active"' : '') . '><a href="points.php">' . getString('points', 'Points') . '</a></li>';
+    }
+    if (constant('PAGE_TRACKS') === true) {
+        $ret .= '<li ' . ($page_name === 'tracks' ? 'class="active"' : '') . '><a href="tracks.php">' . getString('tracks', 'Tracks') . '</a></li>';
+    }
+    if (constant('PAGE_ROUTES') === true) {
+        $ret .= '<li ' . ($page_name === 'routes' ? 'class="active"' : '') . '><a href="routes.php">' . getString('routes', 'Routes') . '</a></li>';
+    }
+    if (constant('PAGE_POLYGONS') === true) {
+        $ret .= '<li ' . ($page_name === 'polygons' ? 'class="active"' : '') . '><a href="polygons.php">' . getString('polygons', 'Polygons') . '</a></li>';
+    }
+    $ret .= (isset($_SESSION['admin_user']) ? 
                                     '<li ' . (substr($page_name, 0, 5) === 'admin' ? 'class="active"' : '') . '><a href="admins.php">' . getString('admin', 'Admin') . '</a></li>'
                                     : "") . '                                
                             </ul>
@@ -70,6 +82,8 @@ function get_navbar_depend_on_page($page_name) {
                     <!-- /.container -->
                 </div>
                 <!-- /.navbar -->';
+    
+    return $ret;
 }
 
 ?>

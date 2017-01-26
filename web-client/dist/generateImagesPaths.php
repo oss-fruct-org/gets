@@ -10,6 +10,7 @@ if (defined('GETS_WEB_HOST'))
 $js_file = 'var MARKER_HOLE_IMAGE = "' . $base_url . 'images/icons/marker_hole.png";';
 $js_file .= 'var LOCATION_IMAGE = "' . $base_url . 'images/icons/location.png";';
 $js_file .= 'var TEMP_MARKER_IMAGE = "' . $base_url . 'images/icons/marker_hole_red.png";';
+$js_file .= 'var ICONS_FOLDER = "' . $base_url . 'images/icons/";';
 
 echo $js_file;
 ?>

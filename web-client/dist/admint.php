@@ -25,6 +25,8 @@ $_POST  = $_SESSION['POST'];
         <script src="generateActionNames.php"></script>
         <!-- ADD IMAGE CONSTANTS SPECIFIC FOR DOMAIN -->
         <script src="generateImagesPaths.php"></script>
+	<!-- ADD JS CONFIG VARIABLES -->
+        <script src="js_config.php"></script>
         
         <script src="scripts/jquery/jquery-1.11.1.js"></script>
         <script src="scripts/jquery/jquery-1.11.1.min.js"></script>

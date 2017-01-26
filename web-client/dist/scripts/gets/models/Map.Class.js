@@ -48,7 +48,7 @@ MapClass.ROUTE_TYPE_CURVE_SERVICE_COLOR = '#00AA00';
  */
 MapClass.prototype.initMap = function() {
     if (!this.baseMapLayer) {
-        this.baseMapLayer = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+        this.baseMapLayer = L.tileLayer(TILE_PROVIDER + '/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
         });
     } 

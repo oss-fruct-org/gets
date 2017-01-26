@@ -9,4 +9,9 @@ define('DEFAULT_LANG', 'en');
 define('TRANSLATIONS_DIR', ROOT_DIR . 'translations');
 define('TRANSLATIONS_SCRIPT', TRANSLATIONS_DIR . '/translations.php');
 
+if (file_exists(realpath(dirname(__FILE__)).'/config/server.config')) {
+    include_once(realpath(dirname(__FILE__)).'/config/server.config');
+} else {
+    include_once(realpath(dirname(__FILE__)).'/actions/utils/default.server.config');
+}
 ?>

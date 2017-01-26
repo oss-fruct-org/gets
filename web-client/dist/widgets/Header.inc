@@ -1,6 +1,4 @@
 <?php
-include_once 'actions/utils/config.inc';
-
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
@@ -30,16 +28,16 @@ function get_navbar_depend_on_page($page_name) {
                     <div class="container">
                         <div class="navbar-collapse collapse">
                             <ul class="nav navbar-nav">';
-    if (constant('PAGE_POINTS') === true) {
+    if (defined('PAGE_POINTS') && constant('PAGE_POINTS') === true) {
         $ret .= '<li ' . ($page_name === 'points' ? 'class="active"' : '') . '><a href="points.php">' . getString('points', 'Points') . '</a></li>';
     }
-    if (constant('PAGE_TRACKS') === true) {
+    if (defined('PAGE_TRACKS') && constant('PAGE_TRACKS') === true) {
         $ret .= '<li ' . ($page_name === 'tracks' ? 'class="active"' : '') . '><a href="tracks.php">' . getString('tracks', 'Tracks') . '</a></li>';
     }
-    if (constant('PAGE_ROUTES') === true) {
+    if (defined('PAGE_ROUTES') && constant('PAGE_ROUTES') === true) {
         $ret .= '<li ' . ($page_name === 'routes' ? 'class="active"' : '') . '><a href="routes.php">' . getString('routes', 'Routes') . '</a></li>';
     }
-    if (constant('PAGE_POLYGONS') === true) {
+    if (defined('PAGE_POLYGONS') && constant('PAGE_POLYGONS') === true) {
         $ret .= '<li ' . ($page_name === 'polygons' ? 'class="active"' : '') . '><a href="polygons.php">' . getString('polygons', 'Polygons') . '</a></li>';
     }
     $ret .= (isset($_SESSION['admin_user']) ? 

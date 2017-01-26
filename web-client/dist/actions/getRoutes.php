@@ -1,4 +1,6 @@
 <?php
+    require_once('../config.php');
+
     $routeCoords = json_decode($_POST['routeCoords']);
     $fromLat = $routeCoords->fromLat;
     $fromLng = $routeCoords->fromLng;

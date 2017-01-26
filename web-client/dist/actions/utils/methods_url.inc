@@ -1,6 +1,4 @@
 <?php
-include_once('config.inc');
-
 define('LOGIN_METHOD_URL', 'http://' . GETS_SERVER_URL . 'login.php');
 define('LOGOUT_METHOD_URL', 'http://' . GETS_SERVER_URL . 'logout.php');
 define('AVAILABLE_CHANNELS_METHOD_URL', 'http://' . GETS_SERVER_URL . 'available_channels.php');

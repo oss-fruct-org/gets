@@ -21,9 +21,9 @@ session_start();
         ?>
        
         <!-- ADD ACTION CONSTANTS SPECIFIC FOR DOMAIN -->
-        <script src="actions/generateActionNames.php"></script>
+        <script src="generateActionNames.php"></script>
         <!-- ADD IMAGE CONSTANTS SPECIFIC FOR DOMAIN -->
-        <script src="images/generateImagesPaths.php"></script>
+        <script src="generateImagesPaths.php"></script>
         
         <script src="scripts/jquery/jquery-1.11.1.min.js"></script>
         <script src="scripts/jquery/jquery.cookie.js"></script>

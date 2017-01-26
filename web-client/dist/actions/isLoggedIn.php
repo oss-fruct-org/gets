@@ -1,4 +1,5 @@
 <?php
+require_once('../config.php');
 session_start();
 $result = array();
 if (isset($_SESSION['g2t_token'])) {

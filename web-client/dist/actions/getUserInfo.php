@@ -1,4 +1,5 @@
 <?php
+require_once('../config.php');
 session_start();
 $result = array();
 $result['email'] = isset($_SESSION['email']) ? $_SESSION['email'] : 'unknown';

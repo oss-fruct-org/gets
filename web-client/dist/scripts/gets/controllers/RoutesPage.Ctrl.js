@@ -238,6 +238,10 @@ RoutesPage.prototype.route = function (fromLat,fromLng,toLat,toLng) {
                 window.location = "routes.php?lang=ru#form=route_info&route_type=safe";
             else
                 window.location = "routes.php?lang=ru#form=route_info&route_type=fastest";
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+    	    alert(xhr.status);
+    	    alert(xhr.responseText);
         }
     });
 };

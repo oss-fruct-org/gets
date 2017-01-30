@@ -1,6 +1,11 @@
 <?php
     require_once('../config.php');
 
+    if (!isset($_SERVER["HTTP_HOST"])) {
+	parse_str($argv[1], $_GET);
+	  parse_str($argv[1], $_POST);
+    }
+
     $routeCoords = json_decode($_POST['routeCoords']);
     $fromLat = $routeCoords->fromLat;
     $fromLng = $routeCoords->fromLng;
@@ -12,6 +17,13 @@
     $toLat = 61.789176;
     $toLng = 34.354344;
     $disability = 1;*/
-    exec("/SDK/Java/jdk/bin/java -jar graphhopper-priority.jar ". $fromLat . " " . $fromLng . " " . $toLat . " " . $toLng . " " . $disability, $result);
+    $result = array();
+    $pointsFile = "points.txt";
+    
+    if (defined('GHPATH') && defined('GHSOURCE')) {
+	//echo "java -jar " . GHPATH . " " . $fromLat . " " . $fromLng . " " . $toLat . " " . $toLng . " " . $disability . " " . $pointsFile . " " . GHSOURCE;
+	exec("java -jar " . GHPATH . " " . $fromLat . " " . $fromLng . " " . $toLat . " " . $toLng . " " . $disability . " " . $pointsFile . " " . GHSOURCE, $result);
+    }
+    //echo var_dump($result);
     echo $result[0];
 ?>

@@ -68,7 +68,7 @@ MapClass.prototype.initMap = function() {
                 {
                     text: 'Проложить маршрут',
                     callback: function (e) {
-                        window.location = "routes.php?lang=ru#form=add_route&lat=" + e.latlng.lat +"&lng=" + e.latlng.lng;
+                        window.location = "?lang=ru#form=add_route&lat=" + e.latlng.lat +"&lng=" + e.latlng.lng;
                     }
                 }]
         });

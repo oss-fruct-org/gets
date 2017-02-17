@@ -23,6 +23,8 @@ function UserClass(windowObj) {
     this.windowObj = windowObj;
     this.coords = null;
     this.coordsSet = false;
+    this.targetCoords = null;
+    this.targetCoordsSet = false;
 };
 
 /**
@@ -154,6 +156,13 @@ UserClass.prototype.setUserGeoPosition = function(position) {
     this.coordsSet = true;
 };
 
+UserClass.prototype.setTargetLocation = function(position) {
+    this.targetCoords = {};
+    this.targetCoords.lat = position.coords.latitude;
+    this.targetCoords.lng = position.coords.longitude;
+    this.targetCoordsSet = true;
+};
+
 UserClass.prototype.handleGeoLocationError = function (error) {
     switch(error.code) {
         case error.PERMISSION_DENIED:
@@ -183,6 +192,10 @@ UserClass.prototype.getUsersGeoPosition = function() {
     return this.coords;
 };
 
+UserClass.prototype.getTargetLocation = function() {
+    return this.targetCoords;
+};
+
 /**
  * Check is user's coordinates set.
  * 
@@ -190,6 +203,15 @@ UserClass.prototype.getUsersGeoPosition = function() {
  */
 UserClass.prototype.isCoordsSet = function() {
     return this.coordsSet;
+};
+
+/**
+ * Check is user's coordinates set.
+ * 
+ * @returns {Boolean} coordiantes status.
+ */
+UserClass.prototype.isTargetLocationSet = function() {
+    return this.targetCoordsSet;
 };
 
 /**

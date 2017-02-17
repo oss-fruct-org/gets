@@ -62,13 +62,15 @@ MapClass.prototype.initMap = function() {
             contextmenu: true,
             contextmenuWidth: 140,
             contextmenuItems: [{
-                text: 'Add marker',
-                callback: function () { alert('click add marker') }
+                text: gettext('Route from'),
+                callback: function (e) {
+            		window.location = "?"+lang+"#form=route_from&lat=" + e.latlng.lat + "&lng=" + e.latlng.lng;
+            	    }
             },
                 {
-                    text: 'Проложить маршрут',
+                    text: gettext('Route to'),
                     callback: function (e) {
-                        window.location = "?lang=ru#form=add_route&lat=" + e.latlng.lat +"&lng=" + e.latlng.lng;
+                        window.location = "?"+lang+"#form=route_to&lat=" + e.latlng.lat +"&lng=" + e.latlng.lng;
                     }
                 }]
         });
@@ -77,11 +79,11 @@ MapClass.prototype.initMap = function() {
             options: {
                 position: 'topright',
                 zoomInText: '+',
-                zoomInTitle: 'Zoom in',
+                zoomInTitle: gettext('Zoom in'),
                 zoomOutText: '-',
-                zoomOutTitle: 'Zoom out',
+                zoomOutTitle: gettext('Zoom out'),
                 zoomHomeText: '<i class="fa fa-home" style="line-height:1.65;"></i>',
-                zoomHomeTitle: 'Zoom home'
+                zoomHomeTitle: gettext('Zoom home')
             },
 
             onAdd: function (map) {
@@ -609,7 +611,7 @@ MapClass.prototype.placePointsOnMap = function(pointList, markerBaseLink) {
 
 
 function onEachFeature(feature, layer) {
-    var popupContent = '<br><a href="' + feature.properties.popupContent + '">Поместить маршрут в окно "Информация о маршруте"</a>';
+    var popupContent = '<br><a href="' + feature.properties.popupContent + '">'+gettext("put-track-in-track-info")+'</a>';
     layer.bindPopup(popupContent);
 }
 MapClass.prototype.placeRouteOnMap = function (route, points, routeBaseLink, categories) {
@@ -714,7 +716,7 @@ MapClass.prototype.placeSocialsOnMap = function(socialList) {
         this.socialsLayer.addLayer(marker);
         this.socialMarkers.push(marker);
 
-        var popup = L.popup().setContent("<center>" + socialList[i].title + "<br><button class='route_to' name="+ coords + ">Проложить маршрут</button></center>");
+        var popup = L.popup().setContent("<center>" + socialList[i].title + "<br><button class='route_to' name="+ coords + ">" + gettext("Route to") + "</button></center>");
         var self = this;
         marker.bindPopup(popup);
     }
@@ -766,7 +768,7 @@ MapClass.prototype.placeFilteredSocialsOnMap = function(categoryId, states) {
         this.socialsLayer.addLayer(marker);
         this.socialMarkers.push(marker);
 
-        var popup = L.popup().setContent("<center>" + socialList[i].title + "<br><button class='route_to' name="+ coords + ">Проложить маршрут</button></center>");
+        var popup = L.popup().setContent("<center>" + socialList[i].title + "<br><button class='route_to' name="+ coords + ">" + gettext("Route to") + "</button></center>");
         var self = this;
         marker.bindPopup(popup);
     }

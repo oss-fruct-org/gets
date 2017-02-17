@@ -124,22 +124,25 @@ RouteInfo.prototype.placeRouteInRouteInfo = function(routes, obstacles, routeTyp
     $(obstaclesCalc).append(obsctCalcString);
 
     $('.obstacles_info').on('click', function (e) {
-        $('.full_obstacles_info').css('display','none');
+        $('.full_obstacles_info').css('display', 'none');
         $(this).children().css('display','flex');
     });
+    $('.full_obstacles_info').on('click', function (e) {
+        $('.full_obstacles_info').hide();
+    });
     $(btnDistanceSafe).on('click', function () {
-        window.location = "routes.php?lang=ru#form=route_info&route_type=safe";
+        window.location = "routes.php?"+lang+"#form=route_info&route_type=safe";
     });
 
     $(btnDistanceNormal).on('click', function () {
-        window.location = "routes.php?lang=ru#form=route_info&route_type=normal";
+        window.location = "routes.php?"+lang+"#form=route_info&route_type=normal";
     });
 
     $(btnDistanceFastest).on('click', function () {
-        window.location = "routes.php?lang=ru#form=route_info&route_type=fastest";
+        window.location = "routes.php?"+lang+"#form=route_info&route_type=fastest";
     });
     $(weight).on('click', function () {
-       $(obstaclesCalc).show();
+       $(obstaclesCalc).toggle();
     });
 
 };

@@ -53,6 +53,7 @@ $translations = array(
     'track-remove-success' => 'Track was successfully removed', 
     'track-publish-success' => 'Track was successfully published', 
     'track-unpublish-success' => 'Track was successfully unpublished',
+    'put-track-in-track-info' => 'Put track into the Track info window',
     // Show on the map options
     'show-on-map-markers' => 'Only points',
     'show-on-map-raw-simple' => 'Raw route',
@@ -146,6 +147,10 @@ $translations = array(
     //Admins content page
     'list-of-all-points' => 'List of all points',
     'list-of-all-tracks' => 'List of all tracks',
+    
+    //route info
+    'cost' => 'Cost',
+    'obstacles' => 'Obstacles',
 
     //other words
     'show-on-map' => 'Show on map',

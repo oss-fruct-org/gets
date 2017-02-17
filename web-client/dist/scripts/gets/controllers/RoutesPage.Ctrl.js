@@ -25,8 +25,9 @@ function RoutesPage(document, window) {
 RoutesPage.MAIN = 'main';
 RoutesPage.SOCIAL_INFO = 'social_info';
 RoutesPage.ROUTE_INFO = 'route_info';
-RoutesPage.ADD_ROUTE = 'add_route';
+RoutesPage.ADD_ROUTE = 'route_to';
 RoutesPage.POINT_INFO = 'route_info';
+RoutesPage.ROUTE_FROM = 'route_from';
 
 RoutesPage.prototype.changeForm = function () {
     var form = this._utils.getHashVar('form');
@@ -37,7 +38,9 @@ RoutesPage.prototype.changeForm = function () {
         $("#social-all-access").html("Показать все категории");
         this.showSocialInfo();
     } else if (form === RoutesPage.ADD_ROUTE) {
-        this.addRouteFromMap();
+        this.addRouteFromMap(); //TODO: rename to updateRouteTo
+    } else if (form === RoutesPage.ROUTE_FROM) {
+	this.updateRouteFrom();
     } else if (form === RoutesPage.ROUTE_INFO) {
         this.showRouteInfo();
     } else if (typeof form === 'undefined') {
@@ -223,7 +226,7 @@ RoutesPage.prototype.route = function (fromLat,fromLng,toLat,toLng) {
         dataType: 'json ',
         data: "routeCoords=" + JSON.stringify(data),
         success: function(response) {
-            window.location = "routes.php?lang=ru#form=main";
+            window.location = "routes.php?"+lang+"#form=main";
             that._routes = [];
             that._mapCtrl.removeRoutesFromMap();
             var flag = false;
@@ -235,9 +238,9 @@ RoutesPage.prototype.route = function (fromLat,fromLng,toLat,toLng) {
                 that._routes.push(tmpRoute);
             });
             if(flag)
-                window.location = "routes.php?lang=ru#form=route_info&route_type=safe";
+                window.location = "routes.php?"+lang+"#form=route_info&route_type=safe";
             else
-                window.location = "routes.php?lang=ru#form=route_info&route_type=fastest";
+                window.location = "routes.php?"+lang+"#form=route_info&route_type=fastest";
         },
         error: function (xhr, ajaxOptions, thrownError) {
     	    alert(xhr.status);
@@ -329,7 +332,7 @@ RoutesPage.prototype.showRouteInfo = function () {
         this.currentView.showView();
     } catch (Exception) {
         MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
-        window.location = "routes.php?lang=ru#form=main";
+        window.location = "routes.php?"+lang+"#form=main";
         Logger.error(Exception.toString());
     }
 };
@@ -337,9 +340,25 @@ RoutesPage.prototype.showRouteInfo = function () {
 RoutesPage.prototype.addRouteFromMap = function () {
     var toLat = decodeURIComponent(this._utils.getHashVar('lat'));
     var toLng = decodeURIComponent(this._utils.getHashVar('lng'));
-    var fromCoords = this._user.getUsersGeoPosition();
-    this.route(fromCoords.lat,fromCoords.lng,toLat,toLng);
+    var toCoords = {coords:{latitude:toLat, longitude:toLng}};
+    this._user.setTargetLocation(toCoords);
+    if (this._user.isCoordsSet() && this._user.isTargetLocationSet()) {
+	var fromCoords = this._user.getUsersGeoPosition();
+	this.route(fromCoords.lat,fromCoords.lng,toLat,toLng);
+    }
 };
+
+RoutesPage.prototype.updateRouteFrom = function () {
+    var fromLat = decodeURIComponent(this._utils.getHashVar('lat'));
+    var fromLng = decodeURIComponent(this._utils.getHashVar('lng'));
+    var fromCoords = {coords:{latitude:fromLat, longitude:fromLng}};
+    this._user.setUserGeoPosition(fromCoords);
+    if (this._user.isCoordsSet() && this._user.isTargetLocationSet()) {
+	var toCoords = this._user.getTargetLocation();
+	this.route(fromLat,fromLng,toCoords.lat,toCoords.lng);
+    }
+};
+
 RoutesPage.prototype.getCategories = function () {
     this._categories= [];
     var that = this;

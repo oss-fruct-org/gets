@@ -54,6 +54,7 @@ $translations = array(
     'put-point-in-point-info' => 'Поместить точку в окно «Информация о точке»',
     'track-publish-success' => 'Маршрут был успешно опубликован', 
     'track-unpublish-success' => 'Маршрут был успешно снят с публикации',
+    'put-track-in-track-info' => 'Поместить маршрут в окно информации о маршруте',
     // Show on the map options
     'show-on-map-markers' => 'Только точки',
     'show-on-map-raw-simple' => 'Простой маршрут',
@@ -70,6 +71,8 @@ $translations = array(
     'route-parameters-alternatives' => 'Альтернативыне маршруты: ',
     'find-alternatives' => 'Искать альтернативы',
     'request-route' => 'Построить маршрут',
+    'Route to' => 'Маршрут сюда',
+    'Route from' => 'Маршрут отсюда',
        
     // Point Info widget strings
     'point-info-title' => 'Информация о точке', 
@@ -147,6 +150,10 @@ $translations = array(
     //Admins content page
     'list-of-all-points' => 'Список всех точек',
     'list-of-all-tracks' => 'Список всех маршрутов',
+
+    //route info
+    'cost' => 'Стоимость',
+    'obstacles' => 'Препятствия',
 
     //other words
     'show-on-map' => 'Показать на карте',

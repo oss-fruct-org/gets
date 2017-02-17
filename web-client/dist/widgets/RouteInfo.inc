@@ -1,6 +1,6 @@
 <?php
 
-echo    '<div id="route-info-page" class="action-menu-container hidden" data-pagetitle="Информация о маршруте" data-putpoint="Поместить маршрут в окно информации о маршруте">
+echo    '<div id="route-info-page" class="action-menu-container hidden" data-pagetitle="'. getString('track-info-title', 'Track info') .'" data-putpoint="'.getString('put-track-in-track-info', '').'">
             <div class="action-menu-inner-content">                               
                 <div class="main-block">
                     <div class="distance-route-div" style="">
@@ -9,9 +9,9 @@ echo    '<div id="route-info-page" class="action-menu-container hidden" data-pag
                         <div class="distanceBtn" style="background: #c0392b" id="route-type-fastest"></div>     
                     </div>
                   
-                    <span><b>Стоимость:</b></span><div id="route-weight"></div>
+                    <span><b>'.getString('cost', 'Cost').':</b></span><div id="route-weight"></div>
                     <div id="obstacles_calc"></div>
-                    <span><b>Препятствия:</b></span>
+                    <span><b>'.getString('obstacles', 'Obstacles').':</b></span>
                     <div id="route-obstacles"></div>
                 </div>   
             </div>

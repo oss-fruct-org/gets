@@ -353,6 +353,7 @@ RoutesPage.prototype.updateRouteFrom = function () {
     var fromLng = decodeURIComponent(this._utils.getHashVar('lng'));
     var fromCoords = {coords:{latitude:fromLat, longitude:fromLng}};
     this._user.setUserGeoPosition(fromCoords);
+    this._mapCtrl.setStartPosition(fromLat, fromLng);
     if (this._user.isCoordsSet() && this._user.isTargetLocationSet()) {
 	var toCoords = this._user.getTargetLocation();
 	this.route(fromLat,fromLng,toCoords.lat,toCoords.lng);

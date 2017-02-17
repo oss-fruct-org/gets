@@ -28,6 +28,7 @@ function MapClass() {
     this.socialMarkers = [];
     this.socialList = [];
     this.currentPosition = [];
+    this.routeStartMarker = null;
 }
 
 // Route types
@@ -878,12 +879,14 @@ MapClass.prototype.checkTrack = function(track) {
  * @param {Double} longitude
  */
 MapClass.prototype.setCenter = function(latitude, longitude) {
-    var ic = L.icon({
+/*    var ic = L.icon({
         iconUrl: "img/pegman.png",
         iconSize: [40,40]
     });
     var marker = L.marker([latitude, longitude], {title: "Вы здесь", draggable: false,  icon: ic});
     this.map.addLayer(marker);
+*/
+    this.updateStartMarker(latitude,longitude);
     this.currentPosition = [latitude,longitude];
     this.map.setView([latitude, longitude], 15);
 };
@@ -899,6 +902,27 @@ MapClass.prototype.getCenter = function() {
 MapClass.prototype.getSize = function() {
     return this.map.getSize();
 };
+
+MapClass.prototype.updateStartMarker = function(latitude, longitude) {
+	if (this.routeStartMarker !== null) {
+	    this.routeStartMarker.setLatLng([latitude, longitude]);
+	    this.routeStartMarker.update();
+	} else {
+	    // координаты есть, маркера нет
+	    var ic = L.icon({
+    		iconUrl: "img/pegman.png",
+    		iconSize: [40,40]});
+	    this.routeStartMarker = L.marker([latitude, longitude], {title: gettext("Start point"), draggable: false, icon:ic});
+	    this.map.addLayer(this.routeStartMarker);
+	}
+/*    var ic = L.icon({
+        iconUrl: "img/pegman.png",
+        iconSize: [40,40]
+    });
+    var marker = L.marker([latitude, longitude], {title: "Вы здесь", draggable: false,  icon: ic});
+    this.map.addLayer(marker);
+*/
+}
 
 /**
  * Create draggable temporary marker which will send coordinates on drag. Marker 

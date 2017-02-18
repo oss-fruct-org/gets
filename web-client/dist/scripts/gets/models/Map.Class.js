@@ -706,7 +706,8 @@ MapClass.prototype.placeSocialsOnMap = function(socialList) {
         this.socialsLayer.addLayer(marker);
         this.socialMarkers.push(marker);
 
-        var popup = L.popup().setContent("<center>" + socialList[i].title + "<br><button class='route_to' name="+ coords + ">" + gettext("Route to") + "</button></center>");
+        var popup = L.popup().setContent("<center>" + socialList[i].title + "<br><button class='route_to' name="+ coords + ">" + gettext("Route to") + 
+    	    "</button><br><button class='social_info' name='"+ socialList[i].uuid+"'>"+ gettext("put-point-in-point-info") +"</button></center>");
         var self = this;
         marker.bindPopup(popup);
     }

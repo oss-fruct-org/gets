@@ -210,6 +210,11 @@ RoutesPage.prototype.initPage = function () {
         var fromCoords = self._user.getUsersGeoPosition();
         self.route(fromCoords.lat,fromCoords.lng,toCoords[0],toCoords[1]);
     });
+
+    $(this.document).on('click', '.social_info', function (e) {
+        e.preventDefault();
+        window.location = "routes.php?"+lang+"#form=social_info&social_uuid=" + this.name;
+    });
 };
 
 RoutesPage.prototype.downloadPointsHandler = function() {

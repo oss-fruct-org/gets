@@ -59,6 +59,18 @@ RoutesPage.prototype.initPage = function () {
     if (this._mapCtrl == null) {
         this._mapCtrl = new MapController(this.document, this.window);
         this._mapCtrl.initMap();
+        this._mapCtrl._map.map.contextmenu.addItem({
+            text: gettext('Route from'),
+            callback: function (e) {
+        	window.location = "?"+lang+"#form=route_from&lat=" + e.latlng.lat + "&lng=" + e.latlng.lng;
+            }
+        });
+        this._mapCtrl._map.map.contextmenu.addItem({
+            text: gettext('Route to'),
+            callback: function (e) {
+                window.location = "?"+lang+"#form=route_to&lat=" + e.latlng.lat +"&lng=" + e.latlng.lng;
+            }
+        });
     }
 
     // Init models

@@ -63,18 +63,6 @@ MapClass.prototype.initMap = function() {
             layers: [this.baseMapLayer],
             contextmenu: true,
             contextmenuWidth: 140,
-            contextmenuItems: [{
-                text: gettext('Route from'),
-                callback: function (e) {
-            		window.location = "?"+lang+"#form=route_from&lat=" + e.latlng.lat + "&lng=" + e.latlng.lng;
-            	    }
-            },
-                {
-                    text: gettext('Route to'),
-                    callback: function (e) {
-                        window.location = "?"+lang+"#form=route_to&lat=" + e.latlng.lat +"&lng=" + e.latlng.lng;
-                    }
-                }]
         });
         var that = this;
         L.Control.zoomHome = L.Control.extend({

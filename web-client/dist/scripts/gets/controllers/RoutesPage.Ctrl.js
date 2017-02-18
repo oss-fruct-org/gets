@@ -342,6 +342,7 @@ RoutesPage.prototype.addRouteFromMap = function () {
     var toLng = decodeURIComponent(this._utils.getHashVar('lng'));
     var toCoords = {coords:{latitude:toLat, longitude:toLng}};
     this._user.setTargetLocation(toCoords);
+    this._mapCtrl.setTargetLocation(toLat, toLng);
     if (this._user.isCoordsSet() && this._user.isTargetLocationSet()) {
 	var fromCoords = this._user.getUsersGeoPosition();
 	this.route(fromCoords.lat,fromCoords.lng,toLat,toLng);

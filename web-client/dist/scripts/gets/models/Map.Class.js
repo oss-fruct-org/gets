@@ -29,6 +29,7 @@ function MapClass() {
     this.socialList = [];
     this.currentPosition = [];
     this.routeStartMarker = null;
+    this.routeTargetLocation = null;
 }
 
 // Route types
@@ -914,6 +915,20 @@ MapClass.prototype.updateStartMarker = function(latitude, longitude) {
     		iconSize: [40,40]});
 	    this.routeStartMarker = L.marker([latitude, longitude], {title: gettext("Start point"), draggable: false, icon:ic});
 	    this.map.addLayer(this.routeStartMarker);
+	}
+}
+
+MapClass.prototype.updateTargetLocation = function(latitude, longitude) {
+	if (this.routeTargetLocation !== null) {
+	    this.routeTargetLocation.setLatLng([latitude, longitude]);
+	    this.routeTargetLocation.update();
+	} else {
+	    // координаты есть, маркера нет
+	    var ic = L.icon({
+    		iconUrl: "images/icons/finished.png",
+    		iconSize: [40,40]});
+	    this.routeTargetLocation = L.marker([latitude, longitude], {title: gettext("Finish point"), draggable: false, icon:ic});
+	    this.map.addLayer(this.routeTargetLocation);
 	}
 /*    var ic = L.icon({
         iconUrl: "img/pegman.png",

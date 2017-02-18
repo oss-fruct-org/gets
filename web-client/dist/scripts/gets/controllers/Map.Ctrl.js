@@ -53,6 +53,10 @@ MapController.prototype.setStartPosition = function(latitude, longitude) {
     this._map.updateStartMarker(latitude, longitude);
 };
 
+MapController.prototype.setTargetLocation = function(latitude, longitude) {
+    this._map.updateTargetLocation(latitude, longitude);
+};
+
 MapController.prototype.setMapCenterOnSocial = function(uuid) {
     this._map.setMapCenterOnSocial(uuid);
 };

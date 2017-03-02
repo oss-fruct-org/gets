@@ -1,8 +1,10 @@
 <?php
 session_start();
 // Translations
-define('TRANSLATIONS_DIR', './translations');
-define('TRANSLATIONS_SCRIPT', TRANSLATIONS_DIR . '/translations.php');
+#define('TRANSLATIONS_DIR', './translations');
+#define('TRANSLATIONS_SCRIPT', TRANSLATIONS_DIR . '/translations.php');
+#require_once(TRANSLATIONS_SCRIPT);
+require_once("config.php");
 require_once(TRANSLATIONS_SCRIPT);
 
 //load translations

@@ -144,7 +144,7 @@ PointsClass.prototype.downLoadPoints = function(paramsObj, callback) {
             pointObj.coordinates = $(pointListItems[i]).find('coordinates').length ? $(pointListItems[i]).find('coordinates').text() : '';
             pointObj.category_id = $(pointListItems[i]).find("[name='category_id']").length ? $(pointListItems[i]).find("[name='category_id']").text() : '';
             pointObj.radius = $(pointListItems[i]).find("[name='radius']").length ? $(pointListItems[i]).find("[name='radius']").text() : '';
-            if (typeof self.categories != 'undefined') {
+            if (self.categories != null) {
         	var category = self.categories.getCategory(pointObj.category_id);
         	pointObj.categoryName = category.name;
         	pointObj.iconURL = category.url.icon;
@@ -362,6 +362,7 @@ PointsClass.prototype.removePoint = function (callback) {
 
 PointsClass.prototype.findPointInPointList = function(uuid) {
     if (!uuid || !this.pointList) {
+	Logger.debug("findPointInPointList with wrong UUID: " + uuid);
         return;
     }
     for (var i = 0, len = this.pointList.length; i < len; i++) {

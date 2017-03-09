@@ -620,7 +620,8 @@ function onEachFeature(feature, layer) {
 MapClass.prototype.placeRouteOnMap = function (route, points, routeBaseLink, categories) {
         var that = this;
         var coords = [];
-        this.routesPointsLayer = new L.MarkerClusterGroup({disableClusteringAtZoom: 17});
+        //this.routesPointsLayer = new L.MarkerClusterGroup({disableClusteringAtZoom: 17});
+        this.routesPointsLayer = L.layerGroup();
         $.each(route.getObstacles(), function (id, val) {
             var tmpPoint = points.findPointInPointList(val['uuid']);
             var coords = tmpPoint.coordinates.split(',');

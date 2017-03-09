@@ -65,6 +65,7 @@ PointsPage.prototype.initPage = function() {
         }
         if (!this._categories) {
             this._categories = new CategoriesClass();
+            this._points.setCategories(this._categories);
         }
         if (!this._user) {
             this._user = new UserClass(this.window);
@@ -524,10 +525,9 @@ PointsPage.prototype.showPointInfo = function() {
         if (!pointUUID) {
             throw new GetsWebClientException('Track Page Error', 'showPointInfo, hash parameter point uuid undefined');
         }
-        this._points.findPointInPointList(pointUUID);
+        var point = this._points.findPointInPointList(pointUUID);
         
-        Logger.debug(this._points.getPoint());
-        this._pointInfo.placePointInPointInfo(this._points.getPoint(), this._user.isLoggedIn());
+        this._pointInfo.placePointInPointInfo(point, this._user.isLoggedIn());
         
         this.currentView.hideView();
         this.currentView = this._pointInfo;
@@ -606,6 +606,7 @@ PointsPage.prototype.downloadPointsHandler = function() {
     try {
         this._pointsMain.showOverlay();
         var formData = $(this.document).find('#point-main-form').serializeArray();
+        this._points.setCategories(this._categories);
         this._points.downLoadPoints(formData, function () {
             var pointList = that._points.getPointList();
             /*var points_json = "[";

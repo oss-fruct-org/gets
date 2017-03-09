@@ -57,8 +57,8 @@ CategoriesClass.prototype.downloadCategories = function () {
         var categoryObj = {};
         categoryObj.id = $(value).find('id').length ? $(value).find('id').text() : '';
         categoryObj.name = $(value).find('name').length ? $(value).find('name').text() : '';
-        categoryObj.description = $(value).find('description').length ? $(value).find('description').text() : '';
-        categoryObj.url = $(value).find('url').length ? $(value).find('url').text() : '';
+        categoryObj.description = $(value).find('description').length ? parseVals($(value).find('description').text()) : '';
+        categoryObj.url = $(value).find('url').length ? parseVals($(value).find('url').text()) : '';
 
         categoriesArray.push(categoryObj);
     });
@@ -66,10 +66,29 @@ CategoriesClass.prototype.downloadCategories = function () {
     this.categories = categoriesArray;
 };
 
+function parseVals(stringValue) {
+    try {
+	return JSON.parse(stringValue);
+    } catch (e) {
+	return stringValue;
+    }
+}
+
 /**
  * Getters
  */
 CategoriesClass.prototype.getCategories = function () {
     this.checkCategories();
     return this.categories;
+};
+
+
+
+CategoriesClass.prototype.getCategory = function (id) {
+    this.checkCategories();
+    for (var i = 0; i < this.categories.length; i++) {
+	if (this.categories[i].id === id) {
+	    return this.categories[i];
+	}
+    }
 };

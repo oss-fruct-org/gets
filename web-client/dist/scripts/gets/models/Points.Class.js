@@ -15,6 +15,7 @@ function PointsClass() {
     this.point = null;
     this.needPointListUpdate = false;
     this.needPointUpdate = false;
+    this.categories = null;
 };
 
 /**
@@ -54,6 +55,7 @@ PointsClass.prototype.checkPointList = function () {
  * @throws {GetsWebClientException}    
  */
 PointsClass.prototype.downLoadPoints = function(paramsObj, callback) { 
+    Logger.debug(this.categories);
     var lat = 0.0, lng = 0.0, radius = 1, categoryId = -1, space = 'public';
     
     $(paramsObj).each(function (idx, value) {
@@ -142,6 +144,14 @@ PointsClass.prototype.downLoadPoints = function(paramsObj, callback) {
             pointObj.coordinates = $(pointListItems[i]).find('coordinates').length ? $(pointListItems[i]).find('coordinates').text() : '';
             pointObj.category_id = $(pointListItems[i]).find("[name='category_id']").length ? $(pointListItems[i]).find("[name='category_id']").text() : '';
             pointObj.radius = $(pointListItems[i]).find("[name='radius']").length ? $(pointListItems[i]).find("[name='radius']").text() : '';
+            if (typeof self.categories != 'undefined') {
+        	var category = self.categories.getCategory(pointObj.category_id);
+        	pointObj.categoryName = category.name;
+        	pointObj.iconURL = category.url.icon;
+            }else{
+        	pointObj.categoryName = '';
+        	pointObj.iconURL = '';
+            }
             
             $(pointListItems[i]).find('Data').each(function(index, newValue) {               
                 pointExtendedData.push({name: $(newValue).attr('name')/*.replace(/_/g, ' ')*/, value: $(newValue).text()});               
@@ -158,6 +168,11 @@ PointsClass.prototype.downLoadPoints = function(paramsObj, callback) {
         }
     });
 };
+
+PointsClass.prototype.setCategories = function (categoriesClass) {
+    categoriesClass.checkCategories();
+    this.categories = categoriesClass;
+}
 
 /**
  * Upload point to a given track in the GeTS Server. 

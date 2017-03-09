@@ -561,22 +561,35 @@ MapClass.prototype.placePointsOnMap = function(pointList, markerBaseLink) {
         throw new GetsWebClientException('Map Error', 'placePointsOnMap, pointList undefined or null.');
     }
     this.pointsLayer = new L.MarkerClusterGroup({disableClusteringAtZoom: 17});
+    
+    var iconsArray = {};
 
     for (var i = 0; i < pointList.length; i++) {
         var coords = pointList[i].coordinates.split(',');
-        var marker = L.marker([coords[1], coords[0]], {title: pointList[i].name, draggable: false}); //{icon: myIcon}
+        if (typeof iconsArray[pointList[i].category_id] == 'undefined') {
+    	    var imgUrl = pointList[i].iconURL;
+    	    if (imgUrl != '') {
+    		//Logger.debug(imgUrl);
+    		iconsArray[pointList[i].category_id] = L.icon({iconUrl: imgUrl,iconSize:[30,30]});
+    	    } else {
+    		iconsArray[pointList[i].category_id] = new L.Icon.Default;
+    	    }
+        }
+        var marker = L.marker([coords[1], coords[0]], {title: pointList[i].name, draggable: false, icon: iconsArray[pointList[i].category_id]}); //{icon: myIcon}
 
         marker.uuid = pointList[i].uuid;
         marker.title = pointList[i].name;
         marker.category_id = pointList[i].category_id;
+        marker.categoryName = pointList[i].categoryName;
+        marker.iconURL = pointList[i].iconURL;
 
 
         this.pointsLayer.addLayer(marker);
 
         var popup = L.popup()
-            .setContent(
+            .setContent('<img style="float:left" src="' + pointList[i].iconURL + '" width="30"/>' +
             '<b>' + pointList[i].name +
-            '</b><br>' + pointList[i].description +
+            '</b>' + (pointList[i].description != '{}' ? '<br>' + pointList[i].description : '') +
             (markerBaseLink ?
             '<br><a id="' + this.pointsLayer.getLayerId(marker) + '" href="' + markerBaseLink.url + pointList[i].uuid + '">' + markerBaseLink.text + '</a>' : '')
         );

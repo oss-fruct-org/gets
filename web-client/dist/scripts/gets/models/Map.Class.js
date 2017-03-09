@@ -20,7 +20,9 @@ function MapClass() {
     this.searchArea = null;
     this.userMarker = null;
     this.pointsLayer = null;
-    this.routesPointsLayer = null;
+    this.safeRoutePointsLayer = null;
+    this.normalRoutePointsLayer = null;
+    this.hardRoutePointsLayer = null;
     this.socialsLayer = null;
     this.routeLayer = null;
     this.routeLayerArray = null;
@@ -621,7 +623,19 @@ MapClass.prototype.placeRouteOnMap = function (route, points, routeBaseLink, cat
         var that = this;
         var coords = [];
         //this.routesPointsLayer = new L.MarkerClusterGroup({disableClusteringAtZoom: 17});
-        this.routesPointsLayer = L.layerGroup();
+        switch(route.getType()) {
+    	    case "safe": 
+    		this.safeRoutePointsLayer = L.layerGroup();
+    		break;
+    	    case "normal":
+    		this.normalRoutePointsLayer = L.layerGroup();
+    		break;
+    	    case "fastest": 
+    		this.fastestRoutePointsLayer = L.layerGroup();
+    		break;
+    	    default:
+    		alert("Unknown route type");
+        }
         $.each(route.getObstacles(), function (id, val) {
             var tmpPoint = points.findPointInPointList(val['uuid']);
             var coords = tmpPoint.coordinates.split(',');
@@ -640,7 +654,19 @@ MapClass.prototype.placeRouteOnMap = function (route, points, routeBaseLink, cat
             marker.category_id = tmpPoint.category_id;
 
 
-            that.routesPointsLayer.addLayer(marker);
+        switch(route.getType()) {
+    	    case "safe": 
+        	that.safeRoutePointsLayer.addLayer(marker);
+    		break;
+    	    case "normal":
+        	that.normalRoutePointsLayer.addLayer(marker);
+    		break;
+    	    case "fastest": 
+        	that.fastestRoutePointsLayer.addLayer(marker);
+    		break;
+    	    default:
+    		alert("Unknown route type");
+        }
 
             var popup = L.popup()
                 .setContent(
@@ -648,7 +674,7 @@ MapClass.prototype.placeRouteOnMap = function (route, points, routeBaseLink, cat
                     '</b><br>' +tmpPoint.description);
             marker.bindPopup(popup);
         });
-        this.routeLayer.addLayer(this.routesPointsLayer);
+        //this.routeLayer.addLayer(this.easyRoutePointsLayer);
         $.each(route.getRouteCoords(), function (id, val) {
             coords.push([val['lng'],val['lat']]);
         });
@@ -691,6 +717,25 @@ MapClass.prototype.setCurrentRouteLayer = function (type) {
     });
     this.currentRouteLayer = this.routeLayerArray[type];
     this.currentRouteLayer.fire("click");
+    Logger.debug("type is " + type);
+    
+    switch (type) {
+	case 'safe': 
+	    this.routeLayer.addLayer(this.safeRoutePointsLayer);
+	    if (this.routeLayer.hasLayer(this.normalRoutePointsLayer)) this.routeLayer.removeLayer(this.normalRoutePointsLayer);
+	    if (this.routeLayer.hasLayer(this.fastestRoutePointsLayer)) this.routeLayer.removeLayer(this.fastestRoutePointsLayer);
+	    break;
+	case 'normal': 
+	    if (this.routeLayer.hasLayer(this.safeRoutePointsLayer)) this.routeLayer.removeLayer(this.safeRoutePointsLayer);
+	    this.routeLayer.addLayer(this.normalRoutePointsLayer);
+	    if (this.routeLayer.hasLayer(this.fastestRoutePointsLayer)) this.routeLayer.removeLayer(this.fastestRoutePointsLayer);
+	    break;
+	case 'fastest': 
+	    if (this.routeLayer.hasLayer(this.safeRoutePointsLayer)) this.routeLayer.removeLayer(this.safeRoutePointsLayer);
+	    if (this.routeLayer.hasLayer(this.normalRoutePointsLayer)) this.routeLayer.removeLayer(this.normalRoutePointsLayer);
+	    this.routeLayer.addLayer(this.fastestRoutePointsLayer);
+	    break;
+    }
 };
 
 MapClass.prototype.getCurrentRouteLayer = function () {

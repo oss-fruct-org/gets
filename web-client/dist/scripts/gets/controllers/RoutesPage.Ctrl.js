@@ -246,18 +246,17 @@ RoutesPage.prototype.route = function (fromLat,fromLng,toLat,toLng) {
             window.location = "routes.php?"+lang+"#form=main";
             that._routes = [];
             that._mapCtrl.removeRoutesFromMap();
-            var flag = false;
+            var flag = "fastest";
             $.each(response, function (key, value) {
                 if(value['type'] == "safe")
-                    flag = true;
+                    flag = "safe";
+                if (value['type'] == "normal" && flag == "fastest")
+            	    flag = "normal";
                var tmpRoute = new RouteClass(value['distance'],value['weight'], value['type'],value['routePoints'],value['obstacles'],value['routePoints'][0],value['routePoints'][value['routePoints'].length - 1]);
                 that._mapCtrl.placeRouteOnMap(tmpRoute, that._points, '#form=' + RoutesPage.ROUTE_INFO + '&route_type=' + value['type'], that._categories);
                 that._routes.push(tmpRoute);
             });
-            if(flag)
-                window.location = "routes.php?"+lang+"#form=route_info&route_type=safe";
-            else
-                window.location = "routes.php?"+lang+"#form=route_info&route_type=fastest";
+            window.location = "routes.php?"+lang+"#form=route_info&route_type=" + flag;
         },
         error: function (xhr, ajaxOptions, thrownError) {
     	    alert(xhr.status);

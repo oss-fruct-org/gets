@@ -103,7 +103,7 @@ PointsPage.prototype.initPage = function() {
         }        
     } catch (Exception) {
         MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
-        Logger.error(Exception.toString());
+        Logger.error(Exception);
     }
     
     //Init first page

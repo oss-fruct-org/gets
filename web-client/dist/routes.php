@@ -6,8 +6,8 @@ require_once(TRANSLATIONS_SCRIPT);
 <html>
 <head>
     <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="styles/bootstrap-3.2.0/bootstrap.min.css">
-    <link rel="stylesheet" href="styles/bootstrap-3.2.0/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="styles/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="styles/bootstrap/bootstrap-theme.min.css">
     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
     <link rel="stylesheet" href="styles/languages.min.css">
     <link rel="stylesheet" type="text/css" href="styles/leaflet.contextmenu.css"/>
@@ -30,7 +30,7 @@ require_once(TRANSLATIONS_SCRIPT);
     <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
     <script src="scripts/logger.min.js"></script>
     <script src="scripts/readmore.min.js"></script>
-    <script src="scripts/bootstrap-slider.min.js"></script>
+    <script src="scripts/bootstrap/bootstrap-slider.min.js"></script>
     <script src="scripts/leaflet.contextmenu.js"></script>
     <script src="scripts/jquery.inputmask.bundle.min.js"></script>
     <script type="text/javascript" src="scripts/leaflet.markercluster.js"></script>

@@ -24,7 +24,7 @@ require_once(TRANSLATIONS_SCRIPT);
 	<!-- ADD JS CONFIG VARIABLES -->
         <script src="js_config.php"></script>
         
-        <script src="scripts/jquery/jquery-1.11.1.min.js"></script>
+        <script src="scripts/jquery/jquery-3.2.0.min.js"></script>
         <script src="scripts/jquery/jquery.cookie.js"></script>
         <script src="scripts/bootstrap/bootstrap.min.js"></script>               
         <script src="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.js"></script>

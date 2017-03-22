@@ -23,7 +23,7 @@ session_start();
 	<!-- ADD JS CONFIG VARIABLES -->
         <script src="js_config.php"></script>
         
-        <script src="scripts/jquery/jquery-1.11.1.min.js"></script>
+        <script src="scripts/jquery/jquery-3.2.0.min.js"></script>
         <script src="scripts/jquery/jquery.cookie.js"></script>
         <script src="scripts/bootstrap/bootstrap.min.js"></script>
         <script src="scripts/bootstrap/bootstrap-lightbox.min.js"></script>

@@ -132,8 +132,8 @@ PointsClass.prototype.downLoadPoints = function(paramsObj, callback) {
             var pointExtendedData = [];
             pointObj.photos = [];
             
-            pointObj.name = $(pointListItems[i]).find('name').length ? $(pointListItems[i]).find('name').text() : '';
-            pointObj.description = $(pointListItems[i]).find('description').length ? $(pointListItems[i]).find('description').text() : '';
+            pointObj.names = $(pointListItems[i]).find('name').length ? parseVals($(pointListItems[i]).find('name').text()) : '';
+            pointObj.description = $(pointListItems[i]).find('description').length ? parseVals($(pointListItems[i]).find('description').text()) : '';
             pointObj.uuid = $(pointListItems[i]).find("[name='uuid']").length ? $(pointListItems[i]).find("[name='uuid']").text() : '';
             pointObj.access = $(pointListItems[i]).find("[name='access']").length ? $(pointListItems[i]).find("[name='access']").text() : '';
             $(pointListItems[i]).find("gets\\:photo").each(function (idx, val) {
@@ -152,6 +152,17 @@ PointsClass.prototype.downLoadPoints = function(paramsObj, callback) {
         	pointObj.categoryName = '';
         	pointObj.iconURL = '';
             }
+            if (typeof(pointObj.names) === 'object') {
+    		var langID = lang.substr(lang.indexOf("lang=") + 5,2);
+    		if (pointObj.names.hasOwnProperty("name_" + langID)) {
+    		    pointObj.name = pointObj.names["name_" + langID];
+    		} else {
+    		    pointObj.name = pointObj.names.name;
+    		}
+    	    } else {
+    		pointObj.name = pointObj.names;
+    	    }
+
             
             $(pointListItems[i]).find('Data').each(function(index, newValue) {               
                 pointExtendedData.push({name: $(newValue).attr('name')/*.replace(/_/g, ' ')*/, value: $(newValue).text()});               
@@ -168,6 +179,14 @@ PointsClass.prototype.downLoadPoints = function(paramsObj, callback) {
         }
     });
 };
+
+function parseVals(stringValue) {
+    try {
+	return JSON.parse(stringValue);
+    } catch (e) {
+	return stringValue;
+    }
+}
 
 PointsClass.prototype.setCategories = function (categoriesClass) {
     categoriesClass.checkCategories();

@@ -8,11 +8,11 @@ session_start(); echo "azaza " . $_SESSION['g2t_token'];
     <head>     
         <link rel="stylesheet" href="styles/bootstrap/bootstrap.min.css">
         <link rel="stylesheet" href="styles/bootstrap/bootstrap-theme.min.css">
-        <link rel="stylesheet" type="text/css" href="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.css"/>
+        <link rel="stylesheet" type="text/css" href="styles/leaflet/leaflet.css"/>
         <link rel="stylesheet" type="text/css" href="styles/bootstrap/ekko-lightbox.min.css"/>
         <link rel="stylesheet" type="text/css" href="styles/bootstrap/bootstrap-slider.min.css"/>
         <link rel="stylesheet" href="styles/languages.min.css">
-        <link rel="stylesheet" type="text/css" href="styles/leaflet.contextmenu.css"/>
+        <link rel="stylesheet" type="text/css" href="styles/leaflet/leaflet.contextmenu.css"/>
         <?php
         include_once('html_headers.php');
         ?>
@@ -26,11 +26,11 @@ session_start(); echo "azaza " . $_SESSION['g2t_token'];
         <script src="scripts/jquery/jquery.cookie.js"></script>
         <script src="scripts/bootstrap/bootstrap.min.js"></script>
         <script src="scripts/bootstrap/ekko-lightbox.min.js"></script>
-        <script src="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.js"></script>
+        <script src="scripts/leaflet/leaflet.js"></script>
         <script src="scripts/logger.min.js"></script>
         <script src="scripts/readmore.min.js"></script>
         <script src="scripts/bootstrap/bootstrap-slider.min.js"></script>
-        <script src="scripts/leaflet.contextmenu.js"></script>
+        <script src="scripts/leaflet/leaflet.contextmenu.js"></script>
         <script src="scripts/Polyline.encoded.js"></script>
         <script src="scripts/graham_scan.min.js"></script>
         <script src="scripts/jquery.inputmask.bundle.min.js"></script>

@@ -562,7 +562,7 @@ MapClass.prototype.placePointsOnMap = function(pointList, markerBaseLink) {
     if (!pointList) {
         throw new GetsWebClientException('Map Error', 'placePointsOnMap, pointList undefined or null.');
     }
-    this.pointsLayer = new L.MarkerClusterGroup({disableClusteringAtZoom: 17});
+    this.pointsLayer = new L.markerClusterGroup({disableClusteringAtZoom: 17});
     
     var iconsArray = {};
 

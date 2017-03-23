@@ -608,6 +608,7 @@ PointsPage.prototype.downloadPointsHandler = function() {
         var formData = $(this.document).find('#point-main-form').serializeArray();
         this._points.setCategories(this._categories);
         this._points.downLoadPoints(formData, function () {
+    	    Logger.time('total update after download');
             var pointList = that._points.getPointList();
             /*var points_json = "[";
              for (var i = 0; i < pointList.length; i++) {
@@ -648,6 +649,7 @@ PointsPage.prototype.downloadPointsHandler = function() {
                 text: $(that._pointInfo.getView()).data('putpoint')
             });
             that._pointsMain.hideOverlay();
+    	    Logger.timeEnd('total update after download');
         });
     } catch (Exception) {
         MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);

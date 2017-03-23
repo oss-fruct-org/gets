@@ -32,6 +32,7 @@ function MapClass() {
     this.currentPosition = [];
     this.routeStartMarker = null;
     this.routeTargetLocation = null;
+    this.updateProcessID = null;
 }
 
 // Route types
@@ -562,11 +563,18 @@ MapClass.prototype.placePointsOnMap = function(pointList, markerBaseLink) {
     if (!pointList) {
         throw new GetsWebClientException('Map Error', 'placePointsOnMap, pointList undefined or null.');
     }
+    if (this.updateProcessID != null) {
+	clearInterval(this.updateProcessID);
+    }
     this.pointsLayer = new L.markerClusterGroup({disableClusteringAtZoom: 17});
     
     var iconsArray = {};
+    var markersList = [];
+    var curIndex = 0;
+    var that = this;
 
-    for (var i = 0; i < pointList.length; i++) {
+    this.updateProcessID = setInterval(function() {
+    for (var i = curIndex; i < pointList.length && i < curIndex + 50; i++) {
         var coords = pointList[i].coordinates.split(',');
         if (typeof iconsArray[pointList[i].category_id] == 'undefined') {
     	    var imgUrl = pointList[i].iconURL;
@@ -586,14 +594,14 @@ MapClass.prototype.placePointsOnMap = function(pointList, markerBaseLink) {
         marker.iconURL = pointList[i].iconURL;
 
 
-        this.pointsLayer.addLayer(marker);
+        markersList.push(marker);
 
         var popup = L.popup()
             .setContent('<img style="float:left" src="' + pointList[i].iconURL + '" width="30"/>' +
             '<b>' + pointList[i].name +
             '</b>' + (pointList[i].description != '{}' ? '<br>' + pointList[i].description : '') +
             (markerBaseLink ?
-            '<br><a id="' + this.pointsLayer.getLayerId(marker) + '" href="' + markerBaseLink.url + pointList[i].uuid + '">' + markerBaseLink.text + '</a>' : '')
+            '<br><a id="' + that.pointsLayer.getLayerId(marker) + '" href="' + markerBaseLink.url + pointList[i].uuid + '">' + markerBaseLink.text + '</a>' : '')
         );
         marker.bindPopup(popup);
 
@@ -610,8 +618,16 @@ MapClass.prototype.placePointsOnMap = function(pointList, markerBaseLink) {
                 {name: "category", value: this.category_id}, {name: "title", value: this.title}], true, null);
         });
     }
+    curIndex+=50;
+    Logger.debug("uploaded markers = " +markersList.length + "; processID=" + that.updateProcessID);
+    if (curIndex >= pointList.length) {
+	clearInterval(that.updateProcessID);
+	that.updateProcessID = null;
+	that.pointsLayer.addLayers(markersList);
+	that.map.addLayer(that.pointsLayer);
+    }
+    }, 4);
 
-    this.map.addLayer(this.pointsLayer);
 };
 
 

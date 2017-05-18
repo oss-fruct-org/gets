@@ -312,7 +312,7 @@ MapClass.prototype.addTrackPointsToLayerGroup = function (track, group) {
         }).bindPopup(
                 '<b>' + track.points[i].name + '</b><br>' +
                 '<img class="info-image" alt="No image" src="' + track.points[i].photo + '">' +
-                track.points[i].description + '<br>' +
+                (track.points[i].description != '{}' ? track.points[i].description : "") + '<br>' +
                 track.points[i].coordinates + '<br>' +
                 '<a href="' + track.points[i].url + '">' + track.points[i].url + '</a>' +
                 '<audio controls src="' + track.points[i].audio + '"></audio>' +
@@ -687,7 +687,7 @@ MapClass.prototype.placeRouteOnMap = function (route, points, routeBaseLink, cat
             var popup = L.popup()
                 .setContent(
                     '<b>' + tmpPoint.name +
-                    '</b><br>' +tmpPoint.description);
+                    '</b><br>' +(tmpPoint.description != '{}' ? tmpPoint.description : ""));
             marker.bindPopup(popup);
         });
         //this.routeLayer.addLayer(this.easyRoutePointsLayer);

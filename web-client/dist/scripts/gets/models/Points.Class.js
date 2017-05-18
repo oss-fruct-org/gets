@@ -133,7 +133,7 @@ PointsClass.prototype.downLoadPoints = function(paramsObj, callback) {
             pointObj.photos = [];
             
             pointObj.names = $(pointListItems[i]).find('name').length ? parseVals($(pointListItems[i]).find('name').text()) : '';
-            pointObj.description = $(pointListItems[i]).find('description').length ? parseVals($(pointListItems[i]).find('description').text()) : '';
+            pointObj.descriptions = $(pointListItems[i]).find('description').length ? parseVals($(pointListItems[i]).find('description').text()) : '';
             pointObj.uuid = $(pointListItems[i]).find("[name='uuid']").length ? $(pointListItems[i]).find("[name='uuid']").text() : '';
             pointObj.access = $(pointListItems[i]).find("[name='access']").length ? $(pointListItems[i]).find("[name='access']").text() : '';
             $(pointListItems[i]).find("gets\\:photo").each(function (idx, val) {
@@ -161,6 +161,20 @@ PointsClass.prototype.downLoadPoints = function(paramsObj, callback) {
     		}
     	    } else {
     		pointObj.name = pointObj.names;
+    	    }
+    	    if (typeof(pointObj.descriptions) === 'object') {
+    		var langID = lang.substr(lang.indexOf("lang=") + 5,2);
+    		if (pointObj.descriptions.hasOwnProperty("description_" + langID)) {
+    		    pointObj.description = pointObj.descriptions["description_" + langID];
+    		} else {
+    		    if (pointObj.descriptions.hasOwnProperty("description")) {
+    			pointObj.description = pointObj.descriptions.description;
+    		    } else {
+    			pointObj.description = '{}';
+    		    }
+    		}
+    	    } else {
+    		pointObj.description = pointObj.descriptions;
     	    }
 
             

@@ -1,4 +1,5 @@
 <?php
+    header('Access-Control-Allow-Origin: *');
     require_once('../config.php');
     require_once('utils/array2xml.inc');
     require_once('utils/process_request.inc');
@@ -43,7 +44,11 @@
 	$coords = explode(',', $placemark->Point->coordinates);
 	//var_dump((string)$placemark->xpath("c:ExtendedData/c:Data[@name='rating']")[0]->value[0]);
 	//exit;
-	$props['difficulty'] = (string)($placemark->xpath("c:ExtendedData/c:Data[@name='rating']")[0]->value[0]);
+	if ($placemark->xpath("c:ExtendedData/c:Data[@name='rating']")) {
+	    $props['difficulty'] = (string)($placemark->xpath("c:ExtendedData/c:Data[@name='rating']")[0]->value[0]);
+	} else {
+	    $props['difficulty'] = 0;
+	}
 	$props['lat'] = $coords[1];
 	$props['lng'] = $coords[0];
 	$props['uuid'] = (string)$placemark->xpath("c:ExtendedData/c:Data[@name='uuid']")[0]->value[0];

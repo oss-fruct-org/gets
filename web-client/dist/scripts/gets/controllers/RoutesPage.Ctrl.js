@@ -188,15 +188,9 @@ RoutesPage.prototype.initPage = function () {
     // get user's coordinates
     if (this.window.navigator.geolocation) {
         this.window.navigator.geolocation.getCurrentPosition(function (position) {
-            Logger.debug(position);
-            self._user.setUserGeoPosition(position);
+    	    self.setCurrentLocation(position);
             self._mapCtrl.setMapCenter(position.coords.latitude, position.coords.longitude);
-            self._socialsMain.setLatitude(Math.floor(position.coords.latitude * 10000) / 10000);
-            self._socialsMain.setLongitude(Math.floor(position.coords.longitude * 10000) / 10000);
-            self._pointsMain.setLatitude(Math.floor(position.coords.latitude * 10000) / 10000);
-            self._pointsMain.setLongitude(Math.floor(position.coords.longitude * 10000) / 10000);
 
-            self.downloadPointsHandler();
             //self.downloadSocialsHandler();
 
         }, this.handleGeoLocationError);
@@ -204,6 +198,9 @@ RoutesPage.prototype.initPage = function () {
         Logger.debug('geolocation is not supported by this browser');
     }
 
+    self.downloadPointsHandler();
+    
+    Logger.debug("Download points: " + this._points.length);
     $(this.document).on('click', '.route_to', function (e) {
         e.preventDefault();
         var toCoords = this.name.split(',');
@@ -215,6 +212,15 @@ RoutesPage.prototype.initPage = function () {
         e.preventDefault();
         window.location = "routes.php?"+lang+"#form=social_info&social_uuid=" + this.name;
     });
+};
+
+RoutesPage.prototype.setCurrentLocation = function(position) {
+            Logger.debug(position);
+            this._user.setUserGeoPosition(position);
+            this._socialsMain.setLatitude(Math.floor(position.coords.latitude * 10000) / 10000);
+            this._socialsMain.setLongitude(Math.floor(position.coords.longitude * 10000) / 10000);
+            this._pointsMain.setLatitude(Math.floor(position.coords.latitude * 10000) / 10000);
+            this._pointsMain.setLongitude(Math.floor(position.coords.longitude * 10000) / 10000);
 };
 
 RoutesPage.prototype.downloadPointsHandler = function() {
@@ -237,6 +243,7 @@ RoutesPage.prototype.route = function (fromLat,fromLng,toLat,toLng) {
         'toLng': toLng,
         'disability': returnCategory()
     };
+    Logger.debug("Create route from(" + fromLat + ":" + fromLng + ") to (" + toLat + ":" + toLng + ") with points: " + this._points.length);
     $.ajax({
         type: 'POST',
         url: GET_ROUTES_ACTION,
@@ -369,8 +376,10 @@ RoutesPage.prototype.updateRouteFrom = function () {
     var fromLat = decodeURIComponent(this._utils.getHashVar('lat'));
     var fromLng = decodeURIComponent(this._utils.getHashVar('lng'));
     var fromCoords = {coords:{latitude:fromLat, longitude:fromLng}};
-    this._user.setUserGeoPosition(fromCoords);
+    //this._user.setUserGeoPosition(fromCoords);
+    this.setCurrentLocation(fromCoords);
     this._mapCtrl.setStartPosition(fromLat, fromLng);
+    this.downloadPointsHandler();
     if (this._user.isCoordsSet() && this._user.isTargetLocationSet()) {
 	var toCoords = this._user.getTargetLocation();
 	this.route(fromLat,fromLng,toCoords.lat,toCoords.lng);

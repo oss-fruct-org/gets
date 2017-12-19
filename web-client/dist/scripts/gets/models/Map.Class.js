@@ -65,7 +65,7 @@ MapClass.prototype.initMap = function() {
             zoomControl: false,
             layers: [this.baseMapLayer],
             contextmenu: true,
-            contextmenuWidth: 140,
+            contextmenuWidth: 140
         });
         var that = this;
         L.Control.zoomHome = L.Control.extend({

@@ -102,6 +102,7 @@ PointsClass.prototype.downLoadPoints = function(paramsObj, callback) {
     }
     
     //requestObj.space = space;
+    $.support.cors = true; // IE8 compatability
     
     var getPointsRequest = $.ajax({
         url: GET_POINTS_ACTION,
@@ -120,8 +121,9 @@ PointsClass.prototype.downLoadPoints = function(paramsObj, callback) {
     
     var self = this;
     getPointsRequest.done(function(data, textStatus, jqXHR) {
-        if ($(jqXHR.responseText).find('code').text() !== '0') {
+        if ($($.parseXML(jqXHR.responseText)).find('code').text() !== '0') {
             throw new GetsWebClientException('Points Error', 'getPointsRequest: ' + $(jqXHR.responseText).find('message').text());
+            //alert('getPointsRequest: ' + JSON.stringify($(jqXHR.responseText).find('code')) + ";" + textStatus);
         }
         
         //Logger.debug(jqXHR.responseText);
@@ -395,7 +397,7 @@ PointsClass.prototype.removePoint = function (callback) {
 
 PointsClass.prototype.findPointInPointList = function(uuid) {
     if (!uuid || !this.pointList) {
-	Logger.debug("findPointInPointList with wrong UUID: " + uuid);
+	Logger.debug("PointClass.findPointInPointList() with wrong UUID: " + uuid);
         return;
     }
     for (var i = 0, len = this.pointList.length; i < len; i++) {
@@ -404,6 +406,7 @@ PointsClass.prototype.findPointInPointList = function(uuid) {
             return this.point;
         }
     }
+    Logger.debug("PointClass.findPointInPointList(): point with uuid=" + uuid + " not found in list size=" + size);
 };
 
 /**

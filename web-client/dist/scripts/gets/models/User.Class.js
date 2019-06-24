@@ -12,13 +12,14 @@
  * @param {Object} windowObj windowObj window dom object of the current page.
  */
 function UserClass(windowObj) {
+    windowObj.hasOwnProperty = windowObj.hasOwnProperty || Object.prototype.hasOwnProperty; // IE8 compatability
     this.email = null;
     this.coreUser = null;
     this.trustedUser = null;
     this.adminUser = null;
     this.isAuthorized = false;
     if (!windowObj.hasOwnProperty('location')) {
-        throw new GetsWebClientException('User Error', 'UserClass, windowObj argument is not a window object');
+        //throw new GetsWebClientException('User Error', 'UserClass, windowObj argument is not a window object');
     }
     this.windowObj = windowObj;
     this.coords = null;
@@ -53,12 +54,13 @@ UserClass.prototype.authorizeGoogle = function() {
     var id = $(getRedirectLinkRequest.responseText).find('id').text();
     var redirect_url = $(getRedirectLinkRequest.responseText).find('redirect_url').text();
     
-    var googleAuthWindow = this.windowObj.open(redirect_url, 'Google Auth', 'height=600,width=500');
+    var googleAuthWindow = this.windowObj.open(redirect_url, 'Google_Auth', 'height=600,width=500');
     var self = this;
     var timer = setInterval(function() {
         if (googleAuthWindow.closed) {
             clearInterval(timer);
             
+	    $.support.cors = true; // IE8 compatability
             var getAuthTokenRequest = $.ajax({
                 url: LOGIN_ACTION,
                 type: 'POST',

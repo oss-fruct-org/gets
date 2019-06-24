@@ -13,7 +13,7 @@
  */
 function UtilsClass(windowObj) {
     if (!windowObj.hasOwnProperty('location')) {
-        throw new GetsWebClientException('Utils Error', 'UtilsClass, windowObj argument is not a window object');
+        //throw new GetsWebClientException('Utils Error', 'UtilsClass, windowObj argument is not a window object');
     }
     this.windowObj = windowObj;
 }

@@ -4,6 +4,7 @@ session_start();
 #define('TRANSLATIONS_DIR', './translations');
 #define('TRANSLATIONS_SCRIPT', TRANSLATIONS_DIR . '/translations.php');
 #require_once(TRANSLATIONS_SCRIPT);
+header('Content-Type: application/javascript');
 require_once("config.php");
 require_once(TRANSLATIONS_SCRIPT);
 

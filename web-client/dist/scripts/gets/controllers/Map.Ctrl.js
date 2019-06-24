@@ -14,7 +14,7 @@
 function MapController(document, window) {
     window.hasOwnProperty = window.hasOwnProperty || Object.prototype.hasOwnProperty; // IE8 compatability
     if (!window.hasOwnProperty('location')) {
-        throw new GetsWebClientException('Track Page Error', 'TracksPage, windowObj argument is not a window object');
+        //throw new GetsWebClientException('Track Page Error', 'TracksPage, windowObj argument is not a window object');
     }
     this.document = document;
     this.window = window;

@@ -1,6 +1,7 @@
 <?php
 
 require_once("config.php");
+header('Content-Type: application/javascript');
 
 $base_url = 'http://' . $_SERVER['SERVER_NAME'] . substr($_SERVER['REQUEST_URI'], 0, -strlen(basename(__FILE__)));
 

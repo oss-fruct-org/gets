@@ -34,6 +34,7 @@ CategoriesClass.prototype.checkCategories = function () {
  * Download list of categories from the GeTS Server. 
  */
 CategoriesClass.prototype.downloadCategories = function () {
+    $.support.cors = true; // IE8 compatability
     var getCategoriesRequest = $.ajax({
         url: GET_CATEGORIES_ACTION,
         type: 'POST',
@@ -44,14 +45,16 @@ CategoriesClass.prototype.downloadCategories = function () {
     });
        
     getCategoriesRequest.fail(function( jqXHR, textStatus ) {
+	Logger.debug('CategoriesClass.downloadCategories(): fail=' + 'getCategoriesAsArray, getCategoriesRequest failed ' + textStatus);
         throw new GetsWebClientException('Categories Error', 'getCategoriesAsArray, getCategoriesRequest failed ' + textStatus);
     });
       
-    if ($(getCategoriesRequest.responseText).find('code').text() !== '0') {
+    if ($($.parseXML(getCategoriesRequest.responseText)).find('code').text() !== '0') {
+	Logger.debug('CategoriesClass.downloadCategories(): fail=' + $($.parseXML(getCategoriesRequest.responseText)).find('code').text());
         throw new GetsWebClientException('Categories Error', 'getCategoriesAsArray, ' + $(getCategoriesRequest.responseText).find('message').text());
     }
 
-    var categoryElementList = $(getCategoriesRequest.responseText).find('category');
+    var categoryElementList = $($.parseXML(getCategoriesRequest.responseText)).find('category');
     var categoriesArray = [];
     $(categoryElementList).each(function (index, value) {
         var categoryObj = {};

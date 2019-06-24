@@ -12,6 +12,14 @@ html, body {
     min-height: 650px;
 }
 
+/** IE8 compatable */
+.selector { 
+    background-size: cover;
+    /* The url is relative to the document, not to the css file! */
+    /* Prefer absolute urls to avoid confusion. */
+    -ms-behavior: url(styles/backgroundsize.min.htc);
+}
+
 #map {
     display: inline-block;
     position: absolute;

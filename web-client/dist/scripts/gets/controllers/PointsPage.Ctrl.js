@@ -40,8 +40,9 @@ PointsPage.ADD_POINT = 'point_add';
 PointsPage.EDIT_POINT = 'point_edit';
 
 PointsPage.prototype.changeForm = function() {
+    Logger.debug('PointsPage.changeFrom(); _utils=' + this._utils);
     var form = this._utils.getHashVar('form');
-    Logger.debug('changeForm form = ' + form);
+    Logger.debug('PointsPage.changeForm() form = ' + form);
     if (form === PointsPage.MAIN) {
         this.showPointsMain();
     } else if (form === PointsPage.POINT_INFO) {
@@ -57,6 +58,7 @@ PointsPage.prototype.changeForm = function() {
 
 PointsPage.prototype.initPage = function() {
     var self = this;
+    Logger.debug("PointsPage.initPage(); _utils=" + this._utils);
     
     try {      
         // Init models
@@ -67,14 +69,17 @@ PointsPage.prototype.initPage = function() {
             this._categories = new CategoriesClass();
             this._points.setCategories(this._categories);
         }
+        Logger.debug('PointsPage.initPage(): _points=' + this._points);
         if (!this._user) {
             this._user = new UserClass(this.window);
+            Logger.debug('PointsPage.ctrl.js: 1. is Auth: ' + this._user.isLoggedIn());
             this._user.fetchAuthorizationStatus();
-            Logger.debug('is Auth: ' + this._user.isLoggedIn());
+            Logger.debug('PointsPage.ctrl.js: 2. is Auth: ' + this._user.isLoggedIn());
         }
         if (!this._utils) {
             this._utils = new UtilsClass(this.window);
         }
+        Logger.debug('PointsPage.initPage(): _utils=' + this._utils);
     
         // Init views
         if (!this._pointsMain) {
@@ -102,8 +107,8 @@ PointsPage.prototype.initPage = function() {
             //this._mapCtrl.setMapCenter(position.latitude, position.longitude);
         }        
     } catch (Exception) {
-        MessageBox.showMessage(Exception.toString(), MessageBox.ERROR_MESSAGE);
-        Logger.error(Exception);
+        MessageBox.showMessage(Exception.name+': '+Exception.message, MessageBox.ERROR_MESSAGE);
+        Logger.error('PointsPage.initPage() error: ' + Exception.name + ":" + Exception.message);
     }
     
     //Init first page
